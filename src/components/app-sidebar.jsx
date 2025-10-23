@@ -1,15 +1,12 @@
 "use client"
 
 import * as React from "react"
+import { useSession } from "next-auth/react"
 import {
-  IconCamera,
   IconChartBar,
   IconDashboard,
   IconDatabase,
-  IconFileAi,
-  IconFileDescription,
   IconFileWord,
-  IconFolder,
   IconHelp,
   IconInnerShadowTop,
   IconListDetails,
@@ -33,16 +30,11 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
+const navData = {
   navMain: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/dashboard",
       icon: IconDashboard,
     },
     {
@@ -56,62 +48,9 @@ const data = {
       icon: IconChartBar,
     },
     {
-      title: "Projects",
-      url: "#",
-      icon: IconFolder,
-    },
-    {
       title: "Team",
       url: "#",
       icon: IconUsers,
-    },
-  ],
-  navClouds: [
-    {
-      title: "Capture",
-      icon: IconCamera,
-      isActive: true,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Proposal",
-      icon: IconFileDescription,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Prompts",
-      icon: IconFileAi,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
     },
   ],
   navSecondary: [
@@ -153,27 +92,39 @@ const data = {
 export function AppSidebar({
   ...props
 }) {
+  const { data: session } = useSession()
+
+  const user = session?.user ? {
+    name: session.user.name,
+    email: session.user.email,
+    avatar: session.user.image,
+  } : {
+    name: "User",
+    email: "user@example.com",
+    avatar: null,
+  }
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!p-1.5">
-              <a href="#">
+              <a href="/dashboard">
                 <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">Acme Inc.</span>
+                <span className="text-base font-semibold">Defenra Core</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavMain items={navData.navMain} />
+        <NavDocuments items={navData.documents} />
+        <NavSecondary items={navData.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={user} />
       </SidebarFooter>
     </Sidebar>
   );
