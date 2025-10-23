@@ -46,7 +46,7 @@ function LoginForm() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-950 dark:to-zinc-900 p-4">
+    <div className="flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">Вход в систему</CardTitle>
@@ -103,11 +103,11 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-950 dark:to-zinc-900 p-4">
+      <div className="flex min-h-screen items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardContent className="pt-6">
             <div className="flex items-center justify-center">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-700 border-t-transparent" />
             </div>
           </CardContent>
         </Card>

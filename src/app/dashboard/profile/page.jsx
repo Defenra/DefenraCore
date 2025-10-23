@@ -2,29 +2,49 @@
 
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ProfileSkeleton } from "@/components/profile-skeleton";
 
 export default function ProfilePage() {
-  const { data: session, update } = useSession();
+  const { data: session, status, update } = useSession();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [formData, setFormData] = useState({
-    name: session?.user?.name || "",
-    email: session?.user?.email || "",
+    name: "",
+    email: "",
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
   });
 
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, router]);
+
+  useEffect(() => {
+    if (session?.user) {
+      setFormData(prev => ({
+        ...prev,
+        name: session.user.name || "",
+        email: session.user.email || "",
+      }));
+    }
+  }, [session]);
+
+  if (status === "loading") {
+    return <ProfileSkeleton />;
+  }
+
   if (!session) {
-    router.push("/login");
     return null;
   }
 

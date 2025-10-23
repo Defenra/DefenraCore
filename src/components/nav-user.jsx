@@ -36,8 +36,10 @@ export function NavUser({
   const router = useRouter()
 
   const handleLogout = async () => {
-    await signOut({ redirect: false })
-    router.push("/login")
+    await signOut({ 
+      redirect: true,
+      callbackUrl: "/login"
+    })
   }
 
   const getInitials = (name) => {

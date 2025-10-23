@@ -6,10 +6,10 @@ function Skeleton({
 }) {
   return (
     <div
-      data-slot="skeleton"
-      className={cn("bg-accent animate-pulse rounded-md", className)}
-      {...props} />
-  );
+      className={cn("animate-pulse rounded-md bg-zinc-800/50", className)}
+      {...props}
+    />
+  )
 }
 
 export { Skeleton }

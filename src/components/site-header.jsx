@@ -6,6 +6,9 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 
 const pageNames = {
   "/dashboard": "Dashboard",
+  "/dashboard/agents": "Агенты",
+  "/dashboard/proxies": "Прокси",
+  "/dashboard/domains": "Домены",
   "/dashboard/profile": "Профиль",
 };
 
