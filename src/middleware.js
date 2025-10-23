@@ -27,17 +27,34 @@ export async function middleware(request) {
     console.error('Middleware error:', error);
   }
 
-  if (pathname === '/login' || pathname === '/setup' || pathname.startsWith('/api/')) {
+  // Public routes that don't require authentication
+  const publicRoutes = ['/login', '/setup', '/api/'];
+  const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
+  
+  if (isPublicRoute) {
     return NextResponse.next();
   }
 
+  // Check authentication
   const session = await auth();
 
-  if (!session && pathname !== '/') {
-    return NextResponse.redirect(new URL('/login', request.url));
+  // Redirect to login if not authenticated and trying to access protected routes
+  if (!session) {
+    const loginUrl = new URL('/login', request.url);
+    // Add callback URL to redirect back after login
+    if (pathname !== '/') {
+      loginUrl.searchParams.set('callbackUrl', pathname);
+    }
+    return NextResponse.redirect(loginUrl);
   }
 
+  // Redirect authenticated users from root to dashboard
   if (session && pathname === '/') {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
+  }
+
+  // Redirect authenticated users from login to dashboard
+  if (session && pathname === '/login') {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
