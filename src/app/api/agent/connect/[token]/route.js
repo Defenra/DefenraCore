@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import Agent from "@/models/Agent";
 import { getIpInfo, extractIpFromRequest } from "@/lib/ipInfo";
+import { autoAssignAgentToLocations } from "@/lib/autoAssignAgent";
 
 export async function GET(request, { params }) {
   try {
@@ -44,6 +45,20 @@ export async function GET(request, { params }) {
     agent.connectionToken = undefined;
     await agent.save();
 
+    // Auto-assign agent to GeoDNS locations based on IP
+    console.log(`[Agent Connect] ${agent.name} connected from ${ipAddress}`);
+    console.log(`  Country: ${ipInfo.country} (${ipInfo.countryCode})`);
+    
+    const Domain = (await import("@/models/Domain")).default;
+    const autoAssignment = await autoAssignAgentToLocations(
+      agent.agentId,
+      ipInfo,
+      agent.userId,
+      Domain
+    );
+    
+    console.log(`  Auto-assigned to: ${autoAssignment.locations.join(', ')}`);
+
     return NextResponse.json({
       success: true,
       message: "Agent connected successfully",
@@ -52,6 +67,11 @@ export async function GET(request, { params }) {
         agentKey: agent.agentKey,
         pollingInterval: agent.pollingInterval,
         apiEndpoint: `/api/agent/poll`,
+      },
+      autoAssignment: {
+        locations: autoAssignment.locations,
+        assignedCount: autoAssignment.assignedCount,
+        message: autoAssignment.message,
       },
     });
   } catch (error) {

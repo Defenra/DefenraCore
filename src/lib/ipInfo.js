@@ -60,16 +60,31 @@ export async function getIpInfo(ip) {
   }
 }
 
+/**
+ * Clean IP address - convert IPv4-mapped IPv6 to IPv4
+ * ::ffff:51.91.242.9 → 51.91.242.9
+ */
+function cleanIpAddress(ip) {
+  if (!ip) return ip;
+  
+  // Check for IPv4-mapped IPv6 address
+  if (ip.startsWith('::ffff:')) {
+    return ip.substring(7); // Remove ::ffff: prefix
+  }
+  
+  return ip;
+}
+
 export function extractIpFromRequest(request) {
   const forwarded = request.headers.get('x-forwarded-for');
   const realIp = request.headers.get('x-real-ip');
   const cfConnectingIp = request.headers.get('cf-connecting-ip');
 
-  if (cfConnectingIp) return cfConnectingIp;
-  if (realIp) return realIp;
+  if (cfConnectingIp) return cleanIpAddress(cfConnectingIp);
+  if (realIp) return cleanIpAddress(realIp);
   if (forwarded) {
     const ips = forwarded.split(',').map(ip => ip.trim());
-    return ips[0];
+    return cleanIpAddress(ips[0]);
   }
 
   return null;
