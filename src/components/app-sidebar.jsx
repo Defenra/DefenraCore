@@ -3,22 +3,15 @@
 import * as React from "react"
 import { useSession } from "next-auth/react"
 import {
-  IconChartBar,
   IconDashboard,
-  IconDatabase,
-  IconFileWord,
-  IconHelp,
-  IconInnerShadowTop,
-  IconListDetails,
-  IconReport,
-  IconSearch,
-  IconSettings,
-  IconUsers,
+  IconUserCircle,
+  IconShieldLock,
+  IconRobot,
+  IconNetwork,
+  IconWorld,
 } from "@tabler/icons-react"
 
-import { NavDocuments } from "@/components/nav-documents"
 import { NavMain } from "@/components/nav-main"
-import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
 import {
   Sidebar,
@@ -38,53 +31,24 @@ const navData = {
       icon: IconDashboard,
     },
     {
-      title: "Lifecycle",
-      url: "#",
-      icon: IconListDetails,
+      title: "Агенты",
+      url: "/dashboard/agents",
+      icon: IconRobot,
     },
     {
-      title: "Analytics",
-      url: "#",
-      icon: IconChartBar,
+      title: "Прокси",
+      url: "/dashboard/proxies",
+      icon: IconNetwork,
     },
     {
-      title: "Team",
-      url: "#",
-      icon: IconUsers,
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "#",
-      icon: IconSettings,
+      title: "Домены",
+      url: "/dashboard/domains",
+      icon: IconWorld,
     },
     {
-      title: "Get Help",
-      url: "#",
-      icon: IconHelp,
-    },
-    {
-      title: "Search",
-      url: "#",
-      icon: IconSearch,
-    },
-  ],
-  documents: [
-    {
-      name: "Data Library",
-      url: "#",
-      icon: IconDatabase,
-    },
-    {
-      name: "Reports",
-      url: "#",
-      icon: IconReport,
-    },
-    {
-      name: "Word Assistant",
-      url: "#",
-      icon: IconFileWord,
+      title: "Профиль",
+      url: "/dashboard/profile",
+      icon: IconUserCircle,
     },
   ],
 }
@@ -111,8 +75,8 @@ export function AppSidebar({
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!p-1.5">
               <a href="/dashboard">
-                <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">Defenra Core</span>
+                <IconShieldLock className="!size-5" />
+                <span className="text-base font-semibold">Defenra</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -120,8 +84,6 @@ export function AppSidebar({
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={navData.navMain} />
-        <NavDocuments items={navData.documents} />
-        <NavSecondary items={navData.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />

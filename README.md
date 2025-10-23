@@ -1,6 +1,6 @@
-# Defenra Core
+# Defenra
 
-Dashboard management system с MongoDB и NextAuth.
+Security management dashboard с MongoDB и NextAuth.
 
 ## Требования
 
