@@ -3,6 +3,9 @@ import connectDB from "@/lib/mongodb";
 import Agent from "@/models/Agent";
 import Proxy from "@/models/Proxy";
 import { getIpInfo, extractIpFromRequest } from "@/lib/ipInfo";
+import { buildAnycastRecords } from "@/lib/geoFallback";
+import { autoAssignAgentToLocations, removeAgentFromAllLocations } from "@/lib/autoAssignAgent";
+import { checkAgentHealth } from "@/lib/agentHealthCheck";
 
 export async function POST(request) {
   try {
@@ -45,9 +48,11 @@ export async function POST(request) {
 
     const currentIp = extractIpFromRequest(request);
     const now = new Date();
+    let ipChanged = false;
 
     if (currentIp && currentIp !== agent.ipAddress) {
       const ipInfo = await getIpInfo(currentIp);
+      ipChanged = true;
       
       if (agent.ipAddress) {
         if (!agent.ipHistory) {
@@ -73,9 +78,23 @@ export async function POST(request) {
     }
 
     agent.lastSeen = now;
+    const wasInactive = !agent.isActive;
     agent.isActive = true;
     await agent.save();
 
+    console.log(`[Poll] Agent: ${agent.name} (${agentId})`);
+    console.log(`  IP: ${agent.ipAddress} (${agent.ipInfo?.country || 'unknown'})`);
+    console.log(`  Was inactive: ${wasInactive}`);
+    console.log(`  IP changed: ${ipChanged}`);
+
+    // Check health of all agents (update their isActive status)
+    const healthCheck = await checkAgentHealth(Agent);
+    console.log(`[Health Check] ${healthCheck.checkedCount} agents, ${healthCheck.activeCount} active, ${healthCheck.inactiveCount} inactive`);
+    if (healthCheck.deactivated.length > 0) {
+      console.log(`  Deactivated: ${healthCheck.deactivated.join(', ')}`);
+    }
+
+    // Get proxies for this specific agent
     const proxies = await Proxy.find({
       userId: agent.userId,
       isActive: true,
@@ -85,63 +104,99 @@ export async function POST(request) {
       ]
     }).select('-userId -__v');
 
-    // Get all active domains for this user
+    // Get ALL active domains (from all users) - every agent needs full configuration
     const Domain = (await import("@/models/Domain")).default;
     const allDomains = await Domain.find({
-      userId: agent.userId,
       isActive: true,
     }).select("domain dnsRecords geoDnsConfig httpProxy description");
+    
+    console.log(`[GeoDNS] Building full configuration for all agents (${allDomains.length} domains)`);
+
+    // Get ALL active agents (from all users) with their geolocation for dynamic routing
+    const allAgents = await Agent.find({
+      isActive: true,  // CRITICAL: Only active agents
+      ipAddress: { $exists: true, $ne: null },  // Must have IP address
+    }).select("agentId ipAddress name isActive ipInfo");
+
+    console.log(`[Active Agents] Found ${allAgents.length} active agents:`);
+    allAgents.forEach(a => {
+      console.log(`  - ${a.name} (${a.agentId.substring(0, 20)}...) → ${a.ipAddress}`);
+      console.log(`    ipInfo: ${a.ipInfo ? JSON.stringify({ country: a.ipInfo.country, countryCode: a.ipInfo.countryCode, city: a.ipInfo.city }) : 'MISSING'}`);
+    });
 
     // Build comprehensive configuration for agent
-    // Include only domains where agent is assigned to at least one GeoDNS location
+    // ALL agents get ALL domains (they all act as NS servers)
     const domainsConfig = allDomains
-      .filter(d => {
-        // Agent must be assigned to at least one GeoDNS location for this domain
-        return d.geoDnsConfig?.some(loc => loc.agentIds?.includes(agentId));
-      })
-      .map(d => ({
-        id: d._id.toString(),
-        domain: d.domain,
-        description: d.description || "",
+      .map(d => {
+        // Build anycast DNS records with fallback logic
+        // ALL agents get full GeoDNS map for answering client queries
+        const anycastRecords = buildAnycastRecords(d, allAgents);
         
-        // DNS Records (only with httpProxyEnabled)
-        dnsRecords: (d.dnsRecords || [])
-          .filter(r => r.httpProxyEnabled)
+        // Regular DNS records (without httpProxyEnabled filter - agent needs all DNS records)
+        const regularDnsRecords = (d.dnsRecords || [])
           .map(r => ({
             id: r._id?.toString(),
             name: r.name,
             type: r.type,
-            value: r.value,  // Target IP/hostname for proxying
+            value: r.value,
             ttl: r.ttl,
             priority: r.priority,
-          })),
-        
-        // GeoDNS Locations where this agent is assigned
-        geoDnsLocations: (d.geoDnsConfig || [])
-          .filter(loc => loc.agentIds?.includes(agentId))
-          .map(loc => ({
-            code: loc.code,              // us, europe, etc.
-            name: loc.name,              // США, Европа
-            type: loc.type,              // country, continent, custom
-            subdomain: `anycast1.${loc.code}`,  // anycast1.us
-          })),
-        
-        // HTTP Proxy Configuration
-        httpProxy: {
-          type: d.httpProxy?.type || 'both',  // http, https, both
-        },
-        
-        // SSL/TLS Configuration
-        ssl: {
-          enabled: d.httpProxy?.ssl?.enabled || false,
-          certificate: d.httpProxy?.ssl?.certificate || null,
-          privateKey: d.httpProxy?.ssl?.privateKey || null,
-          autoRenew: d.httpProxy?.ssl?.autoRenew || false,
-        },
-        
-        // Lua WAF Code
-        luaCode: d.httpProxy?.luaCode || null,
-      }));
+            httpProxyEnabled: r.httpProxyEnabled || false,
+          }));
+
+        // ALL anycast records - agent needs full map to answer DNS queries
+        const allAnycastRecords = anycastRecords
+          .filter(r => r.value)  // Only records with assigned agents
+          .map(r => ({
+            name: r.name,  // "europe", "us", etc.
+            type: r.type,
+            value: r.value,  // IP of nearest agent for this location
+            ttl: r.ttl,
+            locationCode: r.locationCode,
+            isFallback: r.isFallback,
+            distance: r.distance,
+            description: r.description,
+          }));
+
+        console.log(`  Domain ${d.domain}: ${regularDnsRecords.length} regular + ${allAnycastRecords.length} anycast records`);
+
+        return {
+          id: d._id.toString(),
+          domain: d.domain,
+          description: d.description || "",
+          
+          // DNS Records: regular + ALL anycast records (full GeoDNS map)
+          dnsRecords: [
+            ...regularDnsRecords,
+            ...allAnycastRecords,  // Full map: location -> nearest agent IP
+          ],
+          
+          // GeoDNS Locations (ALL locations - agents are selected dynamically)
+          geoDnsLocations: (d.geoDnsConfig || [])
+            .map(loc => ({
+              code: loc.code,              // us, europe, etc.
+              name: loc.name,              // США, Европа
+              type: loc.type,              // country, continent, custom
+              subdomain: `${loc.code}`,  // us
+            })),
+          
+          // HTTP Proxy Configuration
+          httpProxy: {
+            type: d.httpProxy?.type || 'both',  // http, https, both
+          },
+          
+          // SSL/TLS Configuration
+          ssl: {
+            enabled: d.httpProxy?.ssl?.enabled || false,
+            certificate: d.httpProxy?.ssl?.certificate || null,
+            privateKey: d.httpProxy?.ssl?.privateKey || null,
+            autoRenew: d.httpProxy?.ssl?.autoRenew || false,
+          },
+          
+          // Lua WAF Code
+          luaCode: d.httpProxy?.luaCode || null,
+        };
+      });
 
     // Build comprehensive response
     const response = {

@@ -147,7 +147,7 @@ export function GeoDnsTab({ domain, agents, onUpdate }) {
                   domain.geoDnsConfig.map((location, idx) => (
                     <tr key={idx} className="hover:bg-muted/30">
                       <td className="p-3">
-                        <span className="font-mono text-sm font-medium">anycast1.{location.code}</span>
+                        <span className="font-mono text-sm font-medium">{location.code}</span>
                       </td>
                       <td className="p-3">
                         <span className="text-sm">{location.name}</span>
