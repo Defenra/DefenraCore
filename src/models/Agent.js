@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const AgentSchema = new mongoose.Schema(
   {
@@ -60,18 +60,20 @@ const AgentSchema = new mongoose.Schema(
       lat: Number,
       lon: Number,
     },
-    ipHistory: [{
-      ip: String,
-      changedAt: Date,
-      ipInfo: {
-        country: String,
-        city: String,
-        isp: String,
+    ipHistory: [
+      {
+        ip: String,
+        changedAt: Date,
+        ipInfo: {
+          country: String,
+          city: String,
+          isp: String,
+        },
       },
-    }],
+    ],
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
     },
     metadata: {
@@ -82,9 +84,9 @@ const AgentSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-const Agent = mongoose.models?.Agent || mongoose.model('Agent', AgentSchema);
+const Agent = mongoose.models?.Agent || mongoose.model("Agent", AgentSchema);
 
 export default Agent;

@@ -6,7 +6,13 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ProfileSkeleton } from "@/components/profile-skeleton";
 
@@ -32,7 +38,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (session?.user) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         name: session.user.name || "",
         email: session.user.email || "",
@@ -53,7 +59,10 @@ export default function ProfilePage() {
     setError("");
     setSuccess("");
 
-    if (formData.newPassword && formData.newPassword !== formData.confirmPassword) {
+    if (
+      formData.newPassword &&
+      formData.newPassword !== formData.confirmPassword
+    ) {
       setError("Новые пароли не совпадают");
       return;
     }
@@ -92,7 +101,7 @@ export default function ProfilePage() {
         newPassword: "",
         confirmPassword: "",
       });
-      
+
       await update();
     } catch (error) {
       setError(error.message);
@@ -102,11 +111,13 @@ export default function ProfilePage() {
   };
 
   const getInitials = (name) => {
-    return name
-      ?.split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase() || "U";
+    return (
+      name
+        ?.split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase() || "U"
+    );
   };
 
   return (
@@ -127,7 +138,10 @@ export default function ProfilePage() {
           <CardContent className="space-y-4">
             <div className="flex items-center gap-4">
               <Avatar className="h-20 w-20">
-                <AvatarImage src={session.user?.image} alt={session.user?.name} />
+                <AvatarImage
+                  src={session.user?.image}
+                  alt={session.user?.name}
+                />
                 <AvatarFallback className="text-lg">
                   {getInitials(session.user?.name)}
                 </AvatarFallback>
@@ -155,7 +169,9 @@ export default function ProfilePage() {
                   id="name"
                   type="text"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
                   disabled={loading}
                   required
                 />
@@ -166,7 +182,9 @@ export default function ProfilePage() {
                   id="email"
                   type="email"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
                   disabled={loading}
                   required
                 />
@@ -181,7 +199,10 @@ export default function ProfilePage() {
                       type="password"
                       value={formData.currentPassword}
                       onChange={(e) =>
-                        setFormData({ ...formData, currentPassword: e.target.value })
+                        setFormData({
+                          ...formData,
+                          currentPassword: e.target.value,
+                        })
                       }
                       disabled={loading}
                     />
@@ -193,19 +214,27 @@ export default function ProfilePage() {
                       type="password"
                       value={formData.newPassword}
                       onChange={(e) =>
-                        setFormData({ ...formData, newPassword: e.target.value })
+                        setFormData({
+                          ...formData,
+                          newPassword: e.target.value,
+                        })
                       }
                       disabled={loading}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="confirmPassword">Подтвердите новый пароль</Label>
+                    <Label htmlFor="confirmPassword">
+                      Подтвердите новый пароль
+                    </Label>
                     <Input
                       id="confirmPassword"
                       type="password"
                       value={formData.confirmPassword}
                       onChange={(e) =>
-                        setFormData({ ...formData, confirmPassword: e.target.value })
+                        setFormData({
+                          ...formData,
+                          confirmPassword: e.target.value,
+                        })
                       }
                       disabled={loading}
                     />

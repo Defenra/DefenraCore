@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const ProxySchema = new mongoose.Schema(
   {
@@ -8,7 +8,7 @@ const ProxySchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['tcp', 'udp'],
+      enum: ["tcp", "udp"],
       required: true,
     },
     sourcePort: {
@@ -37,19 +37,19 @@ const ProxySchema = new mongoose.Schema(
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
     },
     description: {
       type: String,
-      default: '',
+      default: "",
     },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-const Proxy = mongoose.models?.Proxy || mongoose.model('Proxy', ProxySchema);
+const Proxy = mongoose.models?.Proxy || mongoose.model("Proxy", ProxySchema);
 
 export default Proxy;

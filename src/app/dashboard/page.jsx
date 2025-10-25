@@ -1,8 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { IconRobot, IconNetwork, IconActivity, IconClock, IconTrendingUp, IconWorld } from "@tabler/icons-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  IconRobot,
+  IconNetwork,
+  IconActivity,
+  IconClock,
+  IconTrendingUp,
+  IconWorld,
+} from "@tabler/icons-react";
 import Link from "next/link";
 
 export default function DashboardPage() {
@@ -34,32 +47,37 @@ export default function DashboardPage() {
         setStats({
           agents: {
             total: agents.length,
-            active: agents.filter(a => a.isActive).length,
-            inactive: agents.filter(a => !a.isActive && a.isConnected).length,
+            active: agents.filter((a) => a.isActive).length,
+            inactive: agents.filter((a) => !a.isActive && a.isConnected).length,
           },
           proxies: {
             total: proxies.length,
-            active: proxies.filter(p => p.isActive).length,
+            active: proxies.filter((p) => p.isActive).length,
           },
         });
 
         const activity = [
-          ...agents.slice(0, 5).map(a => ({
+          ...agents.slice(0, 5).map((a) => ({
             type: "agent",
             title: a.name,
             status: a.isActive ? "active" : "inactive",
             time: a.lastSeen || a.createdAt,
             ip: a.ipAddress,
-            location: a.ipInfo?.city && a.ipInfo?.country ? `${a.ipInfo.city}, ${a.ipInfo.country}` : null,
+            location:
+              a.ipInfo?.city && a.ipInfo?.country
+                ? `${a.ipInfo.city}, ${a.ipInfo.country}`
+                : null,
           })),
-          ...proxies.slice(0, 5).map(p => ({
+          ...proxies.slice(0, 5).map((p) => ({
             type: "proxy",
             title: p.name,
             status: p.isActive ? "active" : "inactive",
             time: p.updatedAt || p.createdAt,
             route: `${p.type.toUpperCase()} :${p.sourcePort} → ${p.destinationHost}:${p.destinationPort}`,
           })),
-        ].sort((a, b) => new Date(b.time) - new Date(a.time)).slice(0, 8);
+        ]
+          .sort((a, b) => new Date(b.time) - new Date(a.time))
+          .slice(0, 8);
 
         setRecentActivity(activity);
       }
@@ -94,13 +112,17 @@ export default function DashboardPage() {
         <Link href="/dashboard/agents">
           <Card className="hover:bg-accent/50 transition-all hover:scale-105 cursor-pointer border-green-500/20 hover:border-green-500/40">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Активные агенты</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Активные агенты
+              </CardTitle>
               <div className="h-8 w-8 rounded-full bg-green-500/10 flex items-center justify-center">
                 <IconActivity className="h-4 w-4 text-green-500" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-500">{stats.agents.active}</div>
+              <div className="text-2xl font-bold text-green-500">
+                {stats.agents.active}
+              </div>
               <p className="text-xs text-muted-foreground">
                 из {stats.agents.total} агентов
               </p>
@@ -111,16 +133,18 @@ export default function DashboardPage() {
         <Link href="/dashboard/agents">
           <Card className="hover:bg-accent/50 transition-all hover:scale-105 cursor-pointer border-yellow-500/20 hover:border-yellow-500/40">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Неактивные агенты</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Неактивные агенты
+              </CardTitle>
               <div className="h-8 w-8 rounded-full bg-yellow-500/10 flex items-center justify-center">
                 <IconClock className="h-4 w-4 text-yellow-500" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-yellow-500">{stats.agents.inactive}</div>
-              <p className="text-xs text-muted-foreground">
-                требуют внимания
-              </p>
+              <div className="text-2xl font-bold text-yellow-500">
+                {stats.agents.inactive}
+              </div>
+              <p className="text-xs text-muted-foreground">требуют внимания</p>
             </CardContent>
           </Card>
         </Link>
@@ -128,13 +152,17 @@ export default function DashboardPage() {
         <Link href="/dashboard/proxies">
           <Card className="hover:bg-accent/50 transition-all hover:scale-105 cursor-pointer border-blue-500/20 hover:border-blue-500/40">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Активные прокси</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Активные прокси
+              </CardTitle>
               <div className="h-8 w-8 rounded-full bg-blue-500/10 flex items-center justify-center">
                 <IconNetwork className="h-4 w-4 text-blue-500" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-500">{stats.proxies.active}</div>
+              <div className="text-2xl font-bold text-blue-500">
+                {stats.proxies.active}
+              </div>
               <p className="text-xs text-muted-foreground">
                 из {stats.proxies.total} прокси
               </p>
@@ -144,7 +172,9 @@ export default function DashboardPage() {
 
         <Card className="border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-transparent">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Производительность</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Производительность
+            </CardTitle>
             <div className="h-8 w-8 rounded-full bg-purple-500/10 flex items-center justify-center">
               <IconTrendingUp className="h-4 w-4 text-purple-500" />
             </div>
@@ -185,15 +215,21 @@ export default function DashboardPage() {
                   key={idx}
                   className="flex items-center gap-4 p-3 rounded-lg hover:bg-accent/50 transition-colors"
                 >
-                  <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
-                    item.type === "agent" 
-                      ? "bg-green-500/10" 
-                      : "bg-blue-500/10"
-                  }`}>
+                  <div
+                    className={`h-10 w-10 rounded-full flex items-center justify-center ${
+                      item.type === "agent"
+                        ? "bg-green-500/10"
+                        : "bg-blue-500/10"
+                    }`}
+                  >
                     {item.type === "agent" ? (
-                      <IconRobot className={`h-5 w-5 ${item.status === "active" ? "text-green-500" : "text-yellow-500"}`} />
+                      <IconRobot
+                        className={`h-5 w-5 ${item.status === "active" ? "text-green-500" : "text-yellow-500"}`}
+                      />
                     ) : (
-                      <IconNetwork className={`h-5 w-5 ${item.status === "active" ? "text-blue-500" : "text-zinc-500"}`} />
+                      <IconNetwork
+                        className={`h-5 w-5 ${item.status === "active" ? "text-blue-500" : "text-zinc-500"}`}
+                      />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -213,11 +249,13 @@ export default function DashboardPage() {
                     </p>
                   </div>
                   <div className="text-right">
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                      item.status === "active"
-                        ? "bg-green-500/10 text-green-500"
-                        : "bg-yellow-500/10 text-yellow-500"
-                    }`}>
+                    <span
+                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        item.status === "active"
+                          ? "bg-green-500/10 text-green-500"
+                          : "bg-yellow-500/10 text-yellow-500"
+                      }`}
+                    >
                       {item.status === "active" ? "Активен" : "Неактивен"}
                     </span>
                     <p className="text-xs text-muted-foreground mt-1">

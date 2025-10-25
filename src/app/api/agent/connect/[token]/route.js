@@ -11,10 +11,7 @@ export async function GET(request, { params }) {
     const { token } = await params;
 
     if (!token) {
-      return NextResponse.json(
-        { error: "Invalid token" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid token" }, { status: 400 });
     }
 
     const agent = await Agent.findOne({ connectionToken: token });
@@ -22,14 +19,14 @@ export async function GET(request, { params }) {
     if (!agent) {
       return NextResponse.json(
         { error: "Invalid or expired connection token" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     if (agent.isConnected) {
       return NextResponse.json(
         { error: "This connection token has already been used" },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -48,16 +45,16 @@ export async function GET(request, { params }) {
     // Auto-assign agent to GeoDNS locations based on IP
     console.log(`[Agent Connect] ${agent.name} connected from ${ipAddress}`);
     console.log(`  Country: ${ipInfo.country} (${ipInfo.countryCode})`);
-    
+
     const Domain = (await import("@/models/Domain")).default;
     const autoAssignment = await autoAssignAgentToLocations(
       agent.agentId,
       ipInfo,
       agent.userId,
-      Domain
+      Domain,
     );
-    
-    console.log(`  Auto-assigned to: ${autoAssignment.locations.join(', ')}`);
+
+    console.log(`  Auto-assigned to: ${autoAssignment.locations.join(", ")}`);
 
     return NextResponse.json({
       success: true,
@@ -76,9 +73,6 @@ export async function GET(request, { params }) {
     });
   } catch (error) {
     console.error("Agent connection error:", error);
-    return NextResponse.json(
-      { error: "Connection failed" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Connection failed" }, { status: 500 });
   }
 }

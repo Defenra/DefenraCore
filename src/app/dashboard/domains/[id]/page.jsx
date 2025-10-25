@@ -6,7 +6,14 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { IconArrowLeft, IconDeviceFloppy, IconWorld, IconMapPin, IconNetwork, IconInfoCircle } from "@tabler/icons-react";
+import {
+  IconArrowLeft,
+  IconDeviceFloppy,
+  IconWorld,
+  IconMapPin,
+  IconNetwork,
+  IconInfoCircle,
+} from "@tabler/icons-react";
 import { toast } from "sonner";
 import { DnsRecordsTab } from "@/components/domain-management/dns-records-tab";
 import { GeoDnsTab } from "@/components/domain-management/geodns-tab";
@@ -18,14 +25,14 @@ import { useAgents } from "@/hooks/useAgents";
 export default function DomainManagePage({ params }) {
   const router = useRouter();
   const { id: domainId } = use(params);
-  
+
   const { data: domainData, isLoading } = useDomain(domainId);
   const { data: agents = [] } = useAgents();
   const updateDomain = useUpdateDomain(domainId);
-  
+
   const [domain, setDomain] = useState(domainData);
   const [expandedRecords, setExpandedRecords] = useState(new Set());
-  
+
   // Update local state when data is loaded
   if (domainData && !domain) {
     setDomain(domainData);
@@ -81,13 +88,16 @@ export default function DomainManagePage({ params }) {
             <div>
               <div className="flex items-center gap-2">
                 <IconWorld className="h-6 w-6 text-blue-500" />
-                <h1 className="text-3xl font-bold tracking-tight">{domain.domain}</h1>
+                <h1 className="text-3xl font-bold tracking-tight">
+                  {domain.domain}
+                </h1>
                 <Badge variant={domain.isActive ? "success" : "outline"}>
                   {domain.isActive ? "Активен" : "Неактивен"}
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground mt-1">
-                {domain.description || "Управление DNS записями и HTTP проксированием"}
+                {domain.description ||
+                  "Управление DNS записями и HTTP проксированием"}
               </p>
             </div>
           </div>
@@ -116,10 +126,16 @@ export default function DomainManagePage({ params }) {
             <span className="hidden sm:inline">HTTP Прокси</span>
             <span className="sm:hidden">Proxy</span>
           </TabsTrigger>
-          <TabsTrigger value="ssl" className="hidden lg:flex items-center gap-2">
+          <TabsTrigger
+            value="ssl"
+            className="hidden lg:flex items-center gap-2"
+          >
             SSL
           </TabsTrigger>
-          <TabsTrigger value="lua" className="hidden lg:flex items-center gap-2">
+          <TabsTrigger
+            value="lua"
+            className="hidden lg:flex items-center gap-2"
+          >
             Lua WAF
           </TabsTrigger>
         </TabsList>
@@ -136,11 +152,7 @@ export default function DomainManagePage({ params }) {
 
         {/* GeoDNS Tab */}
         <TabsContent value="geo" className="mt-6">
-          <GeoDnsTab
-            domain={domain}
-            agents={agents}
-            onUpdate={setDomain}
-          />
+          <GeoDnsTab domain={domain} agents={agents} onUpdate={setDomain} />
         </TabsContent>
 
         {/* HTTP Proxy Tab */}
@@ -150,15 +162,24 @@ export default function DomainManagePage({ params }) {
               <div className="flex items-start gap-3">
                 <IconInfoCircle className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
                 <div className="space-y-2 text-sm">
-                  <p className="font-medium text-foreground">Как работает проксирование</p>
+                  <p className="font-medium text-foreground">
+                    Как работает проксирование
+                  </p>
                   <ul className="text-muted-foreground space-y-1.5 text-xs">
                     <li>• Клиент делает DNS запрос к вашему домену</li>
-                    <li>• Агенты (GeoDNS) определяют геолокацию клиента и отдают IP ближайшего агента</li>
-                    <li>• Трафик идёт на ближайший агент, который проксирует на реальный IP из DNS записи</li>
+                    <li>
+                      • Агенты (GeoDNS) определяют геолокацию клиента и отдают
+                      IP ближайшего агента
+                    </li>
+                    <li>
+                      • Трафик идёт на ближайший агент, который проксирует на
+                      реальный IP из DNS записи
+                    </li>
                     <li>• Применяется SSL и Lua middleware (если настроены)</li>
                   </ul>
                   <p className="text-xs text-muted-foreground/80 mt-3">
-                    💡 Целевой IP указывается в поле "Значение" DNS записи. Агенты автоматически проксируют на него.
+                    💡 Целевой IP указывается в поле "Значение" DNS записи.
+                    Агенты автоматически проксируют на него.
                   </p>
                 </div>
               </div>

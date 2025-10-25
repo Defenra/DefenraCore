@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { useSession } from "next-auth/react"
+import * as React from "react";
+import { useSession } from "next-auth/react";
 import {
   IconDashboard,
   IconUserCircle,
@@ -9,10 +9,11 @@ import {
   IconRobot,
   IconNetwork,
   IconWorld,
-} from "@tabler/icons-react"
+  IconMapPin,
+} from "@tabler/icons-react";
 
-import { NavMain } from "@/components/nav-main"
-import { NavUser } from "@/components/nav-user"
+import { NavMain } from "@/components/nav-main";
+import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -21,7 +22,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
 const navData = {
   navMain: [
@@ -46,34 +47,42 @@ const navData = {
       icon: IconWorld,
     },
     {
+      title: "Карта GeoDNS",
+      url: "/dashboard/geodns-map",
+      icon: IconMapPin,
+    },
+    {
       title: "Профиль",
       url: "/dashboard/profile",
       icon: IconUserCircle,
     },
   ],
-}
+};
 
-export function AppSidebar({
-  ...props
-}) {
-  const { data: session } = useSession()
+export function AppSidebar({ ...props }) {
+  const { data: session } = useSession();
 
-  const user = session?.user ? {
-    name: session.user.name,
-    email: session.user.email,
-    avatar: session.user.image,
-  } : {
-    name: "User",
-    email: "user@example.com",
-    avatar: null,
-  }
+  const user = session?.user
+    ? {
+        name: session.user.name,
+        email: session.user.email,
+        avatar: session.user.image,
+      }
+    : {
+        name: "User",
+        email: "user@example.com",
+        avatar: null,
+      };
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!p-1.5">
+            <SidebarMenuButton
+              asChild
+              className="data-[slot=sidebar-menu-button]:!p-1.5"
+            >
               <a href="/dashboard">
                 <IconShieldLock className="!size-5" />
                 <span className="text-base font-semibold">Defenra</span>

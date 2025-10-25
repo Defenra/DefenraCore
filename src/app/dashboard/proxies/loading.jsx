@@ -10,7 +10,7 @@ export default function Loading() {
         </div>
         <div className="h-10 w-32 bg-gray-800 rounded animate-pulse"></div>
       </div>
-      
+
       <TableSkeleton rows={5} columns={6} />
     </div>
   );

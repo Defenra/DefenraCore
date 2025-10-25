@@ -4,18 +4,37 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { IconPlus, IconTrash, IconCloud, IconCloudOff, IconChevronDown, IconChevronUp, IconInfoCircle } from "@tabler/icons-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  IconPlus,
+  IconTrash,
+  IconCloud,
+  IconCloudOff,
+  IconChevronDown,
+  IconChevronUp,
+  IconInfoCircle,
+} from "@tabler/icons-react";
 
-export function DnsRecordsTab({ domain, onUpdate, expandedRecords, onToggleExpand }) {
+export function DnsRecordsTab({
+  domain,
+  onUpdate,
+  expandedRecords,
+  onToggleExpand,
+}) {
   const handleAddRecord = () => {
-    const newRecord = { 
-      type: "A", 
-      name: "@", 
-      value: "", 
-      ttl: 3600, 
+    const newRecord = {
+      type: "A",
+      name: "@",
+      value: "",
+      ttl: 3600,
       priority: null,
-      httpProxyEnabled: false 
+      httpProxyEnabled: false,
     };
     onUpdate({ ...domain, dnsRecords: [...domain.dnsRecords, newRecord] });
   };
@@ -51,11 +70,17 @@ export function DnsRecordsTab({ domain, onUpdate, expandedRecords, onToggleExpan
             <div className="space-y-3">
               {domain.dnsRecords?.map((record, index) => {
                 const canProxy = ["A", "AAAA", "CNAME"].includes(record.type);
-                const subdomain = record.name === "@" ? domain.domain : `${record.name}.${domain.domain}`;
+                const subdomain =
+                  record.name === "@"
+                    ? domain.domain
+                    : `${record.name}.${domain.domain}`;
                 const isExpanded = expandedRecords.has(index);
 
                 return (
-                  <div key={index} className="border rounded-lg overflow-hidden hover:shadow-md transition-all">
+                  <div
+                    key={index}
+                    className="border rounded-lg overflow-hidden hover:shadow-md transition-all"
+                  >
                     {/* Collapsed View */}
                     <div
                       className="p-4 flex items-center justify-between cursor-pointer bg-card hover:bg-accent/50"
@@ -63,19 +88,24 @@ export function DnsRecordsTab({ domain, onUpdate, expandedRecords, onToggleExpan
                     >
                       <div className="flex items-center gap-3 flex-1">
                         <Badge variant="outline">{record.type}</Badge>
-                        <span className="font-mono text-sm font-medium">{subdomain}</span>
+                        <span className="font-mono text-sm font-medium">
+                          {subdomain}
+                        </span>
                         <span className="text-muted-foreground">→</span>
-                        <span className="font-mono text-sm">{record.value}</span>
-                        {canProxy && (
-                          record.httpProxyEnabled ? (
+                        <span className="font-mono text-sm">
+                          {record.value}
+                        </span>
+                        {canProxy &&
+                          (record.httpProxyEnabled ? (
                             <IconCloud className="h-4 w-4 text-orange-500" />
                           ) : (
                             <IconCloudOff className="h-4 w-4 text-muted-foreground" />
-                          )
-                        )}
+                          ))}
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">TTL: {record.ttl}s</span>
+                        <span className="text-sm text-muted-foreground">
+                          TTL: {record.ttl}s
+                        </span>
                         {isExpanded ? (
                           <IconChevronUp className="h-4 w-4" />
                         ) : (
@@ -92,7 +122,9 @@ export function DnsRecordsTab({ domain, onUpdate, expandedRecords, onToggleExpan
                             <label className="text-sm font-medium">Тип</label>
                             <Select
                               value={record.type}
-                              onValueChange={(value) => handleUpdateRecord(index, "type", value)}
+                              onValueChange={(value) =>
+                                handleUpdateRecord(index, "type", value)
+                              }
                             >
                               <SelectTrigger>
                                 <SelectValue />
@@ -112,26 +144,48 @@ export function DnsRecordsTab({ domain, onUpdate, expandedRecords, onToggleExpan
                             <label className="text-sm font-medium">Имя</label>
                             <Input
                               value={record.name}
-                              onChange={(e) => handleUpdateRecord(index, "name", e.target.value)}
+                              onChange={(e) =>
+                                handleUpdateRecord(
+                                  index,
+                                  "name",
+                                  e.target.value,
+                                )
+                              }
                               placeholder="@ или subdomain"
                             />
                           </div>
 
                           <div className="space-y-2">
-                            <label className="text-sm font-medium">Значение (целевой IP)</label>
+                            <label className="text-sm font-medium">
+                              Значение (целевой IP)
+                            </label>
                             <Input
                               value={record.value}
-                              onChange={(e) => handleUpdateRecord(index, "value", e.target.value)}
+                              onChange={(e) =>
+                                handleUpdateRecord(
+                                  index,
+                                  "value",
+                                  e.target.value,
+                                )
+                              }
                               placeholder="192.168.1.1"
                             />
                           </div>
 
                           <div className="space-y-2">
-                            <label className="text-sm font-medium">TTL (секунды)</label>
+                            <label className="text-sm font-medium">
+                              TTL (секунды)
+                            </label>
                             <Input
                               type="number"
                               value={record.ttl}
-                              onChange={(e) => handleUpdateRecord(index, "ttl", parseInt(e.target.value))}
+                              onChange={(e) =>
+                                handleUpdateRecord(
+                                  index,
+                                  "ttl",
+                                  parseInt(e.target.value),
+                                )
+                              }
                             />
                           </div>
                         </div>
@@ -145,7 +199,9 @@ export function DnsRecordsTab({ domain, onUpdate, expandedRecords, onToggleExpan
                                 <IconCloudOff className="h-5 w-5 text-muted-foreground" />
                               )}
                               <div>
-                                <p className="font-medium text-sm">HTTP Проксирование</p>
+                                <p className="font-medium text-sm">
+                                  HTTP Проксирование
+                                </p>
                                 <p className="text-xs text-muted-foreground">
                                   Маршрутизация через агенты (GeoDNS)
                                 </p>
@@ -155,7 +211,13 @@ export function DnsRecordsTab({ domain, onUpdate, expandedRecords, onToggleExpan
                               <input
                                 type="checkbox"
                                 checked={record.httpProxyEnabled}
-                                onChange={(e) => handleUpdateRecord(index, "httpProxyEnabled", e.target.checked)}
+                                onChange={(e) =>
+                                  handleUpdateRecord(
+                                    index,
+                                    "httpProxyEnabled",
+                                    e.target.checked,
+                                  )
+                                }
                                 className="sr-only peer"
                               />
                               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 dark:peer-focus:ring-orange-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-orange-500"></div>
@@ -186,10 +248,19 @@ export function DnsRecordsTab({ domain, onUpdate, expandedRecords, onToggleExpan
             <div className="flex items-start gap-3">
               <IconInfoCircle className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
               <div className="space-y-2 text-sm">
-                <p className="font-medium text-foreground">О HTTP проксировании</p>
+                <p className="font-medium text-foreground">
+                  О HTTP проксировании
+                </p>
                 <ul className="text-muted-foreground space-y-1 text-xs">
-                  <li>• Оранжевое облако <IconCloud className="inline h-3 w-3 text-orange-500" /> - трафик через агенты (GeoDNS)</li>
-                  <li>• Серое облако <IconCloudOff className="inline h-3 w-3" /> - прямое соединение</li>
+                  <li>
+                    • Оранжевое облако{" "}
+                    <IconCloud className="inline h-3 w-3 text-orange-500" /> -
+                    трафик через агенты (GeoDNS)
+                  </li>
+                  <li>
+                    • Серое облако <IconCloudOff className="inline h-3 w-3" /> -
+                    прямое соединение
+                  </li>
                   <li>• Доступно только для A, AAAA и CNAME записей</li>
                   <li>• Целевой IP указывается в поле "Значение"</li>
                 </ul>

@@ -1,32 +1,35 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-const DnsRecordSchema = new mongoose.Schema({
-  type: {
-    type: String,
-    enum: ['A', 'AAAA', 'CNAME', 'MX', 'TXT', 'NS', 'SRV', 'CAA'],
-    required: true,
+const DnsRecordSchema = new mongoose.Schema(
+  {
+    type: {
+      type: String,
+      enum: ["A", "AAAA", "CNAME", "MX", "TXT", "NS", "SRV", "CAA"],
+      required: true,
+    },
+    name: {
+      type: String,
+      required: true,
+    },
+    value: {
+      type: String,
+      required: true,
+    },
+    ttl: {
+      type: Number,
+      default: 3600,
+    },
+    priority: {
+      type: Number,
+      default: null,
+    },
+    httpProxyEnabled: {
+      type: Boolean,
+      default: false,
+    },
   },
-  name: {
-    type: String,
-    required: true,
-  },
-  value: {
-    type: String,
-    required: true,
-  },
-  ttl: {
-    type: Number,
-    default: 3600,
-  },
-  priority: {
-    type: Number,
-    default: null,
-  },
-  httpProxyEnabled: {
-    type: Boolean,
-    default: false,
-  },
-}, { _id: true });
+  { _id: true },
+);
 
 const DomainSchema = new mongoose.Schema(
   {
@@ -42,8 +45,8 @@ const DomainSchema = new mongoose.Schema(
     httpProxy: {
       type: {
         type: String,
-        enum: ['http', 'https', 'both'],
-        default: 'both',
+        enum: ["http", "https", "both"],
+        default: "both",
       },
       ssl: {
         enabled: {
@@ -52,11 +55,11 @@ const DomainSchema = new mongoose.Schema(
         },
         certificate: {
           type: String,
-          default: '',
+          default: "",
         },
         privateKey: {
           type: String,
-          default: '',
+          default: "",
         },
         autoRenew: {
           type: Boolean,
@@ -65,18 +68,18 @@ const DomainSchema = new mongoose.Schema(
       },
       luaCode: {
         type: String,
-        default: '',
+        default: "",
       },
     },
     dnsRecords: [DnsRecordSchema],
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
     },
     description: {
       type: String,
-      default: '',
+      default: "",
     },
     // GeoDNS Configuration - defines which agents serve which locations
     geoDnsConfig: [
@@ -91,20 +94,23 @@ const DomainSchema = new mongoose.Schema(
         },
         type: {
           type: String,
-          enum: ['continent', 'country', 'custom'],
+          enum: ["continent", "country", "custom"],
           required: true,
         },
-        agentIds: [{
-          type: String,
-        }],
+        agentIds: [
+          {
+            type: String,
+          },
+        ],
       },
     ],
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-const Domain = mongoose.models?.Domain || mongoose.model('Domain', DomainSchema);
+const Domain =
+  mongoose.models?.Domain || mongoose.model("Domain", DomainSchema);
 
 export default Domain;

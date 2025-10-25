@@ -2,11 +2,38 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { IconPlus, IconCopy, IconTrash, IconCheck, IconCircle, IconCircleFilled, IconAlertCircle, IconRefresh, IconWorld, IconChevronDown, IconChevronUp, IconClock } from "@tabler/icons-react";
+import {
+  IconPlus,
+  IconCopy,
+  IconTrash,
+  IconCheck,
+  IconCircle,
+  IconCircleFilled,
+  IconAlertCircle,
+  IconRefresh,
+  IconWorld,
+  IconChevronDown,
+  IconChevronUp,
+  IconClock,
+} from "@tabler/icons-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { useAgents, useCreateAgent, useDeleteAgent } from "@/hooks/useAgents";
@@ -15,7 +42,7 @@ export default function AgentsPage() {
   const { data: agents = [], isLoading, refetch, isFetching } = useAgents();
   const createAgent = useCreateAgent();
   const deleteAgent = useDeleteAgent();
-  
+
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [connectionUrl, setConnectionUrl] = useState("");
   const [newAgentName, setNewAgentName] = useState("");
@@ -40,7 +67,7 @@ export default function AgentsPage() {
   };
 
   const toggleAgentExpanded = (agentId) => {
-    setExpandedAgents(prev => {
+    setExpandedAgents((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(agentId)) {
         newSet.delete(agentId);
@@ -62,7 +89,7 @@ export default function AgentsPage() {
         name: newAgentName,
         pollingInterval: parseInt(newAgentPolling) || 60,
       });
-      
+
       setConnectionUrl(result.agent.connectionUrl);
       setNewAgentName("");
       setNewAgentPolling("60");
@@ -102,9 +129,11 @@ export default function AgentsPage() {
     return new Date(date).toLocaleString("ru-RU");
   };
 
-  const activeCount = agents.filter(a => a.isActive).length;
-  const inactiveCount = agents.filter(a => !a.isActive && a.isConnected).length;
-  const pendingCount = agents.filter(a => !a.isConnected).length;
+  const activeCount = agents.filter((a) => a.isActive).length;
+  const inactiveCount = agents.filter(
+    (a) => !a.isActive && a.isConnected,
+  ).length;
+  const pendingCount = agents.filter((a) => !a.isConnected).length;
 
   return (
     <div className="flex flex-col gap-6 py-6 px-4 lg:px-6">
@@ -122,7 +151,9 @@ export default function AgentsPage() {
             onClick={() => refetch()}
             disabled={isFetching}
           >
-            <IconRefresh className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
+            <IconRefresh
+              className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`}
+            />
           </Button>
           <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
             <DialogTrigger asChild>
@@ -131,82 +162,82 @@ export default function AgentsPage() {
                 Добавить агента
               </Button>
             </DialogTrigger>
-          <DialogContent>
-            {!connectionUrl ? (
-              <>
-                <DialogHeader>
-                  <DialogTitle>Создать токен подключения</DialogTitle>
-                  <DialogDescription>
-                    Укажите название и параметры для нового агента
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Название агента</Label>
-                    <Input
-                      id="name"
-                      placeholder="Мой агент"
-                      value={newAgentName}
-                      onChange={(e) => setNewAgentName(e.target.value)}
-                    />
+            <DialogContent>
+              {!connectionUrl ? (
+                <>
+                  <DialogHeader>
+                    <DialogTitle>Создать токен подключения</DialogTitle>
+                    <DialogDescription>
+                      Укажите название и параметры для нового агента
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Название агента</Label>
+                      <Input
+                        id="name"
+                        placeholder="Мой агент"
+                        value={newAgentName}
+                        onChange={(e) => setNewAgentName(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="polling">
+                        Интервал поллинга (секунды)
+                      </Label>
+                      <Input
+                        id="polling"
+                        type="number"
+                        min="10"
+                        value={newAgentPolling}
+                        onChange={(e) => setNewAgentPolling(e.target.value)}
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="polling">Интервал поллинга (секунды)</Label>
-                    <Input
-                      id="polling"
-                      type="number"
-                      min="10"
-                      value={newAgentPolling}
-                      onChange={(e) => setNewAgentPolling(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={closeDialog}>
-                    Отмена
-                  </Button>
-                  <Button onClick={handleCreateAgent}>
-                    Создать токен
-                  </Button>
-                </DialogFooter>
-              </>
-            ) : (
-              <>
-                <DialogHeader>
-                  <DialogTitle>URL для подключения</DialogTitle>
-                  <DialogDescription>
-                    Скопируйте этот URL и передайте его агенту. Ссылка действительна 24 часа и может быть использована только один раз.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="relative">
-                    <Input
-                      readOnly
-                      value={connectionUrl}
-                      className="pr-10 font-mono text-sm"
-                    />
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="absolute right-1 top-1/2 -translate-y-1/2"
-                      onClick={copyToClipboard}
-                    >
-                      {copied ? (
-                        <IconCheck className="h-4 w-4 text-green-500" />
-                      ) : (
-                        <IconCopy className="h-4 w-4" />
-                      )}
+                  <DialogFooter>
+                    <Button variant="outline" onClick={closeDialog}>
+                      Отмена
                     </Button>
+                    <Button onClick={handleCreateAgent}>Создать токен</Button>
+                  </DialogFooter>
+                </>
+              ) : (
+                <>
+                  <DialogHeader>
+                    <DialogTitle>URL для подключения</DialogTitle>
+                    <DialogDescription>
+                      Скопируйте этот URL и передайте его агенту. Ссылка
+                      действительна 24 часа и может быть использована только
+                      один раз.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="relative">
+                      <Input
+                        readOnly
+                        value={connectionUrl}
+                        className="pr-10 font-mono text-sm"
+                      />
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="absolute right-1 top-1/2 -translate-y-1/2"
+                        onClick={copyToClipboard}
+                      >
+                        {copied ? (
+                          <IconCheck className="h-4 w-4 text-green-500" />
+                        ) : (
+                          <IconCopy className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
                   </div>
-                </div>
-                <DialogFooter>
-                  <Button onClick={closeDialog}>
-                    Готово
-                  </Button>
-                </DialogFooter>
-              </>
-            )}
-          </DialogContent>
+                  <DialogFooter>
+                    <Button onClick={closeDialog}>Готово</Button>
+                  </DialogFooter>
+                </>
+              )}
+            </DialogContent>
           </Dialog>
         </div>
       </div>
@@ -219,7 +250,9 @@ export default function AgentsPage() {
             <IconCircleFilled className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-500">{activeCount}</div>
+            <div className="text-2xl font-bold text-green-500">
+              {activeCount}
+            </div>
           </CardContent>
         </Card>
         <Card className="border-yellow-500/20">
@@ -228,7 +261,9 @@ export default function AgentsPage() {
             <IconAlertCircle className="h-4 w-4 text-yellow-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-500">{inactiveCount}</div>
+            <div className="text-2xl font-bold text-yellow-500">
+              {inactiveCount}
+            </div>
           </CardContent>
         </Card>
         <Card className="border-zinc-500/20">
@@ -237,7 +272,9 @@ export default function AgentsPage() {
             <IconClock className="h-4 w-4 text-zinc-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-zinc-500">{pendingCount}</div>
+            <div className="text-2xl font-bold text-zinc-500">
+              {pendingCount}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -248,7 +285,12 @@ export default function AgentsPage() {
             <div>
               <CardTitle>Список агентов</CardTitle>
               <CardDescription>
-                {agents.length} {agents.length === 1 ? "агент" : agents.length > 4 ? "агентов" : "агента"}
+                {agents.length}{" "}
+                {agents.length === 1
+                  ? "агент"
+                  : agents.length > 4
+                    ? "агентов"
+                    : "агента"}
               </CardDescription>
             </div>
           </div>
@@ -276,25 +318,44 @@ export default function AgentsPage() {
                         {getStatusIcon(agent)}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-semibold text-lg">{agent.name}</h3>
-                            <Badge variant={agent.isActive ? "success" : agent.isConnected ? "warning" : "outline"}>
-                              {agent.statusText || (agent.isConnected ? "Подключён" : "Ожидает")}
+                            <h3 className="font-semibold text-lg">
+                              {agent.name}
+                            </h3>
+                            <Badge
+                              variant={
+                                agent.isActive
+                                  ? "success"
+                                  : agent.isConnected
+                                    ? "warning"
+                                    : "outline"
+                              }
+                            >
+                              {agent.statusText ||
+                                (agent.isConnected ? "Подключён" : "Ожидает")}
                             </Badge>
                           </div>
                           <div className="text-sm text-muted-foreground space-y-1.5">
                             <p className="flex items-center gap-2">
-                              <span className="text-xs text-muted-foreground/70">ID:</span>
-                              <span className="font-mono text-xs bg-accent px-2 py-0.5 rounded">{agent.agentId}</span>
+                              <span className="text-xs text-muted-foreground/70">
+                                ID:
+                              </span>
+                              <span className="font-mono text-xs bg-accent px-2 py-0.5 rounded">
+                                {agent.agentId}
+                              </span>
                             </p>
                             {agent.ipAddress && (
                               <p className="flex items-center gap-1.5">
                                 <IconWorld className="h-3.5 w-3.5 flex-shrink-0" />
-                                <span className="font-mono text-xs">{agent.ipAddress}</span>
-                                {agent.ipInfo?.city && agent.ipInfo?.country && (
-                                  <span className="text-xs text-muted-foreground/70">
-                                    • {agent.ipInfo.city}, {agent.ipInfo.country}
-                                  </span>
-                                )}
+                                <span className="font-mono text-xs">
+                                  {agent.ipAddress}
+                                </span>
+                                {agent.ipInfo?.city &&
+                                  agent.ipInfo?.country && (
+                                    <span className="text-xs text-muted-foreground/70">
+                                      • {agent.ipInfo.city},{" "}
+                                      {agent.ipInfo.country}
+                                    </span>
+                                  )}
                               </p>
                             )}
                             <div className="flex items-center gap-3 text-xs text-muted-foreground/70">
@@ -307,7 +368,9 @@ export default function AgentsPage() {
                         <div className="text-right space-y-2">
                           {agent.lastSeen && (
                             <div className="text-xs text-muted-foreground">
-                              <div className="font-medium">Последняя активность</div>
+                              <div className="font-medium">
+                                Последняя активность
+                              </div>
                               <div>{formatDate(agent.lastSeen)}</div>
                             </div>
                           )}
@@ -343,62 +406,94 @@ export default function AgentsPage() {
                         </Button>
                       </div>
                     </div>
-                    
+
                     {isExpanded && agent.ipInfo && (
                       <div className="px-4 pb-4 pt-2 border-t bg-accent/20">
-                        <h4 className="text-sm font-semibold mb-3">Информация об IP</h4>
+                        <h4 className="text-sm font-semibold mb-3">
+                          Информация об IP
+                        </h4>
                         <div className="grid grid-cols-2 gap-3 text-sm">
                           <div>
-                            <span className="text-muted-foreground">IP адрес:</span>
+                            <span className="text-muted-foreground">
+                              IP адрес:
+                            </span>
                             <p className="font-mono">{agent.ipAddress}</p>
                           </div>
                           <div>
-                            <span className="text-muted-foreground">Страна:</span>
-                            <p>{agent.ipInfo.country} ({agent.ipInfo.countryCode})</p>
+                            <span className="text-muted-foreground">
+                              Страна:
+                            </span>
+                            <p>
+                              {agent.ipInfo.country} ({agent.ipInfo.countryCode}
+                              )
+                            </p>
                           </div>
                           <div>
-                            <span className="text-muted-foreground">Регион:</span>
+                            <span className="text-muted-foreground">
+                              Регион:
+                            </span>
                             <p>{agent.ipInfo.region}</p>
                           </div>
                           <div>
-                            <span className="text-muted-foreground">Город:</span>
+                            <span className="text-muted-foreground">
+                              Город:
+                            </span>
                             <p>{agent.ipInfo.city}</p>
                           </div>
                           <div>
-                            <span className="text-muted-foreground">Провайдер:</span>
+                            <span className="text-muted-foreground">
+                              Провайдер:
+                            </span>
                             <p>{agent.ipInfo.isp}</p>
                           </div>
                           <div>
-                            <span className="text-muted-foreground">Организация:</span>
+                            <span className="text-muted-foreground">
+                              Организация:
+                            </span>
                             <p className="truncate">{agent.ipInfo.org}</p>
                           </div>
                           <div>
-                            <span className="text-muted-foreground">Часовой пояс:</span>
+                            <span className="text-muted-foreground">
+                              Часовой пояс:
+                            </span>
                             <p>{agent.ipInfo.timezone}</p>
                           </div>
                           <div>
                             <span className="text-muted-foreground">AS:</span>
-                            <p className="font-mono text-xs">{agent.ipInfo.as}</p>
+                            <p className="font-mono text-xs">
+                              {agent.ipInfo.as}
+                            </p>
                           </div>
                         </div>
-                        
+
                         {agent.ipHistory && agent.ipHistory.length > 0 && (
                           <div className="mt-4 pt-4 border-t">
-                            <h4 className="text-sm font-semibold mb-2">История IP ({agent.ipHistory.length})</h4>
+                            <h4 className="text-sm font-semibold mb-2">
+                              История IP ({agent.ipHistory.length})
+                            </h4>
                             <div className="space-y-2 max-h-40 overflow-y-auto">
-                              {agent.ipHistory.slice().reverse().map((entry, idx) => (
-                                <div key={idx} className="text-xs p-2 bg-background rounded border">
-                                  <span className="font-mono">{entry.ip}</span>
-                                  {entry.ipInfo && (
-                                    <span className="text-muted-foreground ml-2">
-                                      {entry.ipInfo.city}, {entry.ipInfo.country}
+                              {agent.ipHistory
+                                .slice()
+                                .reverse()
+                                .map((entry, idx) => (
+                                  <div
+                                    key={idx}
+                                    className="text-xs p-2 bg-background rounded border"
+                                  >
+                                    <span className="font-mono">
+                                      {entry.ip}
                                     </span>
-                                  )}
-                                  <div className="text-muted-foreground mt-1">
-                                    {formatDate(entry.changedAt)}
+                                    {entry.ipInfo && (
+                                      <span className="text-muted-foreground ml-2">
+                                        {entry.ipInfo.city},{" "}
+                                        {entry.ipInfo.country}
+                                      </span>
+                                    )}
+                                    <div className="text-muted-foreground mt-1">
+                                      {formatDate(entry.changedAt)}
+                                    </div>
                                   </div>
-                                </div>
-                              ))}
+                                ))}
                             </div>
                           </div>
                         )}

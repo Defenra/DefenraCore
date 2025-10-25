@@ -9,10 +9,7 @@ export async function PUT(request) {
     const session = await auth();
 
     if (!session || !session.user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     await connectDB();
@@ -25,7 +22,7 @@ export async function PUT(request) {
     if (!user) {
       return NextResponse.json(
         { error: "Пользователь не найден" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -34,7 +31,7 @@ export async function PUT(request) {
       if (existingUser) {
         return NextResponse.json(
           { error: "Email уже используется" },
-          { status: 400 }
+          { status: 400 },
         );
       }
       user.email = email;
@@ -48,26 +45,26 @@ export async function PUT(request) {
       if (!currentPassword) {
         return NextResponse.json(
           { error: "Укажите текущий пароль" },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
       const isCorrectPassword = await bcrypt.compare(
         currentPassword,
-        user.password
+        user.password,
       );
 
       if (!isCorrectPassword) {
         return NextResponse.json(
           { error: "Неверный текущий пароль" },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
       if (newPassword.length < 6) {
         return NextResponse.json(
           { error: "Новый пароль должен содержать минимум 6 символов" },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -89,7 +86,7 @@ export async function PUT(request) {
     console.error("Profile update error:", error);
     return NextResponse.json(
       { error: "Ошибка при обновлении профиля" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

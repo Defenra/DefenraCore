@@ -2,23 +2,60 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { IconPlus, IconTrash, IconToggleLeft, IconToggleRight, IconNetwork, IconRefresh } from "@tabler/icons-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  IconPlus,
+  IconTrash,
+  IconToggleLeft,
+  IconToggleRight,
+  IconNetwork,
+  IconRefresh,
+} from "@tabler/icons-react";
 import { toast } from "sonner";
-import { useProxies, useCreateProxy, useUpdateProxy, useDeleteProxy } from "@/hooks/useProxies";
+import {
+  useProxies,
+  useCreateProxy,
+  useUpdateProxy,
+  useDeleteProxy,
+} from "@/hooks/useProxies";
 import { useAgents } from "@/hooks/useAgents";
 
 export default function ProxiesPage() {
-  const { data: proxies = [], isLoading: proxiesLoading, refetch, isFetching } = useProxies();
+  const {
+    data: proxies = [],
+    isLoading: proxiesLoading,
+    refetch,
+    isFetching,
+  } = useProxies();
   const { data: allAgents = [] } = useAgents();
   const createProxy = useCreateProxy();
   const updateProxy = useUpdateProxy();
   const deleteProxy = useDeleteProxy();
-  
+
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -30,11 +67,16 @@ export default function ProxiesPage() {
     description: "",
   });
 
-  const agents = allAgents.filter(a => a.isConnected);
+  const agents = allAgents.filter((a) => a.isConnected);
   const loading = proxiesLoading;
 
   const handleCreateProxy = async () => {
-    if (!formData.name || !formData.sourcePort || !formData.destinationHost || !formData.destinationPort) {
+    if (
+      !formData.name ||
+      !formData.sourcePort ||
+      !formData.destinationHost ||
+      !formData.destinationPort
+    ) {
       toast.error("Заполните все обязательные поля");
       return;
     }
@@ -46,7 +88,7 @@ export default function ProxiesPage() {
         sourcePort: parseInt(formData.sourcePort),
         destinationPort: parseInt(formData.destinationPort),
       });
-      
+
       toast.success("Прокси создан");
       setCreateDialogOpen(false);
       setFormData({
@@ -66,7 +108,9 @@ export default function ProxiesPage() {
   const handleToggleProxy = async (id, currentStatus) => {
     try {
       await updateProxy.mutateAsync({ id, isActive: !currentStatus });
-      toast.success(`Прокси ${!currentStatus ? "активирован" : "деактивирован"}`);
+      toast.success(
+        `Прокси ${!currentStatus ? "активирован" : "деактивирован"}`,
+      );
     } catch (error) {
       toast.error(error.message || "Ошибка изменения статуса");
     }
@@ -85,7 +129,7 @@ export default function ProxiesPage() {
 
   const getAgentName = (agentId) => {
     if (!agentId) return "Все агенты";
-    const agent = agents.find(a => a.agentId === agentId);
+    const agent = agents.find((a) => a.agentId === agentId);
     return agent ? agent.name : agentId;
   };
 
@@ -110,7 +154,9 @@ export default function ProxiesPage() {
             onClick={() => refetch()}
             disabled={isFetching}
           >
-            <IconRefresh className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
+            <IconRefresh
+              className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`}
+            />
           </Button>
           <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
             <DialogTrigger asChild>
@@ -134,12 +180,19 @@ export default function ProxiesPage() {
                       id="name"
                       placeholder="Мой прокси"
                       value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="type">Тип *</Label>
-                    <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
+                    <Select
+                      value={formData.type}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, type: value })
+                      }
+                    >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -161,7 +214,9 @@ export default function ProxiesPage() {
                       min="1"
                       max="65535"
                       value={formData.sourcePort}
-                      onChange={(e) => setFormData({ ...formData, sourcePort: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, sourcePort: e.target.value })
+                      }
                     />
                   </div>
                   <div className="space-y-2">
@@ -173,7 +228,12 @@ export default function ProxiesPage() {
                       min="1"
                       max="65535"
                       value={formData.destinationPort}
-                      onChange={(e) => setFormData({ ...formData, destinationPort: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          destinationPort: e.target.value,
+                        })
+                      }
                     />
                   </div>
                 </div>
@@ -184,13 +244,23 @@ export default function ProxiesPage() {
                     id="destinationHost"
                     placeholder="example.com или 192.168.1.1"
                     value={formData.destinationHost}
-                    onChange={(e) => setFormData({ ...formData, destinationHost: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        destinationHost: e.target.value,
+                      })
+                    }
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="agentId">Применить к *</Label>
-                  <Select value={formData.agentId} onValueChange={(value) => setFormData({ ...formData, agentId: value })}>
+                  <Select
+                    value={formData.agentId}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, agentId: value })
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -211,17 +281,20 @@ export default function ProxiesPage() {
                     id="description"
                     placeholder="Опционально"
                     value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
                   />
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setCreateDialogOpen(false)}
+                >
                   Отмена
                 </Button>
-                <Button onClick={handleCreateProxy}>
-                  Создать
-                </Button>
+                <Button onClick={handleCreateProxy}>Создать</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -257,14 +330,24 @@ export default function ProxiesPage() {
                       <h3 className="font-semibold">{proxy.name}</h3>
                       <div className="text-sm text-muted-foreground space-y-1">
                         <p>
-                          <span className="font-mono">{proxy.type.toUpperCase()}</span> :{proxy.sourcePort} → {proxy.destinationHost}:{proxy.destinationPort}
+                          <span className="font-mono">
+                            {proxy.type.toUpperCase()}
+                          </span>{" "}
+                          :{proxy.sourcePort} → {proxy.destinationHost}:
+                          {proxy.destinationPort}
                         </p>
                         <p>Агент: {getAgentName(proxy.agentId)}</p>
-                        {proxy.description && <p className="text-xs">{proxy.description}</p>}
+                        {proxy.description && (
+                          <p className="text-xs">{proxy.description}</p>
+                        )}
                       </div>
                     </div>
                     <div className="text-right text-sm">
-                      <div className={proxy.isActive ? "text-green-500" : "text-zinc-500"}>
+                      <div
+                        className={
+                          proxy.isActive ? "text-green-500" : "text-zinc-500"
+                        }
+                      >
                         {proxy.isActive ? "Активен" : "Неактивен"}
                       </div>
                       <div className="text-muted-foreground text-xs">
@@ -276,7 +359,9 @@ export default function ProxiesPage() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => handleToggleProxy(proxy.id, proxy.isActive)}
+                      onClick={() =>
+                        handleToggleProxy(proxy.id, proxy.isActive)
+                      }
                     >
                       {proxy.isActive ? (
                         <IconToggleRight className="h-5 w-5 text-green-500" />

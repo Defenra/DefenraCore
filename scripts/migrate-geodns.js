@@ -1,7 +1,7 @@
 // Script to migrate existing domains to add default GeoDNS locations
 
-import mongoose from 'mongoose';
-import 'dotenv/config';
+import mongoose from "mongoose";
+import "dotenv/config";
 
 const DomainSchema = new mongoose.Schema(
   {
@@ -13,20 +13,31 @@ const DomainSchema = new mongoose.Schema(
     description: String,
     geoDnsConfig: Array,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-const Domain = mongoose.models?.Domain || mongoose.model('Domain', DomainSchema);
+const Domain =
+  mongoose.models?.Domain || mongoose.model("Domain", DomainSchema);
 
 const defaultGeoDnsConfig = [
   // Continents
   { code: "europe", name: "Европа", type: "continent", agentIds: [] },
-  { code: "north-america", name: "Северная Америка", type: "continent", agentIds: [] },
-  { code: "south-america", name: "Южная Америка", type: "continent", agentIds: [] },
+  {
+    code: "north-america",
+    name: "Северная Америка",
+    type: "continent",
+    agentIds: [],
+  },
+  {
+    code: "south-america",
+    name: "Южная Америка",
+    type: "continent",
+    agentIds: [],
+  },
   { code: "africa", name: "Африка", type: "continent", agentIds: [] },
   { code: "asia", name: "Азия", type: "continent", agentIds: [] },
   { code: "oceania", name: "Океания", type: "continent", agentIds: [] },
-  
+
   // Popular countries
   { code: "us", name: "США", type: "country", agentIds: [] },
   { code: "ca", name: "Канада", type: "country", agentIds: [] },
@@ -42,9 +53,9 @@ const defaultGeoDnsConfig = [
 
 async function migrate() {
   try {
-    console.log('Connecting to MongoDB...');
+    console.log("Connecting to MongoDB...");
     await mongoose.connect(process.env.MONGODB_URI);
-    console.log('Connected!');
+    console.log("Connected!");
 
     // Find all domains without geoDnsConfig or with empty array
     const domainsToMigrate = await Domain.find({
@@ -62,10 +73,12 @@ async function migrate() {
       console.log(`✓ Migrated: ${domain.domain}`);
     }
 
-    console.log(`\n✅ Migration completed! ${domainsToMigrate.length} domains updated.`);
+    console.log(
+      `\n✅ Migration completed! ${domainsToMigrate.length} domains updated.`,
+    );
     process.exit(0);
   } catch (error) {
-    console.error('Migration error:', error);
+    console.error("Migration error:", error);
     process.exit(1);
   }
 }

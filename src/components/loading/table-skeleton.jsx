@@ -10,15 +10,18 @@ export function TableSkeleton({ rows = 5, columns = 4 }) {
       <CardContent>
         <div className="space-y-4">
           {/* Table header */}
-          <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}>
+          <div
+            className="grid gap-4"
+            style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}
+          >
             {Array.from({ length: columns }).map((_, i) => (
               <Skeleton key={`header-${i}`} className="h-4 w-full" />
             ))}
           </div>
-          
+
           {/* Separator */}
           <Skeleton className="h-px w-full" />
-          
+
           {/* Table rows */}
           {Array.from({ length: rows }).map((_, rowIndex) => (
             <div
@@ -30,7 +33,9 @@ export function TableSkeleton({ rows = 5, columns = 4 }) {
                 <Skeleton
                   key={`cell-${rowIndex}-${colIndex}`}
                   className="h-6 w-full"
-                  style={{ animationDelay: `${(rowIndex * columns + colIndex) * 50}ms` }}
+                  style={{
+                    animationDelay: `${(rowIndex * columns + colIndex) * 50}ms`,
+                  }}
                 />
               ))}
             </div>
