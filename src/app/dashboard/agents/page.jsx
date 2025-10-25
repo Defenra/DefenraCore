@@ -111,7 +111,8 @@ export default function AgentsPage() {
   };
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(connectionUrl);
+    navigator.clipboard.writeText(`curl -sSL https://raw.githubusercontent.com/Defenra/DefenraAgent/main/quick-install.sh | \\
+  sudo CONNECT_URL="${connectionUrl}" bash`);
     setCopied(true);
     toast.success("Скопировано в буфер обмена");
     setTimeout(() => setCopied(false), 2000);
@@ -206,7 +207,7 @@ export default function AgentsPage() {
                   <DialogHeader>
                     <DialogTitle>URL для подключения</DialogTitle>
                     <DialogDescription>
-                      Скопируйте этот URL и передайте его агенту. Ссылка
+                      Скопируйте эту команду вставьте в терминал сервера. Команда
                       действительна 24 часа и может быть использована только
                       один раз.
                     </DialogDescription>
@@ -215,7 +216,8 @@ export default function AgentsPage() {
                     <div className="relative">
                       <Input
                         readOnly
-                        value={connectionUrl}
+                        value={`curl -sSL https://raw.githubusercontent.com/Defenra/DefenraAgent/main/quick-install.sh | \\
+  sudo CONNECT_URL="${connectionUrl}" bash`}
                         className="pr-10 font-mono text-sm"
                       />
                       <Button
