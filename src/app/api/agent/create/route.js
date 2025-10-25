@@ -9,10 +9,7 @@ export async function POST(request) {
     const session = await auth();
 
     if (!session || !session.user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     await connectDB();
@@ -23,7 +20,7 @@ export async function POST(request) {
     if (!name) {
       return NextResponse.json(
         { error: "Название агента обязательно" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -40,8 +37,8 @@ export async function POST(request) {
       userId: session.user.id,
     });
 
-    const host = request.headers.get('host');
-    const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+    const host = request.headers.get("host");
+    const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
     const connectionUrl = `${protocol}://${host}/api/agent/connect/${connectionToken}`;
 
     return NextResponse.json({
@@ -57,7 +54,7 @@ export async function POST(request) {
     console.error("Agent creation error:", error);
     return NextResponse.json(
       { error: "Ошибка при создании токена подключения" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

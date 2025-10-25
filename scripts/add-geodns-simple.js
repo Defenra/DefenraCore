@@ -1,24 +1,34 @@
 // Simple script to add GeoDNS config to local.host domain
 
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config({ path: path.resolve(__dirname, '../.env.local') });
+dotenv.config({ path: path.resolve(__dirname, "../.env.local") });
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
 const DomainSchema = new mongoose.Schema({}, { strict: false });
-const Domain = mongoose.model('Domain', DomainSchema);
+const Domain = mongoose.model("Domain", DomainSchema);
 
 const defaultGeoDnsConfig = [
   { code: "europe", name: "Европа", type: "continent", agentIds: [] },
-  { code: "north-america", name: "Северная Америка", type: "continent", agentIds: [] },
-  { code: "south-america", name: "Южная Америка", type: "continent", agentIds: [] },
+  {
+    code: "north-america",
+    name: "Северная Америка",
+    type: "continent",
+    agentIds: [],
+  },
+  {
+    code: "south-america",
+    name: "Южная Америка",
+    type: "continent",
+    agentIds: [],
+  },
   { code: "africa", name: "Африка", type: "continent", agentIds: [] },
   { code: "asia", name: "Азия", type: "continent", agentIds: [] },
   { code: "oceania", name: "Океания", type: "continent", agentIds: [] },
@@ -37,25 +47,26 @@ const defaultGeoDnsConfig = [
 async function addGeoDns() {
   try {
     await mongoose.connect(MONGODB_URI);
-    console.log('✅ Connected\n');
+    console.log("✅ Connected\n");
 
-    const domain = await Domain.findOne({ domain: 'local.host' });
-    
+    const domain = await Domain.findOne({ domain: "local.host" });
+
     if (!domain) {
-      console.log('❌ Domain local.host not found!');
+      console.log("❌ Domain local.host not found!");
       return;
     }
 
     console.log(`📋 Found domain: ${domain.domain}`);
-    console.log(`   Current geoDnsConfig: ${domain.geoDnsConfig ? `${domain.geoDnsConfig.length} locations` : 'null/undefined'}`);
-    
+    console.log(
+      `   Current geoDnsConfig: ${domain.geoDnsConfig ? `${domain.geoDnsConfig.length} locations` : "null/undefined"}`,
+    );
+
     domain.geoDnsConfig = defaultGeoDnsConfig;
     await domain.save();
-    
+
     console.log(`\n✅ Added 16 GeoDNS locations to ${domain.domain}!`);
-    
   } catch (error) {
-    console.error('❌ Error:', error);
+    console.error("❌ Error:", error);
   } finally {
     await mongoose.disconnect();
   }

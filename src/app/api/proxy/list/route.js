@@ -8,19 +8,17 @@ export async function GET() {
     const session = await auth();
 
     if (!session || !session.user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     await connectDB();
 
-    const proxies = await Proxy.find({ userId: session.user.id })
-      .sort({ createdAt: -1 });
+    const proxies = await Proxy.find({ userId: session.user.id }).sort({
+      createdAt: -1,
+    });
 
     return NextResponse.json({
-      proxies: proxies.map(proxy => ({
+      proxies: proxies.map((proxy) => ({
         id: proxy._id,
         name: proxy.name,
         type: proxy.type,
@@ -38,7 +36,7 @@ export async function GET() {
     console.error("Proxy list error:", error);
     return NextResponse.json(
       { error: "Ошибка при получении списка прокси" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

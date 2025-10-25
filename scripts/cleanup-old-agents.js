@@ -1,19 +1,19 @@
 // Script to remove inactive agents from GeoDNS assignments
 
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config({ path: path.resolve(__dirname, '../.env.local') });
+dotenv.config({ path: path.resolve(__dirname, "../.env.local") });
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
-  console.error('❌ MONGODB_URI not found in environment');
+  console.error("❌ MONGODB_URI not found in environment");
   process.exit(1);
 }
 
@@ -27,35 +27,39 @@ const AgentSchema = new mongoose.Schema({
 
 const DomainSchema = new mongoose.Schema({
   domain: String,
-  geoDnsConfig: [{
-    code: String,
-    name: String,
-    type: String,
-    agentIds: [String],
-  }],
+  geoDnsConfig: [
+    {
+      code: String,
+      name: String,
+      type: String,
+      agentIds: [String],
+    },
+  ],
 });
 
-const Agent = mongoose.model('Agent', AgentSchema);
-const Domain = mongoose.model('Domain', DomainSchema);
+const Agent = mongoose.model("Agent", AgentSchema);
+const Domain = mongoose.model("Domain", DomainSchema);
 
 async function cleanupOldAgents() {
   try {
     await mongoose.connect(MONGODB_URI);
-    console.log('✅ Connected to MongoDB\n');
+    console.log("✅ Connected to MongoDB\n");
 
     // Get all agents
     const allAgents = await Agent.find({});
     const activeAgentIds = allAgents
-      .filter(a => a.isActive && a.isConnected)
-      .map(a => a.agentId);
-    
+      .filter((a) => a.isActive && a.isConnected)
+      .map((a) => a.agentId);
+
     console.log(`📊 Found ${allAgents.length} total agents`);
     console.log(`✅ Active agents: ${activeAgentIds.length}`);
-    console.log(`❌ Inactive agents: ${allAgents.length - activeAgentIds.length}\n`);
+    console.log(
+      `❌ Inactive agents: ${allAgents.length - activeAgentIds.length}\n`,
+    );
 
-    console.log('Active agent IDs:');
-    activeAgentIds.forEach(id => console.log(`  - ${id}`));
-    console.log('');
+    console.log("Active agent IDs:");
+    activeAgentIds.forEach((id) => console.log(`  - ${id}`));
+    console.log("");
 
     // Get all domains
     const domains = await Domain.find({});
@@ -72,12 +76,14 @@ async function cleanupOldAgents() {
 
       for (const location of domain.geoDnsConfig || []) {
         const before = location.agentIds.length;
-        
+
         // Remove inactive agents
-        location.agentIds = location.agentIds.filter(agentId => {
+        location.agentIds = location.agentIds.filter((agentId) => {
           const isActive = activeAgentIds.includes(agentId);
           if (!isActive) {
-            console.log(`  ❌ Removing inactive agent from ${location.code}: ${agentId}`);
+            console.log(
+              `  ❌ Removing inactive agent from ${location.code}: ${agentId}`,
+            );
             removedFromDomain++;
             totalRemoved++;
           }
@@ -98,17 +104,16 @@ async function cleanupOldAgents() {
       }
     }
 
-    console.log('═══════════════════════════════════════');
+    console.log("═══════════════════════════════════════");
     console.log(`✅ Cleanup complete!`);
     console.log(`📊 Domains updated: ${domainsUpdated}`);
     console.log(`🗑️  Total assignments removed: ${totalRemoved}`);
-    console.log('═══════════════════════════════════════');
-
+    console.log("═══════════════════════════════════════");
   } catch (error) {
-    console.error('❌ Error:', error);
+    console.error("❌ Error:", error);
   } finally {
     await mongoose.disconnect();
-    console.log('\n✅ Disconnected from MongoDB');
+    console.log("\n✅ Disconnected from MongoDB");
   }
 }
 

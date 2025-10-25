@@ -8,7 +8,7 @@
 export async function checkAgentHealth(Agent) {
   const now = new Date();
   const agents = await Agent.find({});
-  
+
   let activeCount = 0;
   let inactiveCount = 0;
   let deactivated = [];
@@ -58,7 +58,7 @@ export async function checkAgentHealth(Agent) {
  */
 export async function deactivateAgent(agentId, Agent) {
   const agent = await Agent.findOne({ agentId });
-  
+
   if (!agent) {
     return false;
   }
@@ -80,13 +80,13 @@ export async function deactivateAgent(agentId, Agent) {
  */
 export async function activateAgent(agentId, Agent) {
   const agent = await Agent.findOne({ agentId });
-  
+
   if (!agent) {
     return false;
   }
 
   const wasInactive = !agent.isActive;
-  
+
   agent.isActive = true;
   agent.lastSeen = new Date();
   await agent.save();

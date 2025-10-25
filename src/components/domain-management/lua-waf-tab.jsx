@@ -1,10 +1,18 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { IconCode, IconInfoCircle } from "@tabler/icons-react";
 import dynamic from "next/dynamic";
 
-const MonacoEditor = dynamic(() => import("@monaco-editor/react"), { ssr: false });
+const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
+  ssr: false,
+});
 
 const LUA_EXAMPLES = `-- Пример 1: Блокировка /admin без авторизации
 if ngx.var.request_uri:match("/admin") and not ngx.var.http_authorization then
@@ -74,22 +82,62 @@ export function LuaWafTab({ domain, onUpdate }) {
             <div className="flex items-start gap-3">
               <IconInfoCircle className="h-5 w-5 text-purple-500 mt-0.5 flex-shrink-0" />
               <div className="space-y-2 text-sm">
-                <p className="font-medium text-foreground">Возможности Lua WAF</p>
+                <p className="font-medium text-foreground">
+                  Возможности Lua WAF
+                </p>
                 <ul className="text-muted-foreground space-y-1.5 text-xs">
-                  <li>• <strong>Rate Limiting</strong> - ограничение запросов по IP</li>
-                  <li>• <strong>Блокировка</strong> - ботов, стран, User-Agent</li>
-                  <li>• <strong>Security Headers</strong> - добавление заголовков безопасности</li>
-                  <li>• <strong>Custom Rules</strong> - любая логика обработки запросов</li>
-                  <li>• <strong>Redirects</strong> - перенаправления и редиректы</li>
-                  <li>• <strong>Access Control</strong> - управление доступом по условиям</li>
+                  <li>
+                    • <strong>Rate Limiting</strong> - ограничение запросов по
+                    IP
+                  </li>
+                  <li>
+                    • <strong>Блокировка</strong> - ботов, стран, User-Agent
+                  </li>
+                  <li>
+                    • <strong>Security Headers</strong> - добавление заголовков
+                    безопасности
+                  </li>
+                  <li>
+                    • <strong>Custom Rules</strong> - любая логика обработки
+                    запросов
+                  </li>
+                  <li>
+                    • <strong>Redirects</strong> - перенаправления и редиректы
+                  </li>
+                  <li>
+                    • <strong>Access Control</strong> - управление доступом по
+                    условиям
+                  </li>
                 </ul>
                 <div className="mt-3 p-3 bg-muted/50 rounded">
-                  <p className="font-medium text-xs mb-2">Доступные переменные:</p>
+                  <p className="font-medium text-xs mb-2">
+                    Доступные переменные:
+                  </p>
                   <div className="grid grid-cols-2 gap-2 text-xs font-mono">
-                    <div><span className="text-purple-600 dark:text-purple-400">ngx.var.remote_addr</span> - IP клиента</div>
-                    <div><span className="text-purple-600 dark:text-purple-400">ngx.var.request_uri</span> - URI запроса</div>
-                    <div><span className="text-purple-600 dark:text-purple-400">ngx.var.http_*</span> - HTTP заголовки</div>
-                    <div><span className="text-purple-600 dark:text-purple-400">ngx.var.geoip_*</span> - Геоданные</div>
+                    <div>
+                      <span className="text-purple-600 dark:text-purple-400">
+                        ngx.var.remote_addr
+                      </span>{" "}
+                      - IP клиента
+                    </div>
+                    <div>
+                      <span className="text-purple-600 dark:text-purple-400">
+                        ngx.var.request_uri
+                      </span>{" "}
+                      - URI запроса
+                    </div>
+                    <div>
+                      <span className="text-purple-600 dark:text-purple-400">
+                        ngx.var.http_*
+                      </span>{" "}
+                      - HTTP заголовки
+                    </div>
+                    <div>
+                      <span className="text-purple-600 dark:text-purple-400">
+                        ngx.var.geoip_*
+                      </span>{" "}
+                      - Геоданные
+                    </div>
                   </div>
                 </div>
               </div>
@@ -127,7 +175,8 @@ export function LuaWafTab({ domain, onUpdate }) {
               />
             </div>
             <p className="text-xs text-muted-foreground">
-              💡 Скрипт выполняется на всех агентах перед проксированием запроса на целевой сервер
+              💡 Скрипт выполняется на всех агентах перед проксированием запроса
+              на целевой сервер
             </p>
           </div>
 
@@ -138,7 +187,8 @@ export function LuaWafTab({ domain, onUpdate }) {
               <div className="text-sm">
                 <p className="font-medium text-foreground">⚠️ Важно</p>
                 <p className="text-muted-foreground text-xs mt-1">
-                  Некорректный Lua код может привести к отказу в обслуживании. Тестируйте скрипты перед применением в production.
+                  Некорректный Lua код может привести к отказу в обслуживании.
+                  Тестируйте скрипты перед применением в production.
                 </p>
               </div>
             </div>

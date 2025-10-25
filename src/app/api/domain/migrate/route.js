@@ -9,35 +9,55 @@ export async function POST(request) {
     const session = await auth();
 
     if (!session || !session.user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     await connectDB();
 
-    // Default GeoDNS configuration
+    // Default GeoDNS configuration - popular countries
     const defaultGeoDnsConfig = [
-      // Continents
-      { code: "europe", name: "Европа", type: "continent", agentIds: [] },
-      { code: "north-america", name: "Северная Америка", type: "continent", agentIds: [] },
-      { code: "south-america", name: "Южная Америка", type: "continent", agentIds: [] },
-      { code: "africa", name: "Африка", type: "continent", agentIds: [] },
-      { code: "asia", name: "Азия", type: "continent", agentIds: [] },
-      { code: "oceania", name: "Океания", type: "continent", agentIds: [] },
-      
-      // Popular countries
+      // North America
       { code: "us", name: "США", type: "country", agentIds: [] },
       { code: "ca", name: "Канада", type: "country", agentIds: [] },
-      { code: "au", name: "Австралия", type: "country", agentIds: [] },
+      { code: "mx", name: "Мексика", type: "country", agentIds: [] },
+
+      // South America
+      { code: "br", name: "Бразилия", type: "country", agentIds: [] },
+      { code: "ar", name: "Аргентина", type: "country", agentIds: [] },
+      { code: "cl", name: "Чили", type: "country", agentIds: [] },
+
+      // Europe
+      { code: "ru", name: "Россия", type: "country", agentIds: [] },
+      { code: "gb", name: "Великобритания", type: "country", agentIds: [] },
+      { code: "de", name: "Германия", type: "country", agentIds: [] },
+      { code: "fr", name: "Франция", type: "country", agentIds: [] },
+      { code: "it", name: "Италия", type: "country", agentIds: [] },
+      { code: "es", name: "Испания", type: "country", agentIds: [] },
+      { code: "pl", name: "Польша", type: "country", agentIds: [] },
+      { code: "ua", name: "Украина", type: "country", agentIds: [] },
+      { code: "nl", name: "Нидерланды", type: "country", agentIds: [] },
+      { code: "tr", name: "Турция", type: "country", agentIds: [] },
+
+      // Asia
+      { code: "cn", name: "Китай", type: "country", agentIds: [] },
       { code: "jp", name: "Япония", type: "country", agentIds: [] },
+      { code: "in", name: "Индия", type: "country", agentIds: [] },
+      { code: "kr", name: "Южная Корея", type: "country", agentIds: [] },
+      { code: "kz", name: "Казахстан", type: "country", agentIds: [] },
       { code: "ir", name: "Иран", type: "country", agentIds: [] },
       { code: "ae", name: "ОАЭ", type: "country", agentIds: [] },
-      { code: "tr", name: "Турция", type: "country", agentIds: [] },
-      { code: "cn", name: "Китай", type: "country", agentIds: [] },
-      { code: "kz", name: "Казахстан", type: "country", agentIds: [] },
-      { code: "ru", name: "Россия", type: "country", agentIds: [] },
+      { code: "sg", name: "Сингапур", type: "country", agentIds: [] },
+      { code: "id", name: "Индонезия", type: "country", agentIds: [] },
+      { code: "th", name: "Таиланд", type: "country", agentIds: [] },
+
+      // Africa
+      { code: "za", name: "ЮАР", type: "country", agentIds: [] },
+      { code: "eg", name: "Египет", type: "country", agentIds: [] },
+      { code: "ng", name: "Нигерия", type: "country", agentIds: [] },
+
+      // Oceania
+      { code: "au", name: "Австралия", type: "country", agentIds: [] },
+      { code: "nz", name: "Новая Зеландия", type: "country", agentIds: [] },
     ];
 
     // Find all domains without geoDnsConfig or with empty array
@@ -66,7 +86,7 @@ export async function POST(request) {
     console.error("Domain migration error:", error);
     return NextResponse.json(
       { error: "Ошибка при миграции доменов" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

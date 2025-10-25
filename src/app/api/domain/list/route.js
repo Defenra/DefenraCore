@@ -8,19 +8,17 @@ export async function GET() {
     const session = await auth();
 
     if (!session || !session.user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     await connectDB();
 
-    const domains = await Domain.find({ userId: session.user.id })
-      .sort({ createdAt: -1 });
+    const domains = await Domain.find({ userId: session.user.id }).sort({
+      createdAt: -1,
+    });
 
     return NextResponse.json({
-      domains: domains.map(domain => ({
+      domains: domains.map((domain) => ({
         id: domain._id,
         domain: domain.domain,
         isActive: domain.isActive,
@@ -35,7 +33,7 @@ export async function GET() {
     console.error("Domain list error:", error);
     return NextResponse.json(
       { error: "Ошибка при получении списка доменов" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

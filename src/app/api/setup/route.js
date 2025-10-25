@@ -7,14 +7,14 @@ export async function GET() {
   try {
     await connectDB();
     const userCount = await User.countDocuments();
-    
-    return NextResponse.json({ 
-      needsSetup: userCount === 0 
+
+    return NextResponse.json({
+      needsSetup: userCount === 0,
     });
   } catch (error) {
     return NextResponse.json(
       { error: "Ошибка подключения к базе данных" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -27,7 +27,7 @@ export async function POST(request) {
     if (userCount > 0) {
       return NextResponse.json(
         { error: "Установка уже выполнена" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -37,14 +37,14 @@ export async function POST(request) {
     if (!name || !email || !password) {
       return NextResponse.json(
         { error: "Все поля обязательны" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (password.length < 6) {
       return NextResponse.json(
         { error: "Пароль должен содержать минимум 6 символов" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -70,7 +70,7 @@ export async function POST(request) {
     console.error("Setup error:", error);
     return NextResponse.json(
       { error: "Ошибка при создании пользователя" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

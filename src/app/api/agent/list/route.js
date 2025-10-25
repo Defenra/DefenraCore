@@ -9,22 +9,19 @@ export async function GET() {
     const session = await auth();
 
     if (!session || !session.user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     await connectDB();
 
     const agents = await Agent.find({ userId: session.user.id })
-      .select('-agentKey -connectionToken')
+      .select("-agentKey -connectionToken")
       .sort({ createdAt: -1 });
 
     const agentsWithStatus = await Promise.all(
       agents.map(async (agent) => {
         const activityStatus = checkAgentActivity(agent);
-        
+
         if (agent.isActive !== activityStatus.isActive) {
           agent.isActive = activityStatus.isActive;
           await agent.save();
@@ -47,7 +44,7 @@ export async function GET() {
           ipInfo: agent.ipInfo,
           ipHistory: agent.ipHistory,
         };
-      })
+      }),
     );
 
     return NextResponse.json({
@@ -57,7 +54,7 @@ export async function GET() {
     console.error("Agent list error:", error);
     return NextResponse.json(
       { error: "Ошибка при получении списка агентов" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

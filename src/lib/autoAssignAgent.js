@@ -34,12 +34,12 @@ const COUNTRY_TO_LOCATION = {
   LV: "europe",
   EE: "europe",
   IE: "europe",
-  
+
   // North America
   US: "us",
   CA: "ca",
   MX: "north-america",
-  
+
   // South America
   BR: "south-america",
   AR: "south-america",
@@ -48,7 +48,7 @@ const COUNTRY_TO_LOCATION = {
   PE: "south-america",
   VE: "south-america",
   EC: "south-america",
-  
+
   // Asia
   CN: "cn",
   JP: "jp",
@@ -68,11 +68,11 @@ const COUNTRY_TO_LOCATION = {
   IQ: "asia",
   SA: "asia",
   IL: "asia",
-  
+
   // Oceania
   AU: "au",
   NZ: "oceania",
-  
+
   // Africa
   ZA: "africa",
   EG: "africa",
@@ -118,10 +118,16 @@ export function getAgentLocations(ipInfo) {
   }
 
   const countryCode = ipInfo.countryCode.toUpperCase();
-  
+
   // Special handling for localhost/unknown IPs (for testing)
-  if (countryCode === "XX" || ipInfo.country === "Unknown" || ipInfo.city === "Localhost") {
-    console.log(`    ⚠️  Localhost/Unknown IP detected - using TEST location (europe)`);
+  if (
+    countryCode === "XX" ||
+    ipInfo.country === "Unknown" ||
+    ipInfo.city === "Localhost"
+  ) {
+    console.log(
+      `    ⚠️  Localhost/Unknown IP detected - using TEST location (europe)`,
+    );
     // For testing: assign to a default location (europe)
     // In production, agents should have real IPs
     return ["europe"];
@@ -131,13 +137,17 @@ export function getAgentLocations(ipInfo) {
 
   // 1. Try to find specific country/location mapping
   const specificLocation = COUNTRY_TO_LOCATION[countryCode];
-  
+
   if (specificLocation) {
     locations.push(specificLocation);
-    
+
     // 2. Also add continent if not already a continent
     const continent = LOCATION_TO_CONTINENT[specificLocation];
-    if (continent && continent !== specificLocation && !locations.includes(continent)) {
+    if (
+      continent &&
+      continent !== specificLocation &&
+      !locations.includes(continent)
+    ) {
       locations.push(continent);
     }
   } else {
@@ -161,20 +171,26 @@ function guessContinent(ipInfo) {
   if (ipInfo.continent) {
     const cont = ipInfo.continent.toLowerCase();
     if (cont.includes("europe")) return "europe";
-    if (cont.includes("america") && !cont.includes("south")) return "north-america";
+    if (cont.includes("america") && !cont.includes("south"))
+      return "north-america";
     if (cont.includes("south")) return "south-america";
     if (cont.includes("asia")) return "asia";
     if (cont.includes("africa")) return "africa";
-    if (cont.includes("oceania") || cont.includes("australia")) return "oceania";
+    if (cont.includes("oceania") || cont.includes("australia"))
+      return "oceania";
   }
 
   // Fallback to country name patterns
   const country = (ipInfo.country || "").toLowerCase();
-  if (country.includes("europe") || country.includes("european")) return "europe";
-  if (country.includes("america") && !country.includes("south")) return "north-america";
-  if (country.includes("africa") || country.includes("african")) return "africa";
+  if (country.includes("europe") || country.includes("european"))
+    return "europe";
+  if (country.includes("america") && !country.includes("south"))
+    return "north-america";
+  if (country.includes("africa") || country.includes("african"))
+    return "africa";
   if (country.includes("asia") || country.includes("asian")) return "asia";
-  if (country.includes("oceania") || country.includes("australia")) return "oceania";
+  if (country.includes("oceania") || country.includes("australia"))
+    return "oceania";
 
   return null;
 }
@@ -187,13 +203,27 @@ function guessContinent(ipInfo) {
  * @param {Object} Domain - Domain model
  * @returns {Promise<Object>} - { assignedCount, locations }
  */
-export async function autoAssignAgentToLocations(agentId, ipInfo, userId, Domain) {
-  console.log(`    [autoAssignAgent] Starting for agent ${agentId.substring(0, 20)}...`);
-  console.log(`    IP Info:`, JSON.stringify({ country: ipInfo.country, countryCode: ipInfo.countryCode, city: ipInfo.city }));
-  
+export async function autoAssignAgentToLocations(
+  agentId,
+  ipInfo,
+  userId,
+  Domain,
+) {
+  console.log(
+    `    [autoAssignAgent] Starting for agent ${agentId.substring(0, 20)}...`,
+  );
+  console.log(
+    `    IP Info:`,
+    JSON.stringify({
+      country: ipInfo.country,
+      countryCode: ipInfo.countryCode,
+      city: ipInfo.city,
+    }),
+  );
+
   const locations = getAgentLocations(ipInfo);
-  console.log(`    Detected locations: ${locations.join(', ') || 'none'}`);
-  
+  console.log(`    Detected locations: ${locations.join(", ") || "none"}`);
+
   if (locations.length === 0) {
     console.log(`    ⚠️  No locations detected for this IP!`);
     return { assignedCount: 0, locations: [] };
@@ -202,7 +232,7 @@ export async function autoAssignAgentToLocations(agentId, ipInfo, userId, Domain
   // Get all domains for this user
   const domains = await Domain.find({ userId, isActive: true });
   console.log(`    Found ${domains.length} active domains`);
-  
+
   let assignedCount = 0;
 
   for (const domain of domains) {
@@ -211,8 +241,10 @@ export async function autoAssignAgentToLocations(agentId, ipInfo, userId, Domain
 
     for (const location of locations) {
       // Find this location in geoDnsConfig
-      const locationConfig = domain.geoDnsConfig?.find(loc => loc.code === location);
-      
+      const locationConfig = domain.geoDnsConfig?.find(
+        (loc) => loc.code === location,
+      );
+
       if (locationConfig) {
         // Check if agent is already assigned
         if (!locationConfig.agentIds.includes(agentId)) {
@@ -224,7 +256,9 @@ export async function autoAssignAgentToLocations(agentId, ipInfo, userId, Domain
           console.log(`      - Already assigned to: ${location}`);
         }
       } else {
-        console.log(`      ⚠️  Location "${location}" not found in geoDnsConfig`);
+        console.log(
+          `      ⚠️  Location "${location}" not found in geoDnsConfig`,
+        );
       }
     }
 
@@ -239,7 +273,7 @@ export async function autoAssignAgentToLocations(agentId, ipInfo, userId, Domain
     locations,
     message: `Auto-assigned agent to ${locations.join(", ")} across ${domains.length} domain(s)`,
   };
-  
+
   console.log(`    ✅ Auto-assign complete: ${assignedCount} assignments`);
   return result;
 }
@@ -253,7 +287,7 @@ export async function autoAssignAgentToLocations(agentId, ipInfo, userId, Domain
  */
 export async function removeAgentFromAllLocations(agentId, userId, Domain) {
   const domains = await Domain.find({ userId, isActive: true });
-  
+
   let removedCount = 0;
 
   for (const domain of domains) {

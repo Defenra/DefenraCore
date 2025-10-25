@@ -1,9 +1,19 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { IconShieldCheck, IconInfoCircle, IconUpload } from "@tabler/icons-react";
+import {
+  IconShieldCheck,
+  IconInfoCircle,
+  IconUpload,
+} from "@tabler/icons-react";
 
 export function SslTab({ domain, onUpdate }) {
   return (
@@ -25,12 +35,18 @@ export function SslTab({ domain, onUpdate }) {
             <div className="flex items-start gap-3">
               <IconInfoCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
               <div className="space-y-2 text-sm">
-                <p className="font-medium text-foreground">Как работает SSL терминация</p>
+                <p className="font-medium text-foreground">
+                  Как работает SSL терминация
+                </p>
                 <ul className="text-muted-foreground space-y-1.5 text-xs">
                   <li>• Клиент подключается по HTTPS к ближайшему агенту</li>
                   <li>• Агент терминирует SSL/TLS соединение</li>
-                  <li>• Агент проксирует запрос на целевой сервер (HTTP или HTTPS)</li>
-                  <li>• Поддержка автоматического обновления через Let's Encrypt</li>
+                  <li>
+                    • Агент проксирует запрос на целевой сервер (HTTP или HTTPS)
+                  </li>
+                  <li>
+                    • Поддержка автоматического обновления через Let's Encrypt
+                  </li>
                 </ul>
               </div>
             </div>
@@ -40,22 +56,26 @@ export function SslTab({ domain, onUpdate }) {
           <div className="flex items-center justify-between p-4 border rounded-lg">
             <div>
               <p className="font-medium text-sm">Включить SSL/TLS</p>
-              <p className="text-xs text-muted-foreground">Терминация HTTPS на агентах</p>
+              <p className="text-xs text-muted-foreground">
+                Терминация HTTPS на агентах
+              </p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
                 checked={domain.httpProxy?.ssl?.enabled || false}
-                onChange={(e) => onUpdate({
-                  ...domain,
-                  httpProxy: {
-                    ...domain.httpProxy,
-                    ssl: {
-                      ...domain.httpProxy?.ssl,
-                      enabled: e.target.checked,
+                onChange={(e) =>
+                  onUpdate({
+                    ...domain,
+                    httpProxy: {
+                      ...domain.httpProxy,
+                      ssl: {
+                        ...domain.httpProxy?.ssl,
+                        enabled: e.target.checked,
+                      },
                     },
-                  },
-                })}
+                  })
+                }
                 className="sr-only peer"
               />
               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 dark:peer-focus:ring-green-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-500"></div>
@@ -72,16 +92,18 @@ export function SslTab({ domain, onUpdate }) {
                 </label>
                 <Textarea
                   value={domain.httpProxy?.ssl?.certificate || ""}
-                  onChange={(e) => onUpdate({
-                    ...domain,
-                    httpProxy: {
-                      ...domain.httpProxy,
-                      ssl: {
-                        ...domain.httpProxy?.ssl,
-                        certificate: e.target.value,
+                  onChange={(e) =>
+                    onUpdate({
+                      ...domain,
+                      httpProxy: {
+                        ...domain.httpProxy,
+                        ssl: {
+                          ...domain.httpProxy?.ssl,
+                          certificate: e.target.value,
+                        },
                       },
-                    },
-                  })}
+                    })
+                  }
                   placeholder="-----BEGIN CERTIFICATE-----
 MIIDXTCCAkWgAwIBAgIJAKZ...
 -----END CERTIFICATE-----"
@@ -97,16 +119,18 @@ MIIDXTCCAkWgAwIBAgIJAKZ...
                 </label>
                 <Textarea
                   value={domain.httpProxy?.ssl?.privateKey || ""}
-                  onChange={(e) => onUpdate({
-                    ...domain,
-                    httpProxy: {
-                      ...domain.httpProxy,
-                      ssl: {
-                        ...domain.httpProxy?.ssl,
-                        privateKey: e.target.value,
+                  onChange={(e) =>
+                    onUpdate({
+                      ...domain,
+                      httpProxy: {
+                        ...domain.httpProxy,
+                        ssl: {
+                          ...domain.httpProxy?.ssl,
+                          privateKey: e.target.value,
+                        },
                       },
-                    },
-                  })}
+                    })
+                  }
                   placeholder="-----BEGIN PRIVATE KEY-----
 MIIEvQIBADANBgkqhkiG9w0...
 -----END PRIVATE KEY-----"
@@ -118,23 +142,29 @@ MIIEvQIBADANBgkqhkiG9w0...
               {/* Let's Encrypt Toggle */}
               <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
                 <div>
-                  <p className="font-medium text-sm">Let's Encrypt Auto-Renewal</p>
-                  <p className="text-xs text-muted-foreground">Автоматическое обновление сертификатов</p>
+                  <p className="font-medium text-sm">
+                    Let's Encrypt Auto-Renewal
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Автоматическое обновление сертификатов
+                  </p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
                     type="checkbox"
                     checked={domain.httpProxy?.ssl?.autoRenew || false}
-                    onChange={(e) => onUpdate({
-                      ...domain,
-                      httpProxy: {
-                        ...domain.httpProxy,
-                        ssl: {
-                          ...domain.httpProxy?.ssl,
-                          autoRenew: e.target.checked,
+                    onChange={(e) =>
+                      onUpdate({
+                        ...domain,
+                        httpProxy: {
+                          ...domain.httpProxy,
+                          ssl: {
+                            ...domain.httpProxy?.ssl,
+                            autoRenew: e.target.checked,
+                          },
                         },
-                      },
-                    })}
+                      })
+                    }
                     className="sr-only peer"
                   />
                   <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 dark:peer-focus:ring-green-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-500"></div>
