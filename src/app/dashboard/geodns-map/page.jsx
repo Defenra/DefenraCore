@@ -1,7 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import {
+  IconAlertCircle,
+  IconChevronDown,
+  IconChevronUp,
+  IconCircle,
+  IconCircleFilled,
+  IconMapPin,
+  IconRefresh,
+  IconWorld,
+} from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,17 +21,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  IconRefresh,
-  IconCircleFilled,
-  IconCircle,
-  IconMapPin,
-  IconWorld,
-  IconAlertCircle,
-  IconChevronDown,
-  IconChevronUp,
-} from "@tabler/icons-react";
-import { Badge } from "@/components/ui/badge";
 
 async function fetchGeoDnsMap() {
   const response = await fetch("/api/geodns/map");

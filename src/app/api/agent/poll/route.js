@@ -1,14 +1,10 @@
 import { NextResponse } from "next/server";
+import { checkAgentHealth } from "@/lib/agentHealthCheck";
+import { buildAnycastRecords } from "@/lib/geoFallback";
+import { extractIpFromRequest, getIpInfo } from "@/lib/ipInfo";
 import connectDB from "@/lib/mongodb";
 import Agent from "@/models/Agent";
 import Proxy from "@/models/Proxy";
-import { getIpInfo, extractIpFromRequest } from "@/lib/ipInfo";
-import { buildAnycastRecords } from "@/lib/geoFallback";
-import {
-  autoAssignAgentToLocations,
-  removeAgentFromAllLocations,
-} from "@/lib/autoAssignAgent";
-import { checkAgentHealth } from "@/lib/agentHealthCheck";
 
 export async function POST(request) {
   try {
@@ -196,6 +192,10 @@ export async function POST(request) {
           certificate: d.httpProxy?.ssl?.certificate || null,
           privateKey: d.httpProxy?.ssl?.privateKey || null,
           autoRenew: d.httpProxy?.ssl?.autoRenew || false,
+          acmeHttpChallenge: {
+            token: d.httpProxy?.ssl?.acmeHttpChallenge?.token || "",
+            keyAuthorization: d.httpProxy?.ssl?.acmeHttpChallenge?.keyAuthorization || "",
+          },
         },
 
         // Lua WAF Code

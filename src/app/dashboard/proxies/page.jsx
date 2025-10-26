@@ -1,6 +1,15 @@
 "use client";
 
+import {
+  IconNetwork,
+  IconPlus,
+  IconRefresh,
+  IconToggleLeft,
+  IconToggleRight,
+  IconTrash,
+} from "@tabler/icons-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -27,22 +36,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  IconPlus,
-  IconTrash,
-  IconToggleLeft,
-  IconToggleRight,
-  IconNetwork,
-  IconRefresh,
-} from "@tabler/icons-react";
-import { toast } from "sonner";
-import {
-  useProxies,
-  useCreateProxy,
-  useUpdateProxy,
-  useDeleteProxy,
-} from "@/hooks/useProxies";
 import { useAgents } from "@/hooks/useAgents";
+import {
+  useCreateProxy,
+  useDeleteProxy,
+  useProxies,
+  useUpdateProxy,
+} from "@/hooks/useProxies";
 
 export default function ProxiesPage() {
   const {
@@ -85,8 +85,8 @@ export default function ProxiesPage() {
       await createProxy.mutateAsync({
         ...formData,
         agentId: formData.agentId === "all" ? null : formData.agentId,
-        sourcePort: parseInt(formData.sourcePort),
-        destinationPort: parseInt(formData.destinationPort),
+        sourcePort: parseInt(formData.sourcePort, 10),
+        destinationPort: parseInt(formData.destinationPort, 10),
       });
 
       toast.success("Прокси создан");

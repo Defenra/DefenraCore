@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
 
@@ -11,7 +11,7 @@ export async function GET() {
     return NextResponse.json({
       needsSetup: userCount === 0,
     });
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json(
       { error: "Ошибка подключения к базе данных" },
       { status: 500 },

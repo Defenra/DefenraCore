@@ -1,9 +1,18 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import {
+  IconChevronDown,
+  IconChevronUp,
+  IconCloud,
+  IconCloudOff,
+  IconInfoCircle,
+  IconPlus,
+  IconTrash,
+} from "@tabler/icons-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -11,15 +20,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  IconPlus,
-  IconTrash,
-  IconCloud,
-  IconCloudOff,
-  IconChevronDown,
-  IconChevronUp,
-  IconInfoCircle,
-} from "@tabler/icons-react";
 
 export function DnsRecordsTab({
   domain,
@@ -183,7 +183,7 @@ export function DnsRecordsTab({
                                 handleUpdateRecord(
                                   index,
                                   "ttl",
-                                  parseInt(e.target.value),
+                                  parseInt(e.target.value, 10),
                                 )
                               }
                             />

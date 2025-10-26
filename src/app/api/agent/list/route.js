@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
+import { checkAgentActivity } from "@/lib/agentStatus";
+import { auth } from "@/lib/auth";
 import connectDB from "@/lib/mongodb";
 import Agent from "@/models/Agent";
-import { auth } from "@/lib/auth";
-import { checkAgentActivity } from "@/lib/agentStatus";
 
 export async function GET() {
   try {

@@ -11,7 +11,7 @@ export async function checkAgentHealth(Agent) {
 
   let activeCount = 0;
   let inactiveCount = 0;
-  let deactivated = [];
+  const deactivated = [];
 
   for (const agent of agents) {
     if (!agent.lastSeen) {
