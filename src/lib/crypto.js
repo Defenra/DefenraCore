@@ -1,4 +1,4 @@
-import crypto from "crypto";
+import crypto from "node:crypto";
 
 export function generateToken(length = 32) {
   return crypto.randomBytes(length).toString("hex");

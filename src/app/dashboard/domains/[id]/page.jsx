@@ -1,29 +1,29 @@
 "use client";
 
-import { use, useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   IconArrowLeft,
   IconDeviceFloppy,
-  IconWorld,
+  IconInfoCircle,
   IconMapPin,
   IconNetwork,
-  IconInfoCircle,
+  IconWorld,
 } from "@tabler/icons-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { use, useState } from "react";
 import { toast } from "sonner";
 import { DnsRecordsTab } from "@/components/domain-management/dns-records-tab";
 import { GeoDnsTab } from "@/components/domain-management/geodns-tab";
 import { LuaWafTab } from "@/components/domain-management/lua-waf-tab";
 import { SslTab } from "@/components/domain-management/ssl-tab";
-import { useDomain, useUpdateDomain } from "@/hooks/useDomains";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAgents } from "@/hooks/useAgents";
+import { useDomain, useUpdateDomain } from "@/hooks/useDomains";
 
 export default function DomainManagePage({ params }) {
-  const router = useRouter();
+  const _router = useRouter();
   const { id: domainId } = use(params);
 
   const { data: domainData, isLoading } = useDomain(domainId);

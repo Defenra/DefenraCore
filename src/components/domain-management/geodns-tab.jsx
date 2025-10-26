@@ -1,22 +1,22 @@
 "use client";
 
+import {
+  IconInfoCircle,
+  IconMapPin,
+  IconPlus,
+  IconTrash,
+  IconX,
+} from "@tabler/icons-react";
 import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  IconPlus,
-  IconTrash,
-  IconMapPin,
-  IconInfoCircle,
-  IconX,
-} from "@tabler/icons-react";
 
 export function GeoDnsTab({ domain, agents, onUpdate }) {
   const [showAddLocation, setShowAddLocation] = useState(false);

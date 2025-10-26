@@ -5,8 +5,8 @@ import {
   IconLogout,
   IconUserCircle,
 } from "@tabler/icons-react";
-import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {

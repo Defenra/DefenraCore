@@ -1,4 +1,3 @@
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Card,
   CardContent,
@@ -6,6 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function ProfileSkeleton() {
   return (

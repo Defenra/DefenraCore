@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
+import { autoAssignAgentToLocations } from "@/lib/autoAssignAgent";
+import { extractIpFromRequest, getIpInfo } from "@/lib/ipInfo";
 import connectDB from "@/lib/mongodb";
 import Agent from "@/models/Agent";
-import { getIpInfo, extractIpFromRequest } from "@/lib/ipInfo";
-import { autoAssignAgentToLocations } from "@/lib/autoAssignAgent";
 
 export async function GET(request, { params }) {
   try {

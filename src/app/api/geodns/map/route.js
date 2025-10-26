@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
+import { checkAgentActivity } from "@/lib/agentStatus";
 import { auth } from "@/lib/auth";
+import { buildAnycastRecords } from "@/lib/geoFallback";
 import connectDB from "@/lib/mongodb";
 import Agent from "@/models/Agent";
 import Domain from "@/models/Domain";
-import { checkAgentActivity } from "@/lib/agentStatus";
-import { buildAnycastRecords } from "@/lib/geoFallback";
 
 export async function GET() {
   try {

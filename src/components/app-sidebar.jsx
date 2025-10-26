@@ -1,16 +1,15 @@
 "use client";
 
-import * as React from "react";
-import { useSession } from "next-auth/react";
 import {
   IconDashboard,
-  IconUserCircle,
-  IconShieldLock,
-  IconRobot,
-  IconNetwork,
-  IconWorld,
   IconMapPin,
+  IconNetwork,
+  IconRobot,
+  IconShieldLock,
+  IconUserCircle,
+  IconWorld,
 } from "@tabler/icons-react";
+import { useSession } from "next-auth/react";
 
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";

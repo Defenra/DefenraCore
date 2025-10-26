@@ -1,11 +1,9 @@
 "use client";
 
-import { Suspense, useState } from "react";
-import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { signIn } from "next-auth/react";
+import { Suspense, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -13,6 +11,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 function LoginForm() {
   const router = useRouter();
@@ -44,7 +44,7 @@ function LoginForm() {
         router.push("/dashboard");
         router.refresh();
       }
-    } catch (error) {
+    } catch (_error) {
       setError("Произошла ошибка при входе");
     } finally {
       setLoading(false);

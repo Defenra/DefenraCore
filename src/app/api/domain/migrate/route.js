@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
 import connectDB from "@/lib/mongodb";
 import Domain from "@/models/Domain";
-import { auth } from "@/lib/auth";
 
 // Migration endpoint to add default GeoDNS locations to existing domains
-export async function POST(request) {
+export async function POST(_request) {
   try {
     const session = await auth();
 

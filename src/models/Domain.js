@@ -65,6 +65,41 @@ const DomainSchema = new mongoose.Schema(
           type: Boolean,
           default: false,
         },
+        acmeEmail: {
+          type: String,
+          default: "",
+        },
+        expiresAt: {
+          type: Date,
+          default: null,
+        },
+        issuer: {
+          type: String,
+          default: "",
+        },
+        lastRenewal: {
+          type: Date,
+          default: null,
+        },
+        renewalStatus: {
+          type: String,
+          enum: ["idle", "pending", "success", "failed"],
+          default: "idle",
+        },
+        renewalError: {
+          type: String,
+          default: "",
+        },
+        acmeHttpChallenge: {
+          token: {
+            type: String,
+            default: "",
+          },
+          keyAuthorization: {
+            type: String,
+            default: "",
+          },
+        },
       },
       luaCode: {
         type: String,

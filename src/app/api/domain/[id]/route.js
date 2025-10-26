@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
 import connectDB from "@/lib/mongodb";
 import Domain from "@/models/Domain";
-import { auth } from "@/lib/auth";
 
-export async function GET(request, { params }) {
+export async function GET(_request, { params }) {
   try {
     const session = await auth();
 
@@ -98,7 +98,7 @@ export async function PUT(request, { params }) {
   }
 }
 
-export async function DELETE(request, { params }) {
+export async function DELETE(_request, { params }) {
   try {
     const session = await auth();
 

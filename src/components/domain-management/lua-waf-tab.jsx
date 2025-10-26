@@ -1,14 +1,14 @@
 "use client";
 
+import { IconCode, IconInfoCircle } from "@tabler/icons-react";
+import dynamic from "next/dynamic";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
-import { IconCode, IconInfoCircle } from "@tabler/icons-react";
-import dynamic from "next/dynamic";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,

@@ -1,6 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {
+  IconActivity,
+  IconClock,
+  IconNetwork,
+  IconRobot,
+  IconTrendingUp,
+  IconWorld,
+} from "@tabler/icons-react";
+import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -8,15 +17,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  IconRobot,
-  IconNetwork,
-  IconActivity,
-  IconClock,
-  IconTrendingUp,
-  IconWorld,
-} from "@tabler/icons-react";
-import Link from "next/link";
 
 export default function DashboardPage() {
   const [stats, setStats] = useState({
@@ -26,11 +26,7 @@ export default function DashboardPage() {
   const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       const [agentsRes, proxiesRes] = await Promise.all([
         fetch("/api/agent/list"),
@@ -86,11 +82,15 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
 
   const formatTimeAgo = (date) => {
     if (!date) return "—";
-    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+    const seconds = Math.floor((Date.now() - new Date(date)) / 1000);
     if (seconds < 60) return "только что";
     if (seconds < 3600) return `${Math.floor(seconds / 60)} мин назад`;
     if (seconds < 86400) return `${Math.floor(seconds / 3600)} ч назад`;

@@ -1,6 +1,22 @@
 "use client";
 
+import {
+  IconAlertCircle,
+  IconCheck,
+  IconChevronDown,
+  IconChevronUp,
+  IconCircle,
+  IconCircleFilled,
+  IconClock,
+  IconCopy,
+  IconPlus,
+  IconRefresh,
+  IconTrash,
+  IconWorld,
+} from "@tabler/icons-react";
 import { useState } from "react";
+import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -20,22 +36,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  IconPlus,
-  IconCopy,
-  IconTrash,
-  IconCheck,
-  IconCircle,
-  IconCircleFilled,
-  IconAlertCircle,
-  IconRefresh,
-  IconWorld,
-  IconChevronDown,
-  IconChevronUp,
-  IconClock,
-} from "@tabler/icons-react";
-import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
 import { useAgents, useCreateAgent, useDeleteAgent } from "@/hooks/useAgents";
 
 export default function AgentsPage() {
@@ -60,7 +60,7 @@ export default function AgentsPage() {
     return <IconAlertCircle className="h-3 w-3 text-yellow-500" />;
   };
 
-  const getStatusColor = (agent) => {
+  const _getStatusColor = (agent) => {
     if (!agent.isConnected) return "text-zinc-500";
     if (agent.isActive) return "text-green-500";
     return "text-yellow-500";
@@ -87,7 +87,7 @@ export default function AgentsPage() {
     try {
       const result = await createAgent.mutateAsync({
         name: newAgentName,
-        pollingInterval: parseInt(newAgentPolling) || 60,
+        pollingInterval: parseInt(newAgentPolling, 10) || 60,
       });
 
       setConnectionUrl(result.agent.connectionUrl);
@@ -207,9 +207,9 @@ export default function AgentsPage() {
                   <DialogHeader>
                     <DialogTitle>URL для подключения</DialogTitle>
                     <DialogDescription>
-                      Скопируйте эту команду вставьте в терминал сервера. Команда
-                      действительна 24 часа и может быть использована только
-                      один раз.
+                      Скопируйте эту команду вставьте в терминал сервера.
+                      Команда действительна 24 часа и может быть использована
+                      только один раз.
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 py-4">

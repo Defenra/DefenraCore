@@ -205,7 +205,7 @@ const LOCATION_DISTANCES = {
 };
 
 // Get continent for a country code
-function getContinentForCountry(countryCode) {
+function _getContinentForCountry(countryCode) {
   return LOCATION_DISTANCES[countryCode] || null;
 }
 

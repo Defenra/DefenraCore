@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
+import { generateAgentId, generateAgentKey, generateToken } from "@/lib/crypto";
 import connectDB from "@/lib/mongodb";
 import Agent from "@/models/Agent";
-import { auth } from "@/lib/auth";
-import { generateToken, generateAgentId, generateAgentKey } from "@/lib/crypto";
 
 export async function POST(request) {
   try {
