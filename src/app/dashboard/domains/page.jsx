@@ -89,35 +89,36 @@ export default function DomainsPage() {
   ).length;
 
   return (
-    <div className="flex flex-col gap-6 py-6 px-4 lg:px-6">
+    <div className="flex flex-col gap-8 p-8">
       <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight">Домены</h1>
+        <div>
+          <h1 className="text-2xl font-semibold mb-2">Домены</h1>
           <p className="text-sm text-muted-foreground">
-            Управление доменами, DNS записями и HTTP проксированием
+            {domains.length} доменов
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <Link href="/dashboard/domains/guide">
-            <Button variant="outline">
-              <IconQuestionMark className="h-4 w-4 mr-2" />
-              Как добавить домен?
+            <Button variant="outline" className="h-10">
+              <IconQuestionMark className="h-5 w-5 mr-2" />
+              Как добавить?
             </Button>
           </Link>
           <Button
             variant="outline"
+            size="icon"
             onClick={() => refetch()}
             disabled={isFetching}
+            className="h-10 w-10"
           >
             <IconRefresh
-              className={`h-4 w-4 mr-2 ${isFetching ? "animate-spin" : ""}`}
+              className={`h-5 w-5 ${isFetching ? "animate-spin" : ""}`}
             />
-            Обновить
           </Button>
           <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
-                <IconPlus className="h-4 w-4 mr-2" />
+              <Button className="h-10">
+                <IconPlus className="h-5 w-5 mr-2" />
                 Добавить домен
               </Button>
             </DialogTrigger>
@@ -170,60 +171,52 @@ export default function DomainsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="border-green-500/20">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+      <div className="grid gap-6 md:grid-cols-3">
+        <Card className="border-border">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-sm text-muted-foreground font-medium">
               Активные домены
             </CardTitle>
-            <IconWorld className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-500">
+            <div className="text-5xl font-bold mb-2">
               {activeCount}
             </div>
+            <p className="text-sm text-muted-foreground">Настроено и работает</p>
           </CardContent>
         </Card>
-        <Card className="border-blue-500/20">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">HTTP прокси</CardTitle>
-            <IconNetwork className="h-4 w-4 text-blue-500" />
+        <Card className="border-border">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-sm text-muted-foreground font-medium">HTTP прокси</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-500">
+            <div className="text-5xl font-bold mb-2">
               {proxyEnabledCount}
             </div>
+            <p className="text-sm text-muted-foreground">С проксированием</p>
           </CardContent>
         </Card>
-        <Card className="border-purple-500/20">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">SSL защита</CardTitle>
-            <IconShieldCheck className="h-4 w-4 text-purple-500" />
+        <Card className="border-border">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-sm text-muted-foreground font-medium">SSL защита</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-purple-500">
+            <div className="text-5xl font-bold mb-2">
               {sslEnabledCount}
             </div>
+            <p className="text-sm text-muted-foreground">С сертификатами</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Domains List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Список доменов</CardTitle>
-          <CardDescription>
-            {domains.length}{" "}
-            {domains.length === 1
-              ? "домен"
-              : domains.length > 4
-                ? "доменов"
-                : "домена"}
-          </CardDescription>
+      <Card className="border-border">
+        <CardHeader className="pb-6">
+          <CardTitle className="text-lg font-medium">Список доменов</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="text-center py-12 text-muted-foreground">
               Загрузка...
             </div>
           ) : domains.length === 0 ? (
@@ -231,13 +224,13 @@ export default function DomainsPage() {
               <div className="text-muted-foreground">Нет доменов</div>
               <Link href="/dashboard/domains/guide">
                 <Button variant="outline">
-                  <IconQuestionMark className="h-4 w-4 mr-2" />
+                  <IconQuestionMark className="h-5 w-5 mr-2" />
                   Как добавить домен?
                 </Button>
               </Link>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {domains.map((domain) => {
                 const proxyCount =
                   domain.dnsRecords?.filter((r) => r.httpProxyEnabled)
@@ -245,61 +238,65 @@ export default function DomainsPage() {
                 return (
                   <div
                     key={domain.id}
-                    className="group border rounded-lg hover:border-accent transition-all hover:shadow-md"
+                    className="border border-border rounded-lg hover:bg-accent/50 transition-colors"
                   >
-                    <div className="p-5">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <IconWorld className="h-5 w-5 text-blue-500" />
-                            <h3 className="font-semibold text-lg">
-                              {domain.domain}
-                            </h3>
-                            <Badge
-                              variant={domain.isActive ? "success" : "outline"}
-                            >
-                              {domain.isActive ? "Активен" : "Неактивен"}
-                            </Badge>
-                            {proxyCount > 0 && (
-                              <Badge variant="info">
-                                <IconNetwork className="h-3 w-3 mr-1" />
-                                {proxyCount} прокси
-                              </Badge>
+                    <div className="p-6">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start gap-4 flex-1">
+                          <IconWorld className="h-6 w-6 text-muted-foreground mt-1" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-3 mb-3">
+                              <h3 className="font-medium text-lg">
+                                {domain.domain}
+                              </h3>
+                              <span className="text-xs text-muted-foreground">
+                                {domain.isActive ? "Активен" : "Неактивен"}
+                              </span>
+                            </div>
+                            {domain.description && (
+                              <p className="text-sm text-muted-foreground mb-3">
+                                {domain.description}
+                              </p>
                             )}
-                            {domain.httpProxy?.ssl?.enabled && (
-                              <Badge variant="success">
-                                <IconShieldCheck className="h-3 w-3 mr-1" />
-                                SSL
-                              </Badge>
-                            )}
-                          </div>
-                          {domain.description && (
-                            <p className="text-sm text-muted-foreground">
-                              {domain.description}
-                            </p>
-                          )}
-                          <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                            <span>
-                              DNS: {domain.dnsRecords?.length || 0} записей
-                            </span>
-                            {proxyCount > 0 && (
-                              <span>• {proxyCount} через прокси</span>
-                            )}
+                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                              <span>
+                                DNS: {domain.dnsRecords?.length || 0} записей
+                              </span>
+                              {proxyCount > 0 && (
+                                <>
+                                  <span>•</span>
+                                  <div className="flex items-center gap-1.5">
+                                    <IconNetwork className="h-4 w-4" />
+                                    <span>{proxyCount} прокси</span>
+                                  </div>
+                                </>
+                              )}
+                              {domain.httpProxy?.ssl?.enabled && (
+                                <>
+                                  <span>•</span>
+                                  <div className="flex items-center gap-1.5">
+                                    <IconShieldCheck className="h-4 w-4" />
+                                    <span>SSL</span>
+                                  </div>
+                                </>
+                              )}
+                            </div>
                           </div>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 ml-4">
                           <Link href={`/dashboard/domains/${domain.id}`}>
-                            <Button variant="outline" size="sm">
-                              <IconSettings className="h-4 w-4 mr-2" />
+                            <Button variant="outline" className="h-10">
+                              <IconSettings className="h-5 w-5 mr-2" />
                               Управление
                             </Button>
                           </Link>
                           <Button
-                            variant="outline"
-                            size="sm"
+                            variant="ghost"
+                            size="icon"
                             onClick={() => handleDeleteDomain(domain.id)}
+                            className="h-10 w-10"
                           >
-                            <IconTrash className="h-4 w-4" />
+                            <IconTrash className="h-5 w-5" />
                           </Button>
                         </div>
                       </div>

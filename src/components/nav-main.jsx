@@ -16,7 +16,7 @@ export function NavMain({ items }) {
 
   return (
     <SidebarGroup>
-      <SidebarGroupContent className="flex flex-col gap-2">
+      <SidebarGroupContent>
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
@@ -26,7 +26,7 @@ export function NavMain({ items }) {
                 isActive={pathname === item.url}
               >
                 <Link href={item.url}>
-                  {item.icon && <item.icon />}
+                  {item.icon && <item.icon className="h-5 w-5" />}
                   <span>{item.title}</span>
                 </Link>
               </SidebarMenuButton>

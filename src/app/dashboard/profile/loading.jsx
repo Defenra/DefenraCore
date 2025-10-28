@@ -1,5 +1,5 @@
-import { ProfileSkeleton } from "@/components/profile-skeleton";
+import { Loading } from "@/components/loading";
 
-export default function Loading() {
-  return <ProfileSkeleton />;
+export default function ProfileLoading() {
+  return <Loading variant="pulse" />;
 }

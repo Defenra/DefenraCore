@@ -137,29 +137,30 @@ export default function AgentsPage() {
   const pendingCount = agents.filter((a) => !a.isConnected).length;
 
   return (
-    <div className="flex flex-col gap-6 py-6 px-4 lg:px-6">
+    <div className="flex flex-col gap-8 p-8">
       <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight">Агенты</h1>
+        <div>
+          <h1 className="text-2xl font-semibold mb-2">Агенты</h1>
           <p className="text-sm text-muted-foreground">
-            Управление подключёнными агентами и мониторинг их состояния
+            {agents.length} подключённых агентов
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <Button
             variant="outline"
             size="icon"
             onClick={() => refetch()}
             disabled={isFetching}
+            className="h-10 w-10"
           >
             <IconRefresh
-              className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`}
+              className={`h-5 w-5 ${isFetching ? "animate-spin" : ""}`}
             />
           </Button>
           <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
-                <IconPlus className="mr-2 h-4 w-4" />
+              <Button className="h-10">
+                <IconPlus className="mr-2 h-5 w-5" />
                 Добавить агента
               </Button>
             </DialogTrigger>
@@ -245,156 +246,132 @@ export default function AgentsPage() {
       </div>
 
       {/* Stats Row */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="border-green-500/20">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Активные</CardTitle>
-            <IconCircleFilled className="h-4 w-4 text-green-500" />
+      <div className="grid gap-6 md:grid-cols-3">
+        <Card className="border-border">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-sm text-muted-foreground font-medium">Активные</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-500">
+            <div className="text-5xl font-bold mb-2">
               {activeCount}
             </div>
+            <p className="text-sm text-muted-foreground">В сети</p>
           </CardContent>
         </Card>
-        <Card className="border-yellow-500/20">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Неактивные</CardTitle>
-            <IconAlertCircle className="h-4 w-4 text-yellow-500" />
+        <Card className="border-border">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-sm text-muted-foreground font-medium">Неактивные</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-500">
+            <div className="text-5xl font-bold mb-2">
               {inactiveCount}
             </div>
+            <p className="text-sm text-muted-foreground">Требуют внимания</p>
           </CardContent>
         </Card>
-        <Card className="border-zinc-500/20">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ожидают</CardTitle>
-            <IconClock className="h-4 w-4 text-zinc-500" />
+        <Card className="border-border">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-sm text-muted-foreground font-medium">Ожидают</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-zinc-500">
+            <div className="text-5xl font-bold mb-2">
               {pendingCount}
             </div>
+            <p className="text-sm text-muted-foreground">Подключения</p>
           </CardContent>
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Список агентов</CardTitle>
-              <CardDescription>
-                {agents.length}{" "}
-                {agents.length === 1
-                  ? "агент"
-                  : agents.length > 4
-                    ? "агентов"
-                    : "агента"}
-              </CardDescription>
-            </div>
-          </div>
+      <Card className="border-border">
+        <CardHeader className="pb-6">
+          <CardTitle className="text-lg font-medium">Список агентов</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="text-center py-12 text-muted-foreground">
               Загрузка...
             </div>
           ) : agents.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="text-center py-12 text-muted-foreground">
               Нет подключённых агентов
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {agents.map((agent) => {
                 const isExpanded = expandedAgents.has(agent.id);
                 return (
                   <div
                     key={agent.id}
-                    className="group border rounded-lg hover:border-accent transition-all hover:shadow-md"
+                    className="border border-border rounded-lg hover:bg-accent/50 transition-colors"
                   >
-                    <div className="flex items-center justify-between p-5">
-                      <div className="flex items-center gap-4 flex-1">
+                    <div className="flex items-start justify-between p-6">
+                      <div className="flex items-start gap-4 flex-1">
                         {getStatusIcon(agent)}
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-semibold text-lg">
+                          <div className="flex items-center gap-3 mb-3">
+                            <h3 className="font-medium text-lg">
                               {agent.name}
                             </h3>
-                            <Badge
-                              variant={
-                                agent.isActive
-                                  ? "success"
-                                  : agent.isConnected
-                                    ? "warning"
-                                    : "outline"
-                              }
-                            >
+                            <span className="text-xs text-muted-foreground">
                               {agent.statusText ||
-                                (agent.isConnected ? "Подключён" : "Ожидает")}
-                            </Badge>
+                                (agent.isActive ? "Активен" : agent.isConnected ? "Подключён" : "Ожидает")}
+                            </span>
                           </div>
-                          <div className="text-sm text-muted-foreground space-y-1.5">
-                            <p className="flex items-center gap-2">
-                              <span className="text-xs text-muted-foreground/70">
-                                ID:
-                              </span>
-                              <span className="font-mono text-xs bg-accent px-2 py-0.5 rounded">
+                          <div className="text-sm text-muted-foreground space-y-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs">ID:</span>
+                              <span className="font-mono text-xs">
                                 {agent.agentId}
                               </span>
-                            </p>
+                            </div>
                             {agent.ipAddress && (
-                              <p className="flex items-center gap-1.5">
-                                <IconWorld className="h-3.5 w-3.5 flex-shrink-0" />
+                              <div className="flex items-center gap-2">
+                                <IconWorld className="h-4 w-4" />
                                 <span className="font-mono text-xs">
                                   {agent.ipAddress}
                                 </span>
                                 {agent.ipInfo?.city &&
                                   agent.ipInfo?.country && (
-                                    <span className="text-xs text-muted-foreground/70">
-                                      • {agent.ipInfo.city},{" "}
-                                      {agent.ipInfo.country}
+                                    <span className="text-xs">
+                                      • {agent.ipInfo.city}, {agent.ipInfo.country}
                                     </span>
                                   )}
-                              </p>
+                              </div>
                             )}
-                            <div className="flex items-center gap-3 text-xs text-muted-foreground/70">
+                            <div className="flex items-center gap-3 text-xs">
                               <span>Поллинг: {agent.pollingInterval}с</span>
                               <span>•</span>
                               <span>Timeout: {agent.inactivityThreshold}с</span>
                             </div>
                           </div>
                         </div>
-                        <div className="text-right space-y-2">
+                        <div className="text-right space-y-1">
                           {agent.lastSeen && (
                             <div className="text-xs text-muted-foreground">
-                              <div className="font-medium">
-                                Последняя активность
-                              </div>
-                              <div>{formatDate(agent.lastSeen)}</div>
+                              <div>Последняя активность:</div>
+                              <div className="font-mono">{formatDate(agent.lastSeen)}</div>
                             </div>
                           )}
                           {agent.connectedAt && !agent.lastSeen && (
                             <div className="text-xs text-muted-foreground">
-                              <div className="font-medium">Подключён</div>
-                              <div>{formatDate(agent.connectedAt)}</div>
+                              <div>Подключён:</div>
+                              <div className="font-mono">{formatDate(agent.connectedAt)}</div>
                             </div>
                           )}
                         </div>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 ml-4">
                         {agent.ipInfo && (
                           <Button
                             variant="ghost"
                             size="icon"
                             onClick={() => toggleAgentExpanded(agent.id)}
+                            className="h-9 w-9"
                           >
                             {isExpanded ? (
-                              <IconChevronUp className="h-4 w-4" />
+                              <IconChevronUp className="h-5 w-5" />
                             ) : (
-                              <IconChevronDown className="h-4 w-4" />
+                              <IconChevronDown className="h-5 w-5" />
                             )}
                           </Button>
                         )}
@@ -402,19 +379,19 @@ export default function AgentsPage() {
                           variant="ghost"
                           size="icon"
                           onClick={() => handleDeleteAgent(agent.id)}
-                          className="text-red-500 hover:text-red-600 hover:bg-red-500/10"
+                          className="h-9 w-9 hover:bg-accent"
                         >
-                          <IconTrash className="h-4 w-4" />
+                          <IconTrash className="h-5 w-5" />
                         </Button>
                       </div>
                     </div>
 
                     {isExpanded && agent.ipInfo && (
-                      <div className="px-4 pb-4 pt-2 border-t bg-accent/20">
-                        <h4 className="text-sm font-semibold mb-3">
+                      <div className="px-6 pb-6 pt-4 border-t border-border">
+                        <h4 className="text-sm font-medium mb-4">
                           Информация об IP
                         </h4>
-                        <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div className="grid grid-cols-2 gap-4 text-sm">
                           <div>
                             <span className="text-muted-foreground">
                               IP адрес:

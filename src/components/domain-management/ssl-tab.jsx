@@ -106,14 +106,14 @@ export function SslTab({ domain, onUpdate }) {
   const renewalStatus = domain.httpProxy?.ssl?.renewalStatus;
 
   return (
-    <div className="space-y-4">
-      <Card className="border-0 shadow-lg">
-        <CardHeader className="border-b bg-gradient-to-r from-green-500/5 to-emerald-500/5">
-          <CardTitle className="text-xl flex items-center gap-2">
-            <IconShieldCheck className="h-5 w-5 text-green-500" />
+    <div className="space-y-6">
+      <Card className="border-border">
+        <CardHeader className="border-b border-border pb-6">
+          <CardTitle className="text-lg font-medium flex items-center gap-3">
+            <IconShieldCheck className="h-6 w-6 text-muted-foreground" />
             SSL/TLS Настройки
           </CardTitle>
-          <CardDescription className="mt-1.5">
+          <CardDescription className="mt-2">
             Управление SSL сертификатами для HTTPS терминации на агентах
           </CardDescription>
         </CardHeader>

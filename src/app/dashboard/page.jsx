@@ -98,206 +98,168 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 py-6 px-4 lg:px-6">
-      {/* Welcome Section */}
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">Добро пожаловать</h1>
-        <p className="text-muted-foreground">
-          Обзор вашей инфраструктуры и активности агентов
-        </p>
+    <div className="flex flex-col gap-8 p-8">
+      {/* Stats Grid - Large blocks */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Agents Block */}
+        <Link href="/dashboard/agents">
+          <Card className="hover:bg-accent transition-colors cursor-pointer border-border h-full">
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-3">
+                <IconRobot className="h-6 w-6 text-muted-foreground" />
+                <CardTitle className="text-lg font-medium">Агенты</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <div className="text-6xl font-bold mb-2">
+                  {stats.agents.active}
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Активных из {stats.agents.total} всего
+                </p>
+              </div>
+              <div className="flex items-center gap-4 pt-4 border-t border-border">
+                <div className="flex items-center gap-2">
+                  <IconActivity className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">{stats.agents.active} онлайн</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <IconClock className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">{stats.agents.inactive} неактивных</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+
+        {/* Proxies Block */}
+        <Link href="/dashboard/proxies">
+          <Card className="hover:bg-accent transition-colors cursor-pointer border-border h-full">
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-3">
+                <IconNetwork className="h-6 w-6 text-muted-foreground" />
+                <CardTitle className="text-lg font-medium">Прокси</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <div className="text-6xl font-bold mb-2">
+                  {stats.proxies.active}
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Активных из {stats.proxies.total} всего
+                </p>
+              </div>
+              <div className="flex items-center gap-4 pt-4 border-t border-border">
+                <div className="flex items-center gap-2">
+                  <IconWorld className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">TCP/UDP маршрутизация</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Link href="/dashboard/agents">
-          <Card className="hover:bg-accent/50 transition-all hover:scale-105 cursor-pointer border-green-500/20 hover:border-green-500/40">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Активные агенты
-              </CardTitle>
-              <div className="h-8 w-8 rounded-full bg-green-500/10 flex items-center justify-center">
-                <IconActivity className="h-4 w-4 text-green-500" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-500">
-                {stats.agents.active}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                из {stats.agents.total} агентов
-              </p>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="/dashboard/agents">
-          <Card className="hover:bg-accent/50 transition-all hover:scale-105 cursor-pointer border-yellow-500/20 hover:border-yellow-500/40">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Неактивные агенты
-              </CardTitle>
-              <div className="h-8 w-8 rounded-full bg-yellow-500/10 flex items-center justify-center">
-                <IconClock className="h-4 w-4 text-yellow-500" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-yellow-500">
-                {stats.agents.inactive}
-              </div>
-              <p className="text-xs text-muted-foreground">требуют внимания</p>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="/dashboard/proxies">
-          <Card className="hover:bg-accent/50 transition-all hover:scale-105 cursor-pointer border-blue-500/20 hover:border-blue-500/40">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Активные прокси
-              </CardTitle>
-              <div className="h-8 w-8 rounded-full bg-blue-500/10 flex items-center justify-center">
-                <IconNetwork className="h-4 w-4 text-blue-500" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-500">
-                {stats.proxies.active}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                из {stats.proxies.total} прокси
-              </p>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Card className="border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-transparent">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Производительность
-            </CardTitle>
-            <div className="h-8 w-8 rounded-full bg-purple-500/10 flex items-center justify-center">
-              <IconTrendingUp className="h-4 w-4 text-purple-500" />
+      {/* Two Column Layout */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Recent Activity */}
+        <Card className="border-border">
+          <CardHeader className="pb-4">
+            <div className="flex items-center gap-3">
+              <IconActivity className="h-6 w-6 text-muted-foreground" />
+              <CardTitle className="text-lg font-medium">Активность</CardTitle>
             </div>
+            <CardDescription className="mt-2">
+              Последние обновления системы
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-purple-500">98%</div>
-            <p className="text-xs text-muted-foreground">
-              среднее время работы
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Recent Activity */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <IconActivity className="h-5 w-5" />
-            Последняя активность
-          </CardTitle>
-          <CardDescription>
-            Обновления агентов и прокси-конфигураций
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Загрузка...
-            </div>
-          ) : recentActivity.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Нет активности
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {recentActivity.map((item, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center gap-4 p-3 rounded-lg hover:bg-accent/50 transition-colors"
-                >
+            {loading ? (
+              <div className="text-center py-12 text-muted-foreground">
+                Загрузка...
+              </div>
+            ) : recentActivity.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                Нет активности
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {recentActivity.slice(0, 6).map((item, idx) => (
                   <div
-                    className={`h-10 w-10 rounded-full flex items-center justify-center ${
-                      item.type === "agent"
-                        ? "bg-green-500/10"
-                        : "bg-blue-500/10"
-                    }`}
+                    key={idx}
+                    className="flex items-start gap-4 p-4 rounded-lg hover:bg-accent transition-colors"
                   >
                     {item.type === "agent" ? (
-                      <IconRobot
-                        className={`h-5 w-5 ${item.status === "active" ? "text-green-500" : "text-yellow-500"}`}
-                      />
+                      <IconRobot className="h-5 w-5 text-muted-foreground mt-0.5" />
                     ) : (
-                      <IconNetwork
-                        className={`h-5 w-5 ${item.status === "active" ? "text-blue-500" : "text-zinc-500"}`}
-                      />
+                      <IconNetwork className="h-5 w-5 text-muted-foreground mt-0.5" />
                     )}
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <p className="font-medium truncate">{item.title}</p>
+                      <p className="text-sm text-muted-foreground truncate">
+                        {item.route || (
+                          <>
+                            {item.ip && (
+                              <>
+                                <IconWorld className="inline h-3 w-3 mr-1" />
+                                {item.ip}
+                              </>
+                            )}
+                            {item.location && ` • ${item.location}`}
+                          </>
+                        )}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatTimeAgo(item.time)}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{item.title}</p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {item.route || (
-                        <>
-                          {item.ip && (
-                            <>
-                              <IconWorld className="inline h-3 w-3 mr-1" />
-                              {item.ip}
-                            </>
-                          )}
-                          {item.location && ` • ${item.location}`}
-                        </>
-                      )}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <span
-                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                        item.status === "active"
-                          ? "bg-green-500/10 text-green-500"
-                          : "bg-yellow-500/10 text-yellow-500"
-                      }`}
-                    >
-                      {item.status === "active" ? "Активен" : "Неактивен"}
-                    </span>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {formatTimeAgo(item.time)}
-                    </p>
-                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Quick Actions */}
+        <div className="flex flex-col gap-6">
+          <Link href="/dashboard/agents" className="flex-1">
+            <Card className="hover:bg-accent transition-colors cursor-pointer border-border h-full">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-3">
+                  <IconRobot className="h-6 w-6 text-muted-foreground" />
+                  <CardTitle className="text-lg font-medium">
+                    Управление агентами
+                  </CardTitle>
                 </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Добавляйте, мониторьте и управляйте вашими агентами
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
 
-      {/* Quick Actions */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <Link href="/dashboard/agents">
-          <Card className="hover:bg-accent/50 transition-all hover:scale-[1.02] cursor-pointer group">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <IconRobot className="h-5 w-5 group-hover:text-green-500 transition-colors" />
-                Управление агентами
-              </CardTitle>
-              <CardDescription>
-                Добавляйте, мониторьте и управляйте вашими агентами
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        </Link>
-
-        <Link href="/dashboard/proxies">
-          <Card className="hover:bg-accent/50 transition-all hover:scale-[1.02] cursor-pointer group">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <IconNetwork className="h-5 w-5 group-hover:text-blue-500 transition-colors" />
-                Настройка прокси
-              </CardTitle>
-              <CardDescription>
-                Создавайте и управляйте TCP/UDP проксированием
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        </Link>
+          <Link href="/dashboard/proxies" className="flex-1">
+            <Card className="hover:bg-accent transition-colors cursor-pointer border-border h-full">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-3">
+                  <IconNetwork className="h-6 w-6 text-muted-foreground" />
+                  <CardTitle className="text-lg font-medium">
+                    Настройка прокси
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Создавайте и управляйте TCP/UDP проксированием
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+        </div>
       </div>
     </div>
   );

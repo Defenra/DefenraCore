@@ -50,21 +50,21 @@ export function GeoDnsTab({ domain, agents, onUpdate }) {
   };
 
   return (
-    <div className="space-y-4">
-      <Card className="border-0 shadow-lg">
-        <CardHeader className="border-b bg-gradient-to-r from-emerald-500/5 to-teal-500/5">
+    <div className="space-y-6">
+      <Card className="border-border">
+        <CardHeader className="border-b border-border pb-6">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-xl flex items-center gap-2">
-                <IconMapPin className="h-5 w-5 text-emerald-500" />
+              <CardTitle className="text-lg font-medium flex items-center gap-3">
+                <IconMapPin className="h-6 w-6 text-muted-foreground" />
                 GeoDNS Конфигурация
               </CardTitle>
-              <CardDescription className="mt-1.5">
+              <CardDescription className="mt-2">
                 Управление геолокационной маршрутизацией DNS запросов
               </CardDescription>
             </div>
-            <Button onClick={() => setShowAddLocation(true)}>
-              <IconPlus className="h-4 w-4 mr-2" />
+            <Button onClick={() => setShowAddLocation(true)} className="h-10">
+              <IconPlus className="h-5 w-5 mr-2" />
               Добавить локацию
             </Button>
           </div>
@@ -72,9 +72,9 @@ export function GeoDnsTab({ domain, agents, onUpdate }) {
 
         <CardContent className="p-6 space-y-6">
           {/* Info */}
-          <div className="border rounded-lg p-4 bg-emerald-500/5 border-emerald-500/20">
-            <div className="flex items-start gap-3">
-              <IconInfoCircle className="h-5 w-5 text-emerald-500 mt-0.5 flex-shrink-0" />
+          <div className="border border-border rounded-lg p-6">
+            <div className="flex items-start gap-4">
+              <IconInfoCircle className="h-6 w-6 text-muted-foreground flex-shrink-0" />
               <div className="space-y-2 text-sm">
                 <p className="font-medium text-foreground">
                   Как работает GeoDNS
