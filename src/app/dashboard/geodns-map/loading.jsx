@@ -1,5 +1,5 @@
-import { PageLoader } from "@/components/loading/page-loader";
+import { Loading } from "@/components/loading";
 
-export default function Loading() {
-  return <PageLoader />;
+export default function GeoDnsMapLoading() {
+  return <Loading variant="pulse" />;
 }

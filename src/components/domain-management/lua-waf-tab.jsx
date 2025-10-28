@@ -64,14 +64,14 @@ export function LuaWafTab({ domain, onUpdate }) {
   };
 
   return (
-    <div className="space-y-4">
-      <Card className="border-0 shadow-lg">
-        <CardHeader className="border-b bg-gradient-to-r from-purple-500/5 to-pink-500/5">
-          <CardTitle className="text-xl flex items-center gap-2">
-            <IconCode className="h-5 w-5 text-purple-500" />
+    <div className="space-y-6">
+      <Card className="border-border">
+        <CardHeader className="border-b border-border pb-6">
+          <CardTitle className="text-lg font-medium flex items-center gap-3">
+            <IconCode className="h-6 w-6 text-muted-foreground" />
             Lua WAF / Middleware
           </CardTitle>
-          <CardDescription className="mt-1.5">
+          <CardDescription className="mt-2">
             Напишите Lua скрипт для обработки запросов на edge агентах
           </CardDescription>
         </CardHeader>

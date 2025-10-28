@@ -1,12 +1,15 @@
 "use client";
 
 import {
+  IconChartBar,
   IconDashboard,
+  IconFileText,
   IconMapPin,
   IconNetwork,
   IconRobot,
   IconShieldLock,
   IconUserCircle,
+  IconUsers,
   IconWorld,
 } from "@tabler/icons-react";
 import { useSession } from "next-auth/react";
@@ -51,9 +54,19 @@ const navData = {
       icon: IconMapPin,
     },
     {
-      title: "Профиль",
-      url: "/dashboard/profile",
-      icon: IconUserCircle,
+      title: "Клиенты",
+      url: "/dashboard/clients",
+      icon: IconUsers,
+    },
+    {
+      title: "Статистика",
+      url: "/dashboard/statistics",
+      icon: IconChartBar,
+    },
+    {
+      title: "Логи",
+      url: "/dashboard/logs",
+      icon: IconFileText,
     },
   ],
 };
@@ -74,17 +87,14 @@ export function AppSidebar({ ...props }) {
       };
 
   return (
-    <Sidebar collapsible="offcanvas" {...props}>
-      <SidebarHeader>
+    <Sidebar collapsible="icon" {...props}>
+      <SidebarHeader className="border-b border-border">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              className="data-[slot=sidebar-menu-button]:!p-1.5"
-            >
-              <a href="/dashboard">
-                <IconShieldLock className="!size-5" />
-                <span className="text-base font-semibold">Defenra</span>
+            <SidebarMenuButton size="lg" asChild>
+              <a href="/dashboard" className="flex items-center gap-2">
+                <IconShieldLock className="h-5 w-5 shrink-0" />
+                <span className="text-sm font-semibold">Defenra</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -93,7 +103,7 @@ export function AppSidebar({ ...props }) {
       <SidebarContent>
         <NavMain items={navData.navMain} />
       </SidebarContent>
-      <SidebarFooter>
+      <SidebarFooter className="border-t border-border">
         <NavUser user={user} />
       </SidebarFooter>
     </Sidebar>

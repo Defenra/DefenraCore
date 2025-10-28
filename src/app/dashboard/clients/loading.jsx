@@ -1,5 +1,5 @@
 import { Loading } from "@/components/loading";
 
-export default function DashboardLoading() {
+export default function ClientsLoading() {
   return <Loading variant="pulse" />;
 }

@@ -51,23 +51,23 @@ export function DnsRecordsTab({
   };
 
   return (
-    <div className="space-y-4">
-      <Card className="border-0 shadow-lg">
+    <div className="space-y-6">
+      <Card className="border-border">
         <CardContent className="p-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-medium">DNS Записи</h3>
-            <Button onClick={handleAddRecord}>
-              <IconPlus className="h-4 w-4 mr-2" />
+            <Button onClick={handleAddRecord} className="h-10">
+              <IconPlus className="h-5 w-5 mr-2" />
               Добавить запись
             </Button>
           </div>
 
           {domain.dnsRecords?.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
+            <p className="text-center text-muted-foreground py-12">
               Нет DNS записей. Добавьте первую запись.
             </p>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {domain.dnsRecords?.map((record, index) => {
                 const canProxy = ["A", "AAAA", "CNAME"].includes(record.type);
                 const subdomain =
@@ -79,44 +79,44 @@ export function DnsRecordsTab({
                 return (
                   <div
                     key={index}
-                    className="border rounded-lg overflow-hidden hover:shadow-md transition-all"
+                    className="border border-border rounded-lg overflow-hidden transition-colors"
                   >
                     {/* Collapsed View */}
                     <div
-                      className="p-4 flex items-center justify-between cursor-pointer bg-card hover:bg-accent/50"
+                      className="p-5 flex items-center justify-between cursor-pointer hover:bg-accent"
                       onClick={() => onToggleExpand(index)}
                     >
-                      <div className="flex items-center gap-3 flex-1">
-                        <Badge variant="outline">{record.type}</Badge>
-                        <span className="font-mono text-sm font-medium">
+                      <div className="flex items-center gap-4 flex-1">
+                        <span className="text-xs text-muted-foreground font-mono w-16">{record.type}</span>
+                        <span className="font-mono text-sm">
                           {subdomain}
                         </span>
                         <span className="text-muted-foreground">→</span>
-                        <span className="font-mono text-sm">
+                        <span className="font-mono text-sm text-muted-foreground">
                           {record.value}
                         </span>
                         {canProxy &&
                           (record.httpProxyEnabled ? (
-                            <IconCloud className="h-4 w-4 text-orange-500" />
+                            <IconCloud className="h-5 w-5 text-muted-foreground" />
                           ) : (
-                            <IconCloudOff className="h-4 w-4 text-muted-foreground" />
+                            <IconCloudOff className="h-5 w-5 text-muted-foreground" />
                           ))}
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-4">
                         <span className="text-sm text-muted-foreground">
                           TTL: {record.ttl}s
                         </span>
                         {isExpanded ? (
-                          <IconChevronUp className="h-4 w-4" />
+                          <IconChevronUp className="h-5 w-5" />
                         ) : (
-                          <IconChevronDown className="h-4 w-4" />
+                          <IconChevronDown className="h-5 w-5" />
                         )}
                       </div>
                     </div>
 
                     {/* Expanded View */}
                     {isExpanded && (
-                      <div className="p-4 border-t bg-muted/20 space-y-4">
+                      <div className="p-6 border-t border-border space-y-6">
                         <div className="grid gap-4 sm:grid-cols-2">
                           <div className="space-y-2">
                             <label className="text-sm font-medium">Тип</label>

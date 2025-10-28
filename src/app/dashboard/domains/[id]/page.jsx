@@ -2,10 +2,12 @@
 
 import {
   IconArrowLeft,
+  IconCode,
   IconDeviceFloppy,
   IconInfoCircle,
   IconMapPin,
   IconNetwork,
+  IconShieldCheck,
   IconWorld,
 } from "@tabler/icons-react";
 import Link from "next/link";
@@ -18,6 +20,7 @@ import { LuaWafTab } from "@/components/domain-management/lua-waf-tab";
 import { SslTab } from "@/components/domain-management/ssl-tab";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Loading } from "@/components/loading";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAgents } from "@/hooks/useAgents";
 import { useDomain, useUpdateDomain } from "@/hooks/useDomains";
@@ -58,11 +61,7 @@ export default function DomainManagePage({ params }) {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">Загрузка...</div>
-      </div>
-    );
+    return <Loading />;
   }
 
   if (!domain) {
@@ -74,128 +73,135 @@ export default function DomainManagePage({ params }) {
   }
 
   return (
-    <div className="flex flex-col gap-6 py-6 px-4 lg:px-6">
+    <div className="flex flex-col gap-8 p-8">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="space-y-1 flex-1">
-          <div className="flex items-center gap-3">
-            <Link href="/dashboard/domains">
-              <Button variant="ghost" size="sm">
-                <IconArrowLeft className="h-4 w-4 mr-2" />
-                Назад
-              </Button>
-            </Link>
+        <div className="flex items-center gap-4 flex-1">
+          <Link href="/dashboard/domains">
+            <Button variant="ghost" size="icon" className="h-10 w-10">
+              <IconArrowLeft className="h-5 w-5" />
+            </Button>
+          </Link>
+          <div className="flex items-center gap-4">
+            <IconWorld className="h-8 w-8 text-muted-foreground" />
             <div>
-              <div className="flex items-center gap-2">
-                <IconWorld className="h-6 w-6 text-blue-500" />
-                <h1 className="text-3xl font-bold tracking-tight">
-                  {domain.domain}
-                </h1>
-                <Badge variant={domain.isActive ? "success" : "outline"}>
-                  {domain.isActive ? "Активен" : "Неактивен"}
-                </Badge>
-              </div>
+              <h1 className="text-2xl font-semibold">
+                {domain.domain}
+              </h1>
               <p className="text-sm text-muted-foreground mt-1">
-                {domain.description ||
-                  "Управление DNS записями и HTTP проксированием"}
+                {domain.description || "Управление доменом"}
               </p>
             </div>
           </div>
         </div>
-        <Button onClick={handleSave} disabled={updateDomain.isPending}>
-          <IconDeviceFloppy className="h-4 w-4 mr-2" />
+        <Button onClick={handleSave} disabled={updateDomain.isPending} className="h-10">
+          <IconDeviceFloppy className="h-5 w-5 mr-2" />
           {updateDomain.isPending ? "Сохранение..." : "Сохранить"}
         </Button>
       </div>
 
       {/* Tabs */}
       <Tabs defaultValue="dns" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-5">
-          <TabsTrigger value="dns" className="flex items-center gap-2">
-            <IconWorld className="h-4 w-4" />
-            <span className="hidden sm:inline">DNS записи</span>
-            <span className="sm:hidden">DNS</span>
-          </TabsTrigger>
-          <TabsTrigger value="geo" className="flex items-center gap-2">
-            <IconMapPin className="h-4 w-4" />
-            <span className="hidden sm:inline">География</span>
-            <span className="sm:hidden">Geo</span>
-          </TabsTrigger>
-          <TabsTrigger value="proxy" className="flex items-center gap-2">
-            <IconNetwork className="h-4 w-4" />
-            <span className="hidden sm:inline">HTTP Прокси</span>
-            <span className="sm:hidden">Proxy</span>
-          </TabsTrigger>
-          <TabsTrigger
-            value="ssl"
-            className="hidden lg:flex items-center gap-2"
-          >
-            SSL
-          </TabsTrigger>
-          <TabsTrigger
-            value="lua"
-            className="hidden lg:flex items-center gap-2"
-          >
-            Lua WAF
-          </TabsTrigger>
-        </TabsList>
+        <div className="grid grid-cols-[200px_1fr] gap-6">
+          {/* Sidebar Navigation */}
+          <TabsList className="flex flex-col h-fit gap-2 bg-transparent p-0">
+            <TabsTrigger 
+              value="dns" 
+              className="w-full justify-start gap-3 px-4 py-3 data-[state=active]:bg-accent"
+            >
+              <IconWorld className="h-5 w-5" />
+              <span>DNS записи</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="geo" 
+              className="w-full justify-start gap-3 px-4 py-3 data-[state=active]:bg-accent"
+            >
+              <IconMapPin className="h-5 w-5" />
+              <span>География</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="proxy" 
+              className="w-full justify-start gap-3 px-4 py-3 data-[state=active]:bg-accent"
+            >
+              <IconNetwork className="h-5 w-5" />
+              <span>Прокси</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="ssl" 
+              className="w-full justify-start gap-3 px-4 py-3 data-[state=active]:bg-accent"
+            >
+              <IconShieldCheck className="h-5 w-5" />
+              <span>SSL</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="lua" 
+              className="w-full justify-start gap-3 px-4 py-3 data-[state=active]:bg-accent"
+            >
+              <IconCode className="h-5 w-5" />
+              <span>WAF</span>
+            </TabsTrigger>
+          </TabsList>
 
-        {/* DNS Records Tab */}
-        <TabsContent value="dns" className="mt-6">
-          <DnsRecordsTab
-            domain={domain}
-            onUpdate={setDomain}
-            expandedRecords={expandedRecords}
-            onToggleExpand={toggleRecordExpand}
-          />
-        </TabsContent>
+          {/* Content Area */}
+          <div className="min-w-0">
+            {/* DNS Records Tab */}
+            <TabsContent value="dns" className="mt-0">
+              <DnsRecordsTab
+                domain={domain}
+                onUpdate={setDomain}
+                expandedRecords={expandedRecords}
+                onToggleExpand={toggleRecordExpand}
+              />
+            </TabsContent>
 
-        {/* GeoDNS Tab */}
-        <TabsContent value="geo" className="mt-6">
-          <GeoDnsTab domain={domain} agents={agents} onUpdate={setDomain} />
-        </TabsContent>
+            {/* GeoDNS Tab */}
+            <TabsContent value="geo" className="mt-0">
+              <GeoDnsTab domain={domain} agents={agents} onUpdate={setDomain} />
+            </TabsContent>
 
-        {/* HTTP Proxy Tab */}
-        <TabsContent value="proxy" className="mt-6">
-          <div className="space-y-4">
-            <div className="border rounded-lg p-4 bg-blue-500/5 border-blue-500/20">
-              <div className="flex items-start gap-3">
-                <IconInfoCircle className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
-                <div className="space-y-2 text-sm">
-                  <p className="font-medium text-foreground">
-                    Как работает проксирование
-                  </p>
-                  <ul className="text-muted-foreground space-y-1.5 text-xs">
-                    <li>• Клиент делает DNS запрос к вашему домену</li>
-                    <li>
-                      • Агенты (GeoDNS) определяют геолокацию клиента и отдают
-                      IP ближайшего агента
-                    </li>
-                    <li>
-                      • Трафик идёт на ближайший агент, который проксирует на
-                      реальный IP из DNS записи
-                    </li>
-                    <li>• Применяется SSL и Lua middleware (если настроены)</li>
-                  </ul>
-                  <p className="text-xs text-muted-foreground/80 mt-3">
-                    💡 Целевой IP указывается в поле "Значение" DNS записи.
-                    Агенты автоматически проксируют на него.
-                  </p>
+            {/* HTTP Proxy Tab */}
+            <TabsContent value="proxy" className="mt-0">
+              <div className="space-y-6">
+                <div className="border border-border rounded-lg p-6">
+                  <div className="flex items-start gap-4">
+                    <IconInfoCircle className="h-6 w-6 text-muted-foreground flex-shrink-0" />
+                    <div className="space-y-3">
+                      <p className="font-medium">
+                        Как работает проксирование
+                      </p>
+                      <ul className="text-muted-foreground space-y-2 text-sm">
+                        <li>• Клиент делает DNS запрос к вашему домену</li>
+                        <li>
+                          • Агенты (GeoDNS) определяют геолокацию клиента и отдают
+                          IP ближайшего агента
+                        </li>
+                        <li>
+                          • Трафик идёт на ближайший агент, который проксирует на
+                          реальный IP из DNS записи
+                        </li>
+                        <li>• Применяется SSL и Lua middleware (если настроены)</li>
+                      </ul>
+                      <p className="text-sm text-muted-foreground mt-4">
+                        💡 Целевой IP указывается в поле "Значение" DNS записи.
+                        Агенты автоматически проксируют на него.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            </TabsContent>
+
+            {/* SSL Tab */}
+            <TabsContent value="ssl" className="mt-0">
+              <SslTab domain={domain} onUpdate={setDomain} />
+            </TabsContent>
+
+            {/* Lua WAF Tab */}
+            <TabsContent value="lua" className="mt-0">
+              <LuaWafTab domain={domain} onUpdate={setDomain} />
+            </TabsContent>
           </div>
-        </TabsContent>
-
-        {/* SSL Tab */}
-        <TabsContent value="ssl" className="mt-6">
-          <SslTab domain={domain} onUpdate={setDomain} />
-        </TabsContent>
-
-        {/* Lua WAF Tab */}
-        <TabsContent value="lua" className="mt-6">
-          <LuaWafTab domain={domain} onUpdate={setDomain} />
-        </TabsContent>
+        </div>
       </Tabs>
     </div>
   );
