@@ -105,6 +105,68 @@ const DomainSchema = new mongoose.Schema(
         type: String,
         default: "",
       },
+      antiDDoS: {
+        enabled: {
+          type: Boolean,
+          default: false,
+        },
+        rateLimit: {
+          windowSeconds: {
+            type: Number,
+            default: 5,
+          },
+          maxRequests: {
+            type: Number,
+            default: 100,
+          },
+        },
+        blockDurationSeconds: {
+          type: Number,
+          default: 300,
+        },
+        slowloris: {
+          minContentLength: {
+            type: Number,
+            default: 128,
+          },
+          maxHeaderTimeoutSeconds: {
+            type: Number,
+            default: 20,
+          },
+          maxConnections: {
+            type: Number,
+            default: 1000,
+          },
+        },
+        jsChallenge: {
+          enabled: {
+            type: Boolean,
+            default: false,
+          },
+          cookieName: {
+            type: String,
+            default: "defenra_js_challenge",
+          },
+          ttlSeconds: {
+            type: Number,
+            default: 900,
+          },
+        },
+        logging: {
+          enabled: {
+            type: Boolean,
+            default: true,
+          },
+        },
+        ipWhitelist: {
+          type: [String],
+          default: [],
+        },
+        proxyIpHeaders: {
+          type: [String],
+          default: [],
+        },
+      },
     },
     dnsRecords: [DnsRecordSchema],
     userId: {
