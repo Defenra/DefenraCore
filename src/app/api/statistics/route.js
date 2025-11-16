@@ -14,13 +14,11 @@ export async function GET(request) {
 
     await connectDB();
 
-    // Получаем query параметры
     const { searchParams } = new URL(request.url);
     const timeRange = searchParams.get("timeRange") || "24h";
     const agentId = searchParams.get("agentId");
-    const resourceType = searchParams.get("resourceType"); // "proxy", "domain", или null (все)
+    const resourceType = searchParams.get("resourceType");
 
-    // Определяем временной диапазон
     const now = new Date();
     let startDate = new Date();
 
@@ -44,24 +42,18 @@ export async function GET(request) {
         startDate.setHours(now.getHours() - 24);
     }
 
-    // Строим запрос
     const query = {
       userId: session.user.id,
       timestamp: { $gte: startDate },
     };
 
-    if (agentId) {
-      query.agentId = agentId;
-    }
-
+    if (agentId) query.agentId = agentId;
     if (resourceType && ["proxy", "domain"].includes(resourceType)) {
       query.resourceType = resourceType;
     }
 
-    // Получаем статистику
     const stats = await TrafficStats.find(query).sort({ timestamp: -1 });
 
-    // Группируем данные по времени для графика
     const timeSeriesData = await TrafficStats.aggregate([
       { $match: query },
       {
@@ -84,7 +76,6 @@ export async function GET(request) {
       { $sort: { _id: 1 } },
     ]);
 
-    // Агрегируем данные
     const totalTraffic = stats.reduce((sum, s) => sum + s.totalBytes, 0);
     const inboundTraffic = stats.reduce((sum, s) => sum + s.inboundBytes, 0);
     const outboundTraffic = stats.reduce((sum, s) => sum + s.outboundBytes, 0);
@@ -94,16 +85,11 @@ export async function GET(request) {
       stats.length > 0 ? Math.round(totalResponseTime / stats.length) : 0;
     const totalErrors = stats.reduce((sum, s) => sum + s.errors, 0);
 
-    // Топ агентов по трафику
     const agentStats = {};
     for (const stat of stats) {
       const agentIdStr = stat.agentId.toString();
       if (!agentStats[agentIdStr]) {
-        agentStats[agentIdStr] = {
-          agentId: stat.agentId,
-          totalBytes: 0,
-          requests: 0,
-        };
+        agentStats[agentIdStr] = { agentId: stat.agentId, totalBytes: 0, requests: 0 };
       }
       agentStats[agentIdStr].totalBytes += stat.totalBytes;
       agentStats[agentIdStr].requests += stat.requests;
@@ -114,9 +100,7 @@ export async function GET(request) {
       .slice(0, 10)
       .map(([agentId]) => agentId);
 
-    const topAgents = await Agent.find({
-      _id: { $in: topAgentsIds },
-    }).select("name agentId");
+    const topAgents = await Agent.find({ _id: { $in: topAgentsIds } }).select("name agentId");
 
     const topAgentsList = topAgentsIds.map((agentId) => {
       const agent = topAgents.find((a) => a._id.toString() === agentId);
@@ -130,68 +114,30 @@ export async function GET(request) {
       };
     });
 
-    // Uptime (примерный расчет)
     const agents = await Agent.find({ userId: session.user.id });
     const activeAgents = agents.filter((a) => a.isActive).length;
     const uptime =
-      agents.length > 0
-        ? Math.round((activeAgents / agents.length) * 100 * 10) / 10
-        : 100;
+      agents.length > 0 ? Math.round((activeAgents / agents.length) * 100 * 10) / 10 : 100;
 
-    // Статистика по типам ресурсов
     const proxyStats = await TrafficStats.aggregate([
       {
-        $match: {
-          userId: session.user.id,
-          timestamp: { $gte: startDate },
-          resourceType: "proxy",
-        },
+        $match: { userId: session.user.id, timestamp: { $gte: startDate }, resourceType: "proxy" },
       },
-      {
-        $group: {
-          _id: null,
-          totalBytes: { $sum: "$totalBytes" },
-          requests: { $sum: "$requests" },
-        },
-      },
+      { $group: { _id: null, totalBytes: { $sum: "$totalBytes" }, requests: { $sum: "$requests" } } },
     ]);
 
     const domainStats = await TrafficStats.aggregate([
       {
-        $match: {
-          userId: session.user.id,
-          timestamp: { $gte: startDate },
-          resourceType: "domain",
-        },
+        $match: { userId: session.user.id, timestamp: { $gte: startDate }, resourceType: "domain" },
       },
-      {
-        $group: {
-          _id: null,
-          totalBytes: { $sum: "$totalBytes" },
-          requests: { $sum: "$requests" },
-        },
-      },
+      { $group: { _id: null, totalBytes: { $sum: "$totalBytes" }, requests: { $sum: "$requests" } } },
     ]);
 
     return NextResponse.json({
-      stats: {
-        totalTraffic,
-        inboundTraffic,
-        outboundTraffic,
-        requests: totalRequests,
-        avgResponseTime,
-        uptime,
-        errors: totalErrors,
-      },
+      stats: { totalTraffic, inboundTraffic, outboundTraffic, requests: totalRequests, avgResponseTime, uptime, errors: totalErrors },
       byType: {
-        proxy: {
-          totalBytes: proxyStats[0]?.totalBytes || 0,
-          requests: proxyStats[0]?.requests || 0,
-        },
-        domain: {
-          totalBytes: domainStats[0]?.totalBytes || 0,
-          requests: domainStats[0]?.requests || 0,
-        },
+        proxy: { totalBytes: proxyStats[0]?.totalBytes || 0, requests: proxyStats[0]?.requests || 0 },
+        domain: { totalBytes: domainStats[0]?.totalBytes || 0, requests: domainStats[0]?.requests || 0 },
       },
       topAgents: topAgentsList,
       timeSeries: timeSeriesData.map((item) => ({
@@ -205,71 +151,35 @@ export async function GET(request) {
     });
   } catch (error) {
     console.error("Statistics error:", error);
-    return NextResponse.json(
-      { error: "Ошибка при получении статистики" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Ошибка при получении статистики" }, { status: 500 });
   }
 }
 
-// POST для добавления статистики (вызывается агентом)
 export async function POST(request) {
   try {
     await connectDB();
-
-    // Agent authentication: check Authorization header first
     const authHeader = request.headers.get("authorization");
-    let agent = null;
-    let userId = null;
+    const body = await request.json();
 
+    // AGENT POST (Bearer token)
     if (authHeader && authHeader.startsWith("Bearer ")) {
-      // Agent authentication via Bearer token
-      const body = await request.json();
-      const { agentId } = body;
+      const { agentId, resourceType, resourceId, inboundBytes, outboundBytes, requests, responseTimeMs, errors } = body;
 
-      if (!agentId) {
-        return NextResponse.json(
-          { error: "agentId is required" },
-          { status: 400 }
-        );
-      }
-
-      agent = await Agent.findOne({ agentId });
-      if (!agent) {
-        return NextResponse.json({ error: "Agent not found" }, { status: 404 });
-      }
-
-      userId = agent.userId;
-
-      // Validate remaining fields
-      const {
-        resourceType,
-        resourceId,
-        inboundBytes,
-        outboundBytes,
-        requests,
-        responseTimeMs,
-        errors,
-      } = body;
-
-      if (!resourceType || !resourceId) {
-        return NextResponse.json(
-          { error: "resourceType and resourceId are required" },
-          { status: 400 }
-        );
+      if (!agentId || !resourceType || !resourceId) {
+        return NextResponse.json({ error: "agentId, resourceType и resourceId обязательны" }, { status: 400 });
       }
 
       if (!["proxy", "domain"].includes(resourceType)) {
-        return NextResponse.json(
-          { error: "resourceType must be 'proxy' or 'domain'" },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: "resourceType должен быть 'proxy' или 'domain'" }, { status: 400 });
       }
+
+      const agent = await Agent.findOne({ agentId });
+      if (!agent) return NextResponse.json({ error: "Agent not found" }, { status: 404 });
 
       const totalBytes = (inboundBytes || 0) + (outboundBytes || 0);
 
       const stats = await TrafficStats.create({
-        userId,
+        userId: agent.userId,
         agentId: agent._id,
         resourceType,
         resourceId,
@@ -285,47 +195,24 @@ export async function POST(request) {
       return NextResponse.json({ stats });
     }
 
-    // User session authentication (for UI)
+    // USER SESSION POST (UI)
     const session = await auth();
     if (!session || !session.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json();
-    const {
-      agentId,
-      resourceType,
-      resourceId,
-      inboundBytes,
-      outboundBytes,
-      requests,
-      responseTimeMs,
-      errors,
-    } = body;
+    const { agentId, resourceType, resourceId, inboundBytes, outboundBytes, requests, responseTimeMs, errors } = body;
 
     if (!agentId || !resourceType || !resourceId) {
-      return NextResponse.json(
-        { error: "agentId, resourceType и resourceId обязательны" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "agentId, resourceType и resourceId обязательны" }, { status: 400 });
     }
 
     if (!["proxy", "domain"].includes(resourceType)) {
-      return NextResponse.json(
-        { error: "resourceType должен быть 'proxy' или 'domain'" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "resourceType должен быть 'proxy' или 'domain'" }, { status: 400 });
     }
 
-    // Проверяем, что агент принадлежит пользователю
-    agent = await Agent.findOne({
-      _id: agentId,
-      userId: session.user.id,
-    });
-
-    if (!agent) {
-      return NextResponse.json({ error: "Агент не найден" }, { status: 404 });
-    }
+    const agent = await Agent.findOne({ _id: agentId, userId: session.user.id });
+    if (!agent) return NextResponse.json({ error: "Агент не найден" }, { status: 404 });
 
     const totalBytes = (inboundBytes || 0) + (outboundBytes || 0);
 
@@ -346,9 +233,6 @@ export async function POST(request) {
     return NextResponse.json({ stats });
   } catch (error) {
     console.error("Traffic stats create error:", error);
-    return NextResponse.json(
-      { error: "Failed to create statistics" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to create statistics" }, { status: 500 });
   }
 }
