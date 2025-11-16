@@ -8,6 +8,7 @@ import {
   IconMapPin,
   IconNetwork,
   IconShieldCheck,
+  IconShieldLock,
   IconWorld,
 } from "@tabler/icons-react";
 import Link from "next/link";
@@ -18,6 +19,7 @@ import { DnsRecordsTab } from "@/components/domain-management/dns-records-tab";
 import { GeoDnsTab } from "@/components/domain-management/geodns-tab";
 import { LuaWafTab } from "@/components/domain-management/lua-waf-tab";
 import { SslTab } from "@/components/domain-management/ssl-tab";
+import { AntiDDoSTab } from "@/components/domain-management/anti-ddos-tab";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/loading";
@@ -140,6 +142,13 @@ export default function DomainManagePage({ params }) {
               <IconCode className="h-5 w-5" />
               <span>WAF</span>
             </TabsTrigger>
+            <TabsTrigger 
+              value="antiddos" 
+              className="w-full justify-start gap-3 px-4 py-3 data-[state=active]:bg-accent"
+            >
+              <IconShieldLock className="h-5 w-5" />
+              <span>Anti-DDoS</span>
+            </TabsTrigger>
           </TabsList>
 
           {/* Content Area */}
@@ -199,6 +208,11 @@ export default function DomainManagePage({ params }) {
             {/* Lua WAF Tab */}
             <TabsContent value="lua" className="mt-0">
               <LuaWafTab domain={domain} onUpdate={setDomain} />
+            </TabsContent>
+
+            {/* Anti-DDoS Tab */}
+            <TabsContent value="antiddos" className="mt-0">
+              <AntiDDoSTab domain={domain} onUpdate={setDomain} />
             </TabsContent>
           </div>
         </div>

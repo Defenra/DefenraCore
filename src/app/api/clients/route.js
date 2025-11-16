@@ -75,13 +75,59 @@ export async function GET(request) {
 // POST для добавления/обновления клиента (вызывается агентом)
 export async function POST(request) {
   try {
-    const session = await auth();
+    await connectDB();
 
+    // Agent authentication: check Authorization header first
+    const authHeader = request.headers.get("authorization");
+    let agent = null;
+    let userId = null;
+
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      // Agent authentication via Bearer token
+      const body = await request.json();
+      const { ip, agentId, userAgent, country, city, countryCode } = body;
+
+      if (!ip || !agentId) {
+        return NextResponse.json(
+          { error: "ip and agentId are required" },
+          { status: 400 }
+        );
+      }
+
+      agent = await Agent.findOne({ agentId });
+      if (!agent) {
+        return NextResponse.json({ error: "Agent not found" }, { status: 404 });
+      }
+
+      userId = agent.userId;
+
+      // Update or create client
+      const client = await Client.findOneAndUpdate(
+        { userId, ip, agentId: agent._id },
+        {
+          $set: {
+            userAgent,
+            country,
+            city,
+            countryCode,
+            lastSeen: new Date(),
+          },
+          $inc: { connections: 1 },
+          $setOnInsert: {
+            firstSeen: new Date(),
+          },
+        },
+        { upsert: true, new: true }
+      );
+
+      return NextResponse.json({ client });
+    }
+
+    // User session authentication (for UI)
+    const session = await auth();
     if (!session || !session.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    await connectDB();
 
     const body = await request.json();
     const { ip, agentId, userAgent, country, city, countryCode } = body;
@@ -94,7 +140,7 @@ export async function POST(request) {
     }
 
     // Проверяем, что агент принадлежит пользователю
-    const agent = await Agent.findOne({
+    agent = await Agent.findOne({
       _id: agentId,
       userId: session.user.id,
     });
@@ -105,7 +151,7 @@ export async function POST(request) {
 
     // Обновляем или создаем клиента
     const client = await Client.findOneAndUpdate(
-      { userId: session.user.id, ip, agentId },
+      { userId: session.user.id, ip, agentId: agent._id },
       {
         $set: {
           userAgent,
@@ -126,7 +172,7 @@ export async function POST(request) {
   } catch (error) {
     console.error("Client create/update error:", error);
     return NextResponse.json(
-      { error: "Ошибка при обновлении клиента" },
+      { error: "Failed to update client" },
       { status: 500 }
     );
   }

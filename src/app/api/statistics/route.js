@@ -215,13 +215,81 @@ export async function GET(request) {
 // POST для добавления статистики (вызывается агентом)
 export async function POST(request) {
   try {
-    const session = await auth();
+    await connectDB();
 
+    // Agent authentication: check Authorization header first
+    const authHeader = request.headers.get("authorization");
+    let agent = null;
+    let userId = null;
+
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      // Agent authentication via Bearer token
+      const body = await request.json();
+      const { agentId } = body;
+
+      if (!agentId) {
+        return NextResponse.json(
+          { error: "agentId is required" },
+          { status: 400 }
+        );
+      }
+
+      agent = await Agent.findOne({ agentId });
+      if (!agent) {
+        return NextResponse.json({ error: "Agent not found" }, { status: 404 });
+      }
+
+      userId = agent.userId;
+
+      // Validate remaining fields
+      const {
+        resourceType,
+        resourceId,
+        inboundBytes,
+        outboundBytes,
+        requests,
+        responseTimeMs,
+        errors,
+      } = body;
+
+      if (!resourceType || !resourceId) {
+        return NextResponse.json(
+          { error: "resourceType and resourceId are required" },
+          { status: 400 }
+        );
+      }
+
+      if (!["proxy", "domain"].includes(resourceType)) {
+        return NextResponse.json(
+          { error: "resourceType must be 'proxy' or 'domain'" },
+          { status: 400 }
+        );
+      }
+
+      const totalBytes = (inboundBytes || 0) + (outboundBytes || 0);
+
+      const stats = await TrafficStats.create({
+        userId,
+        agentId: agent._id,
+        resourceType,
+        resourceId,
+        inboundBytes: inboundBytes || 0,
+        outboundBytes: outboundBytes || 0,
+        totalBytes,
+        requests: requests || 0,
+        responseTimeMs: responseTimeMs || 0,
+        errors: errors || 0,
+        timestamp: new Date(),
+      });
+
+      return NextResponse.json({ stats });
+    }
+
+    // User session authentication (for UI)
+    const session = await auth();
     if (!session || !session.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    await connectDB();
 
     const body = await request.json();
     const {
@@ -250,7 +318,7 @@ export async function POST(request) {
     }
 
     // Проверяем, что агент принадлежит пользователю
-    const agent = await Agent.findOne({
+    agent = await Agent.findOne({
       _id: agentId,
       userId: session.user.id,
     });
@@ -263,7 +331,7 @@ export async function POST(request) {
 
     const stats = await TrafficStats.create({
       userId: session.user.id,
-      agentId,
+      agentId: agent._id,
       resourceType,
       resourceId,
       inboundBytes: inboundBytes || 0,
@@ -279,7 +347,7 @@ export async function POST(request) {
   } catch (error) {
     console.error("Traffic stats create error:", error);
     return NextResponse.json(
-      { error: "Ошибка при создании статистики" },
+      { error: "Failed to create statistics" },
       { status: 500 }
     );
   }

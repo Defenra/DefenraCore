@@ -184,6 +184,7 @@ export async function POST(request) {
         // HTTP Proxy Configuration
         httpProxy: {
           type: d.httpProxy?.type || "both", // http, https, both
+          antiDDoS: d.httpProxy?.antiDDoS || null,
         },
 
         // SSL/TLS Configuration
