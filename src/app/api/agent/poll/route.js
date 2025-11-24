@@ -229,7 +229,7 @@ export async function POST(request) {
         sourcePort: proxy.sourcePort,
         destinationHost: proxy.destinationHost,
         destinationPort: proxy.destinationPort,
-        enabled: true,
+        enabled: proxy.isActive !== undefined ? proxy.isActive : true,
         proxyProtocol: proxy.proxyProtocol || false,
       })),
 
