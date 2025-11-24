@@ -28,6 +28,7 @@ export async function GET() {
         agentId: proxy.agentId,
         isActive: proxy.isActive,
         description: proxy.description,
+        proxyProtocol: proxy.proxyProtocol || false,
         createdAt: proxy.createdAt,
         updatedAt: proxy.updatedAt,
       })),

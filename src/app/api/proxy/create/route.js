@@ -23,6 +23,7 @@ export async function POST(request) {
       destinationPort,
       agentId,
       description,
+      proxyProtocol,
     } = body;
 
     if (!name || !type || !sourcePort || !destinationHost || !destinationPort) {
@@ -81,6 +82,7 @@ export async function POST(request) {
       destinationPort,
       agentId: agentId || null,
       description,
+      proxyProtocol: proxyProtocol || false,
       userId: session.user.id,
     });
 
@@ -96,6 +98,7 @@ export async function POST(request) {
         agentId: proxy.agentId,
         isActive: proxy.isActive,
         description: proxy.description,
+        proxyProtocol: proxy.proxyProtocol || false,
       },
     });
   } catch (error) {
