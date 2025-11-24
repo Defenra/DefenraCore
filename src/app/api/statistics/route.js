@@ -83,7 +83,11 @@ export async function GET(request) {
     const totalResponseTime = stats.reduce((sum, s) => sum + s.responseTimeMs, 0);
     const avgResponseTime =
       stats.length > 0 ? Math.round(totalResponseTime / stats.length) : 0;
-    const totalErrors = stats.reduce((sum, s) => sum + s.errors, 0);
+    const totalErrors = stats.reduce((sum, s) => sum + (s.errors || 0), 0);
+    const totalBlocked = stats.reduce((sum, s) => sum + (s.blockedRequests || 0), 0);
+    const totalRateLimitBlocks = stats.reduce((sum, s) => sum + (s.rateLimitBlocks || 0), 0);
+    const totalFirewallBlocks = stats.reduce((sum, s) => sum + (s.firewallBlocks || 0), 0);
+    const totalL4Blocks = stats.reduce((sum, s) => sum + (s.l4Blocks || 0), 0);
 
     const agentStats = {};
     for (const stat of stats) {
@@ -134,7 +138,19 @@ export async function GET(request) {
     ]);
 
     return NextResponse.json({
-      stats: { totalTraffic, inboundTraffic, outboundTraffic, requests: totalRequests, avgResponseTime, uptime, errors: totalErrors },
+      stats: {
+        totalTraffic,
+        inboundTraffic,
+        outboundTraffic,
+        requests: totalRequests,
+        avgResponseTime,
+        uptime,
+        errors: totalErrors,
+        blockedRequests: totalBlocked,
+        rateLimitBlocks: totalRateLimitBlocks,
+        firewallBlocks: totalFirewallBlocks,
+        l4Blocks: totalL4Blocks,
+      },
       byType: {
         proxy: { totalBytes: proxyStats[0]?.totalBytes || 0, requests: proxyStats[0]?.requests || 0 },
         domain: { totalBytes: domainStats[0]?.totalBytes || 0, requests: domainStats[0]?.requests || 0 },
@@ -163,7 +179,7 @@ export async function POST(request) {
 
     // AGENT POST (Bearer token)
     if (authHeader && authHeader.startsWith("Bearer ")) {
-      const { agentId, resourceType, resourceId, inboundBytes, outboundBytes, requests, responseTimeMs, errors } = body;
+      const { agentId, resourceType, resourceId, inboundBytes, outboundBytes, requests, responseTimeMs, errors, blockedRequests, rateLimitBlocks, firewallBlocks, l4Blocks } = body;
 
       if (!agentId || !resourceType || !resourceId) {
         return NextResponse.json({ error: "agentId, resourceType и resourceId обязательны" }, { status: 400 });
@@ -189,6 +205,10 @@ export async function POST(request) {
         requests: requests || 0,
         responseTimeMs: responseTimeMs || 0,
         errors: errors || 0,
+        blockedRequests: blockedRequests || 0,
+        rateLimitBlocks: rateLimitBlocks || 0,
+        firewallBlocks: firewallBlocks || 0,
+        l4Blocks: l4Blocks || 0,
         timestamp: new Date(),
       });
 
@@ -201,7 +221,7 @@ export async function POST(request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { agentId, resourceType, resourceId, inboundBytes, outboundBytes, requests, responseTimeMs, errors } = body;
+    const { agentId, resourceType, resourceId, inboundBytes, outboundBytes, requests, responseTimeMs, errors, blockedRequests, rateLimitBlocks, firewallBlocks, l4Blocks } = body;
 
     if (!agentId || !resourceType || !resourceId) {
       return NextResponse.json({ error: "agentId, resourceType и resourceId обязательны" }, { status: 400 });
@@ -216,19 +236,23 @@ export async function POST(request) {
 
     const totalBytes = (inboundBytes || 0) + (outboundBytes || 0);
 
-    const stats = await TrafficStats.create({
-      userId: session.user.id,
-      agentId: agent._id,
-      resourceType,
-      resourceId,
-      inboundBytes: inboundBytes || 0,
-      outboundBytes: outboundBytes || 0,
-      totalBytes,
-      requests: requests || 0,
-      responseTimeMs: responseTimeMs || 0,
-      errors: errors || 0,
-      timestamp: new Date(),
-    });
+      const stats = await TrafficStats.create({
+        userId: session.user.id,
+        agentId: agent._id,
+        resourceType,
+        resourceId,
+        inboundBytes: inboundBytes || 0,
+        outboundBytes: outboundBytes || 0,
+        totalBytes,
+        requests: requests || 0,
+        responseTimeMs: responseTimeMs || 0,
+        errors: errors || 0,
+        blockedRequests: blockedRequests || 0,
+        rateLimitBlocks: rateLimitBlocks || 0,
+        firewallBlocks: firewallBlocks || 0,
+        l4Blocks: l4Blocks || 0,
+        timestamp: new Date(),
+      });
 
     return NextResponse.json({ stats });
   } catch (error) {

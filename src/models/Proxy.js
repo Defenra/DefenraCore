@@ -44,6 +44,10 @@ const ProxySchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    proxyProtocol: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

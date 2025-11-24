@@ -50,11 +50,18 @@ async function updateProxy(request, { params }) {
 
     const { id } = await params;
     const body = await request.json();
-    const { isActive } = body;
+    const { isActive, proxyProtocol } = body;
 
-    if (typeof isActive !== "boolean") {
+    if (isActive !== undefined && typeof isActive !== "boolean") {
       return NextResponse.json(
         { error: "isActive должен быть boolean" },
+        { status: 400 },
+      );
+    }
+
+    if (proxyProtocol !== undefined && typeof proxyProtocol !== "boolean") {
+      return NextResponse.json(
+        { error: "proxyProtocol должен быть boolean" },
         { status: 400 },
       );
     }
@@ -68,7 +75,12 @@ async function updateProxy(request, { params }) {
       return NextResponse.json({ error: "Прокси не найден" }, { status: 404 });
     }
 
-    proxy.isActive = isActive;
+    if (isActive !== undefined) {
+      proxy.isActive = isActive;
+    }
+    if (proxyProtocol !== undefined) {
+      proxy.proxyProtocol = proxyProtocol;
+    }
     await proxy.save();
 
     return NextResponse.json({
@@ -76,6 +88,7 @@ async function updateProxy(request, { params }) {
       proxy: {
         id: proxy._id,
         isActive: proxy.isActive,
+        proxyProtocol: proxy.proxyProtocol || false,
       },
     });
   } catch (error) {
