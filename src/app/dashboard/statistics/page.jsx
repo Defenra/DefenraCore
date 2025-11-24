@@ -8,6 +8,7 @@ import {
   IconCloudUpload,
   IconNetwork,
   IconRefresh,
+  IconShieldLock,
   IconWorld,
 } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
@@ -68,6 +69,11 @@ export default function StatisticsPage() {
     requests: 0,
     avgResponseTime: 0,
     uptime: 0,
+    errors: 0,
+    blockedRequests: 0,
+    rateLimitBlocks: 0,
+    firewallBlocks: 0,
+    l4Blocks: 0,
   };
 
   const topAgents = data?.topAgents || [];
@@ -281,6 +287,66 @@ export default function StatisticsPage() {
           <CardContent>
             <div className="text-5xl font-bold mb-2">{stats.uptime}%</div>
             <p className="text-sm text-muted-foreground">Время работы</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Security Metrics */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="border-border">
+          <CardHeader className="pb-4">
+            <div className="flex items-center gap-3">
+              <IconShieldLock className="h-6 w-6 text-red-500" />
+              <CardTitle className="text-lg font-medium">Заблокировано</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-5xl font-bold mb-2">
+              {formatNumber(stats.blockedRequests || 0)}
+            </div>
+            <p className="text-sm text-muted-foreground">Запросов заблокировано</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-sm text-muted-foreground font-medium">
+              Rate Limit
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-5xl font-bold mb-2 text-orange-500">
+              {formatNumber(stats.rateLimitBlocks || 0)}
+            </div>
+            <p className="text-sm text-muted-foreground">Блокировок по лимиту</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-sm text-muted-foreground font-medium">
+              Firewall
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-5xl font-bold mb-2 text-red-500">
+              {formatNumber(stats.firewallBlocks || 0)}
+            </div>
+            <p className="text-sm text-muted-foreground">Системных банов</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-sm text-muted-foreground font-medium">
+              L4 Blocks
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-5xl font-bold mb-2 text-purple-500">
+              {formatNumber(stats.l4Blocks || 0)}
+            </div>
+            <p className="text-sm text-muted-foreground">Блокировок на L4</p>
           </CardContent>
         </Card>
       </div>

@@ -10,7 +10,7 @@
     "format": "biome format --write"
   },
   "engines": {
-    "node": "23"
+    "bun": ">=1.0.0"
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.11.0",

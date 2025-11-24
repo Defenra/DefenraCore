@@ -230,6 +230,7 @@ export async function POST(request) {
         destinationHost: proxy.destinationHost,
         destinationPort: proxy.destinationPort,
         enabled: true,
+        proxyProtocol: proxy.proxyProtocol || false,
       })),
 
       // Statistics
