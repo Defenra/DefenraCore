@@ -38,7 +38,7 @@ export async function DELETE(_request, { params }) {
   }
 }
 
-export async function PATCH(request, { params }) {
+async function updateProxy(request, { params }) {
   try {
     const session = await auth();
 
@@ -85,4 +85,12 @@ export async function PATCH(request, { params }) {
       { status: 500 },
     );
   }
+}
+
+export async function PUT(request, { params }) {
+  return updateProxy(request, { params });
+}
+
+export async function PATCH(request, { params }) {
+  return updateProxy(request, { params });
 }
