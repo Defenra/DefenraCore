@@ -54,6 +54,22 @@ const trafficStatsSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    blockedRequests: {
+      type: Number,
+      default: 0,
+    },
+    rateLimitBlocks: {
+      type: Number,
+      default: 0,
+    },
+    firewallBlocks: {
+      type: Number,
+      default: 0,
+    },
+    l4Blocks: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,
