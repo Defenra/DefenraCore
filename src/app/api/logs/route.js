@@ -89,7 +89,7 @@ export async function GET(request) {
     console.error("Logs list error:", error);
     return NextResponse.json(
       { error: "Ошибка при получении логов" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -111,7 +111,7 @@ export async function POST(request) {
     if (!agentId || !level || !message) {
       return NextResponse.json(
         { error: "agentId, level и message обязательны" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -119,7 +119,7 @@ export async function POST(request) {
     if (!["info", "warning", "error"].includes(level)) {
       return NextResponse.json(
         { error: "Неверный уровень лога" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -148,7 +148,7 @@ export async function POST(request) {
     console.error("Agent log create error:", error);
     return NextResponse.json(
       { error: "Ошибка при создании лога" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

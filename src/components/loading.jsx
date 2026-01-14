@@ -10,15 +10,15 @@ export function Loading({ variant = "pulse" }) {
       <div className="flex flex-col items-center gap-6">
         {/* Logo with animation */}
         <div className={variant === "pulse" ? "animate-pulse" : ""}>
-          <div 
+          <div
             className={`flex items-center gap-3 ${
-              variant === "color" 
-                ? "animate-[hue-rotate_3s_linear_infinite]" 
+              variant === "color"
+                ? "animate-[hue-rotate_3s_linear_infinite]"
                 : ""
             }`}
           >
-            <IconShieldLock 
-              className="h-16 w-16 text-foreground" 
+            <IconShieldLock
+              className="h-16 w-16 text-foreground"
               strokeWidth={1.5}
             />
             <div className="flex flex-col">
@@ -30,9 +30,7 @@ export function Loading({ variant = "pulse" }) {
         </div>
 
         {/* Version */}
-        <div className="text-sm text-muted-foreground">
-          v{version}
-        </div>
+        <div className="text-sm text-muted-foreground">v{version}</div>
 
         {/* Loading dots */}
         <div className="flex gap-2">

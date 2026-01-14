@@ -32,10 +32,15 @@ export async function GET(request) {
       .limit(limit);
 
     // Статистика
-    const totalClients = await Client.countDocuments({ userId: session.user.id });
-    const activeConnections = clients.reduce((sum, c) => sum + c.connections, 0);
+    const totalClients = await Client.countDocuments({
+      userId: session.user.id,
+    });
+    const activeConnections = clients.reduce(
+      (sum, c) => sum + c.connections,
+      0,
+    );
     const uniqueCountries = new Set(
-      clients.map((c) => c.country).filter(Boolean)
+      clients.map((c) => c.country).filter(Boolean),
     ).size;
 
     return NextResponse.json({
@@ -67,7 +72,7 @@ export async function GET(request) {
     console.error("Clients list error:", error);
     return NextResponse.json(
       { error: "Ошибка при получении списка клиентов" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -90,7 +95,7 @@ export async function POST(request) {
       if (!ip || !agentId) {
         return NextResponse.json(
           { error: "ip and agentId are required" },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -117,7 +122,7 @@ export async function POST(request) {
             firstSeen: new Date(),
           },
         },
-        { upsert: true, new: true }
+        { upsert: true, new: true },
       );
 
       return NextResponse.json({ client });
@@ -135,7 +140,7 @@ export async function POST(request) {
     if (!ip || !agentId) {
       return NextResponse.json(
         { error: "IP и agentId обязательны" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -165,7 +170,7 @@ export async function POST(request) {
           firstSeen: new Date(),
         },
       },
-      { upsert: true, new: true }
+      { upsert: true, new: true },
     );
 
     return NextResponse.json({ client });
@@ -173,7 +178,7 @@ export async function POST(request) {
     console.error("Client create/update error:", error);
     return NextResponse.json(
       { error: "Failed to update client" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

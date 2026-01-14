@@ -87,10 +87,10 @@ export function DnsRecordsTab({
                       onClick={() => onToggleExpand(index)}
                     >
                       <div className="flex items-center gap-4 flex-1">
-                        <span className="text-xs text-muted-foreground font-mono w-16">{record.type}</span>
-                        <span className="font-mono text-sm">
-                          {subdomain}
+                        <span className="text-xs text-muted-foreground font-mono w-16">
+                          {record.type}
                         </span>
+                        <span className="font-mono text-sm">{subdomain}</span>
                         <span className="text-muted-foreground">→</span>
                         <span className="font-mono text-sm text-muted-foreground">
                           {record.value}

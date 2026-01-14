@@ -73,14 +73,19 @@ const trafficStatsSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Индексы для агрегации по времени и типу ресурса
 trafficStatsSchema.index({ userId: 1, timestamp: -1 });
 trafficStatsSchema.index({ userId: 1, agentId: 1, timestamp: -1 });
 trafficStatsSchema.index({ userId: 1, resourceType: 1, timestamp: -1 });
-trafficStatsSchema.index({ userId: 1, resourceType: 1, resourceId: 1, timestamp: -1 });
+trafficStatsSchema.index({
+  userId: 1,
+  resourceType: 1,
+  resourceId: 1,
+  timestamp: -1,
+});
 
 const TrafficStats =
   mongoose.models.TrafficStats ||

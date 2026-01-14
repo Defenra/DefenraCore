@@ -273,7 +273,9 @@ export default function StatisticsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-5xl font-bold mb-2">{stats.avgResponseTime}</div>
+            <div className="text-5xl font-bold mb-2">
+              {stats.avgResponseTime}
+            </div>
             <p className="text-sm text-muted-foreground">миллисекунд</p>
           </CardContent>
         </Card>
@@ -297,14 +299,18 @@ export default function StatisticsPage() {
           <CardHeader className="pb-4">
             <div className="flex items-center gap-3">
               <IconShieldLock className="h-6 w-6 text-red-500" />
-              <CardTitle className="text-lg font-medium">Заблокировано</CardTitle>
+              <CardTitle className="text-lg font-medium">
+                Заблокировано
+              </CardTitle>
             </div>
           </CardHeader>
           <CardContent>
             <div className="text-5xl font-bold mb-2">
               {formatNumber(stats.blockedRequests || 0)}
             </div>
-            <p className="text-sm text-muted-foreground">Запросов заблокировано</p>
+            <p className="text-sm text-muted-foreground">
+              Запросов заблокировано
+            </p>
           </CardContent>
         </Card>
 
@@ -318,7 +324,9 @@ export default function StatisticsPage() {
             <div className="text-5xl font-bold mb-2 text-orange-500">
               {formatNumber(stats.rateLimitBlocks || 0)}
             </div>
-            <p className="text-sm text-muted-foreground">Блокировок по лимиту</p>
+            <p className="text-sm text-muted-foreground">
+              Блокировок по лимиту
+            </p>
           </CardContent>
         </Card>
 
@@ -354,9 +362,7 @@ export default function StatisticsPage() {
       {/* Traffic Chart */}
       <Card className="border-border">
         <CardHeader className="pb-6">
-          <CardTitle className="text-lg font-medium">
-            График трафика
-          </CardTitle>
+          <CardTitle className="text-lg font-medium">График трафика</CardTitle>
           <CardDescription>
             Визуализация передачи данных по времени
           </CardDescription>
@@ -382,16 +388,31 @@ export default function StatisticsPage() {
                   margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
                 >
                   <defs>
-                    <linearGradient id="colorInbound" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient
+                      id="colorInbound"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
                       <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
                       <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
                     </linearGradient>
-                    <linearGradient id="colorOutbound" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient
+                      id="colorOutbound"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
                       <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3} />
                       <stop offset="95%" stopColor="#06b6d4" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    className="stroke-muted"
+                  />
                   <XAxis
                     dataKey="time"
                     className="text-xs text-muted-foreground"

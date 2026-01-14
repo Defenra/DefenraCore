@@ -188,16 +188,16 @@ export function SslTab({ domain, onUpdate }) {
                   <li>• Core creates HTTP challenge and saves to database</li>
                   <li>• Agents receive challenge via Poll API</li>
                   <li>
-                    • Let's Encrypt requests:
-                    http://{domain.domain}/.well-known/acme-challenge/TOKEN
+                    • Let's Encrypt requests: http://{domain.domain}
+                    /.well-known/acme-challenge/TOKEN
                   </li>
                   <li>• Agent responds with keyAuthorization via Lua WAF</li>
                   <li>• Certificate is issued and distributed to agents</li>
                   <li>• Auto-renewal happens 30 days before expiry</li>
                 </ul>
                 <p className="text-xs text-muted-foreground mt-3 pt-3 border-t border-blue-500/20">
-                  <strong>Requirements:</strong> Port 80 must be accessible.
-                  Lua WAF on agents handles /.well-known/acme-challenge/*
+                  <strong>Requirements:</strong> Port 80 must be accessible. Lua
+                  WAF on agents handles /.well-known/acme-challenge/*
                   automatically.
                 </p>
               </div>

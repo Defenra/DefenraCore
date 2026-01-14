@@ -38,7 +38,7 @@ const clientSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Индекс для быстрого поиска активных клиентов

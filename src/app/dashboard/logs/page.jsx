@@ -157,12 +157,8 @@ export default function LogsPage() {
       {/* Logs List */}
       <Card className="border-border">
         <CardHeader className="pb-6">
-          <CardTitle className="text-lg font-medium">
-            Журнал событий
-          </CardTitle>
-          <CardDescription>
-            Реальное время событий с агентов
-          </CardDescription>
+          <CardTitle className="text-lg font-medium">Журнал событий</CardTitle>
+          <CardDescription>Реальное время событий с агентов</CardDescription>
         </CardHeader>
         <CardContent>
           {logs.length === 0 ? (

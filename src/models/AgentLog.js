@@ -36,7 +36,7 @@ const agentLogSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Индекс для быстрого поиска логов

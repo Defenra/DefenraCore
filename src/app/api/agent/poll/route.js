@@ -195,7 +195,8 @@ export async function POST(request) {
           autoRenew: d.httpProxy?.ssl?.autoRenew || false,
           acmeHttpChallenge: {
             token: d.httpProxy?.ssl?.acmeHttpChallenge?.token || "",
-            keyAuthorization: d.httpProxy?.ssl?.acmeHttpChallenge?.keyAuthorization || "",
+            keyAuthorization:
+              d.httpProxy?.ssl?.acmeHttpChallenge?.keyAuthorization || "",
           },
         },
 

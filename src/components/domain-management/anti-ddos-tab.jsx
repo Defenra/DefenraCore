@@ -164,13 +164,34 @@ export function AntiDDoSTab({ domain, onUpdate }) {
                   Что включено
                 </p>
                 <ul className="space-y-1.5">
-                  <li>• <strong>L7 защита:</strong> Rate limit на IP с авто-блокировкой через iptables</li>
-                  <li>• <strong>L4 защита:</strong> Проверка TCP флагов (SYN flood, Xmas, NULL, FIN scan), лимиты соединений</li>
-                  <li>• <strong>Системные баны:</strong> Автоматические IP баны через iptables на уровне системы</li>
-                  <li>• <strong>Slowloris защита:</strong> Защита от медленных запросов</li>
-                  <li>• <strong>JS challenge:</strong> Cookie-based защита от ботов</li>
-                  <li>• <strong>Whitelist:</strong> Белый список IP (поддержка CIDR) и доверенных proxy-заголовков</li>
-                  <li>• <strong>Аналитика:</strong> Статистика блокировок и атак в реальном времени через /stats endpoint</li>
+                  <li>
+                    • <strong>L7 защита:</strong> Rate limit на IP с
+                    авто-блокировкой через iptables
+                  </li>
+                  <li>
+                    • <strong>L4 защита:</strong> Проверка TCP флагов (SYN
+                    flood, Xmas, NULL, FIN scan), лимиты соединений
+                  </li>
+                  <li>
+                    • <strong>Системные баны:</strong> Автоматические IP баны
+                    через iptables на уровне системы
+                  </li>
+                  <li>
+                    • <strong>Slowloris защита:</strong> Защита от медленных
+                    запросов
+                  </li>
+                  <li>
+                    • <strong>JS challenge:</strong> Cookie-based защита от
+                    ботов
+                  </li>
+                  <li>
+                    • <strong>Whitelist:</strong> Белый список IP (поддержка
+                    CIDR) и доверенных proxy-заголовков
+                  </li>
+                  <li>
+                    • <strong>Аналитика:</strong> Статистика блокировок и атак в
+                    реальном времени через /stats endpoint
+                  </li>
                 </ul>
               </div>
             </div>
@@ -240,10 +261,15 @@ export function AntiDDoSTab({ domain, onUpdate }) {
                   Защита на уровне пакетов
                 </p>
                 <ul className="space-y-1">
-                  <li>• Автоматическая проверка TCP флагов (SYN flood, Xmas, NULL, FIN scan)</li>
+                  <li>
+                    • Автоматическая проверка TCP флагов (SYN flood, Xmas, NULL,
+                    FIN scan)
+                  </li>
                   <li>• Лимиты одновременных соединений по IP</li>
                   <li>• Rate limiting на L4 (пакеты в секунду)</li>
-                  <li>• Автоматические баны через iptables при обнаружении атак</li>
+                  <li>
+                    • Автоматические баны через iptables при обнаружении атак
+                  </li>
                 </ul>
               </div>
             </div>
@@ -257,7 +283,10 @@ export function AntiDDoSTab({ domain, onUpdate }) {
                 <Input
                   type="number"
                   value={antiDDoS.slowloris.minContentLength}
-                  onChange={handleNumberChange(["slowloris", "minContentLength"])}
+                  onChange={handleNumberChange([
+                    "slowloris",
+                    "minContentLength",
+                  ])}
                   min={0}
                 />
               </div>

@@ -249,34 +249,34 @@ export default function AgentsPage() {
       <div className="grid gap-6 md:grid-cols-3">
         <Card className="border-border">
           <CardHeader className="pb-4">
-            <CardTitle className="text-sm text-muted-foreground font-medium">Активные</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground font-medium">
+              Активные
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-5xl font-bold mb-2">
-              {activeCount}
-            </div>
+            <div className="text-5xl font-bold mb-2">{activeCount}</div>
             <p className="text-sm text-muted-foreground">В сети</p>
           </CardContent>
         </Card>
         <Card className="border-border">
           <CardHeader className="pb-4">
-            <CardTitle className="text-sm text-muted-foreground font-medium">Неактивные</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground font-medium">
+              Неактивные
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-5xl font-bold mb-2">
-              {inactiveCount}
-            </div>
+            <div className="text-5xl font-bold mb-2">{inactiveCount}</div>
             <p className="text-sm text-muted-foreground">Требуют внимания</p>
           </CardContent>
         </Card>
         <Card className="border-border">
           <CardHeader className="pb-4">
-            <CardTitle className="text-sm text-muted-foreground font-medium">Ожидают</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground font-medium">
+              Ожидают
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-5xl font-bold mb-2">
-              {pendingCount}
-            </div>
+            <div className="text-5xl font-bold mb-2">{pendingCount}</div>
             <p className="text-sm text-muted-foreground">Подключения</p>
           </CardContent>
         </Card>
@@ -314,7 +314,11 @@ export default function AgentsPage() {
                             </h3>
                             <span className="text-xs text-muted-foreground">
                               {agent.statusText ||
-                                (agent.isActive ? "Активен" : agent.isConnected ? "Подключён" : "Ожидает")}
+                                (agent.isActive
+                                  ? "Активен"
+                                  : agent.isConnected
+                                    ? "Подключён"
+                                    : "Ожидает")}
                             </span>
                           </div>
                           <div className="text-sm text-muted-foreground space-y-2">
@@ -333,7 +337,8 @@ export default function AgentsPage() {
                                 {agent.ipInfo?.city &&
                                   agent.ipInfo?.country && (
                                     <span className="text-xs">
-                                      • {agent.ipInfo.city}, {agent.ipInfo.country}
+                                      • {agent.ipInfo.city},{" "}
+                                      {agent.ipInfo.country}
                                     </span>
                                   )}
                               </div>
@@ -349,13 +354,17 @@ export default function AgentsPage() {
                           {agent.lastSeen && (
                             <div className="text-xs text-muted-foreground">
                               <div>Последняя активность:</div>
-                              <div className="font-mono">{formatDate(agent.lastSeen)}</div>
+                              <div className="font-mono">
+                                {formatDate(agent.lastSeen)}
+                              </div>
                             </div>
                           )}
                           {agent.connectedAt && !agent.lastSeen && (
                             <div className="text-xs text-muted-foreground">
                               <div>Подключён:</div>
-                              <div className="font-mono">{formatDate(agent.connectedAt)}</div>
+                              <div className="font-mono">
+                                {formatDate(agent.connectedAt)}
+                              </div>
                             </div>
                           )}
                         </div>

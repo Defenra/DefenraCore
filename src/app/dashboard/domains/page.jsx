@@ -179,31 +179,31 @@ export default function DomainsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-5xl font-bold mb-2">
-              {activeCount}
-            </div>
-            <p className="text-sm text-muted-foreground">Настроено и работает</p>
+            <div className="text-5xl font-bold mb-2">{activeCount}</div>
+            <p className="text-sm text-muted-foreground">
+              Настроено и работает
+            </p>
           </CardContent>
         </Card>
         <Card className="border-border">
           <CardHeader className="pb-4">
-            <CardTitle className="text-sm text-muted-foreground font-medium">HTTP прокси</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground font-medium">
+              HTTP прокси
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-5xl font-bold mb-2">
-              {proxyEnabledCount}
-            </div>
+            <div className="text-5xl font-bold mb-2">{proxyEnabledCount}</div>
             <p className="text-sm text-muted-foreground">С проксированием</p>
           </CardContent>
         </Card>
         <Card className="border-border">
           <CardHeader className="pb-4">
-            <CardTitle className="text-sm text-muted-foreground font-medium">SSL защита</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground font-medium">
+              SSL защита
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-5xl font-bold mb-2">
-              {sslEnabledCount}
-            </div>
+            <div className="text-5xl font-bold mb-2">{sslEnabledCount}</div>
             <p className="text-sm text-muted-foreground">С сертификатами</p>
           </CardContent>
         </Card>

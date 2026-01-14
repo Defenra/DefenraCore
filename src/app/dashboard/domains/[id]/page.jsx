@@ -87,16 +87,18 @@ export default function DomainManagePage({ params }) {
           <div className="flex items-center gap-4">
             <IconWorld className="h-8 w-8 text-muted-foreground" />
             <div>
-              <h1 className="text-2xl font-semibold">
-                {domain.domain}
-              </h1>
+              <h1 className="text-2xl font-semibold">{domain.domain}</h1>
               <p className="text-sm text-muted-foreground mt-1">
                 {domain.description || "Управление доменом"}
               </p>
             </div>
           </div>
         </div>
-        <Button onClick={handleSave} disabled={updateDomain.isPending} className="h-10">
+        <Button
+          onClick={handleSave}
+          disabled={updateDomain.isPending}
+          className="h-10"
+        >
           <IconDeviceFloppy className="h-5 w-5 mr-2" />
           {updateDomain.isPending ? "Сохранение..." : "Сохранить"}
         </Button>
@@ -107,43 +109,43 @@ export default function DomainManagePage({ params }) {
         <div className="grid grid-cols-[200px_1fr] gap-6">
           {/* Sidebar Navigation */}
           <TabsList className="flex flex-col h-fit gap-2 bg-transparent p-0">
-            <TabsTrigger 
-              value="dns" 
+            <TabsTrigger
+              value="dns"
               className="w-full justify-start gap-3 px-4 py-3 data-[state=active]:bg-accent"
             >
               <IconWorld className="h-5 w-5" />
               <span>DNS записи</span>
             </TabsTrigger>
-            <TabsTrigger 
-              value="geo" 
+            <TabsTrigger
+              value="geo"
               className="w-full justify-start gap-3 px-4 py-3 data-[state=active]:bg-accent"
             >
               <IconMapPin className="h-5 w-5" />
               <span>География</span>
             </TabsTrigger>
-            <TabsTrigger 
-              value="proxy" 
+            <TabsTrigger
+              value="proxy"
               className="w-full justify-start gap-3 px-4 py-3 data-[state=active]:bg-accent"
             >
               <IconNetwork className="h-5 w-5" />
               <span>Прокси</span>
             </TabsTrigger>
-            <TabsTrigger 
-              value="ssl" 
+            <TabsTrigger
+              value="ssl"
               className="w-full justify-start gap-3 px-4 py-3 data-[state=active]:bg-accent"
             >
               <IconShieldCheck className="h-5 w-5" />
               <span>SSL</span>
             </TabsTrigger>
-            <TabsTrigger 
-              value="lua" 
+            <TabsTrigger
+              value="lua"
               className="w-full justify-start gap-3 px-4 py-3 data-[state=active]:bg-accent"
             >
               <IconCode className="h-5 w-5" />
               <span>WAF</span>
             </TabsTrigger>
-            <TabsTrigger 
-              value="antiddos" 
+            <TabsTrigger
+              value="antiddos"
               className="w-full justify-start gap-3 px-4 py-3 data-[state=active]:bg-accent"
             >
               <IconShieldLock className="h-5 w-5" />
@@ -175,20 +177,20 @@ export default function DomainManagePage({ params }) {
                   <div className="flex items-start gap-4">
                     <IconInfoCircle className="h-6 w-6 text-muted-foreground flex-shrink-0" />
                     <div className="space-y-3">
-                      <p className="font-medium">
-                        Как работает проксирование
-                      </p>
+                      <p className="font-medium">Как работает проксирование</p>
                       <ul className="text-muted-foreground space-y-2 text-sm">
                         <li>• Клиент делает DNS запрос к вашему домену</li>
                         <li>
-                          • Агенты (GeoDNS) определяют геолокацию клиента и отдают
-                          IP ближайшего агента
+                          • Агенты (GeoDNS) определяют геолокацию клиента и
+                          отдают IP ближайшего агента
                         </li>
                         <li>
-                          • Трафик идёт на ближайший агент, который проксирует на
-                          реальный IP из DNS записи
+                          • Трафик идёт на ближайший агент, который проксирует
+                          на реальный IP из DNS записи
                         </li>
-                        <li>• Применяется SSL и Lua middleware (если настроены)</li>
+                        <li>
+                          • Применяется SSL и Lua middleware (если настроены)
+                        </li>
                       </ul>
                       <p className="text-sm text-muted-foreground mt-4">
                         💡 Целевой IP указывается в поле "Значение" DNS записи.

@@ -126,7 +126,9 @@ export default function DashboardPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <IconClock className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{stats.agents.inactive} неактивных</span>
+                  <span className="text-sm">
+                    {stats.agents.inactive} неактивных
+                  </span>
                 </div>
               </div>
             </CardContent>

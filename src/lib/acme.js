@@ -20,8 +20,12 @@ async function setHttpChallenge(domain, token, keyAuthorization) {
 
   console.log(`[ACME] Setting HTTP challenge for ${domain}`);
   console.log(`[ACME] Token: ${token}`);
-  console.log(`[ACME] KeyAuthorization: ${keyAuthorization.substring(0, 30)}...`);
-  console.log(`[ACME] URL: http://${domain}/.well-known/acme-challenge/${token}`);
+  console.log(
+    `[ACME] KeyAuthorization: ${keyAuthorization.substring(0, 30)}...`,
+  );
+  console.log(
+    `[ACME] URL: http://${domain}/.well-known/acme-challenge/${token}`,
+  );
 
   // Save challenge to database
   domainDoc.httpProxy.ssl.acmeHttpChallenge = {
@@ -31,9 +35,11 @@ async function setHttpChallenge(domain, token, keyAuthorization) {
 
   // Inject ACME handler into Lua WAF code
   const userLuaCode = domainDoc.httpProxy.luaCode || "";
-  
-  console.log(`[ACME] Original Lua code length: ${userLuaCode.length} characters`);
-  
+
+  console.log(
+    `[ACME] Original Lua code length: ${userLuaCode.length} characters`,
+  );
+
   // Check if ACME handler is already injected (shouldn't be, but just in case)
   if (!userLuaCode.includes("-- BEGIN ACME AUTO-INJECT")) {
     const acmeHandler = `-- BEGIN ACME AUTO-INJECT (do not edit this section)
@@ -49,17 +55,21 @@ end
 -- END ACME AUTO-INJECT
 
 `;
-    
+
     domainDoc.httpProxy.luaCode = acmeHandler + userLuaCode;
     console.log(`[ACME] ✅ ACME handler injected into Lua WAF code`);
-    console.log(`[ACME] Modified Lua code length: ${domainDoc.httpProxy.luaCode.length} characters`);
-    
+    console.log(
+      `[ACME] Modified Lua code length: ${domainDoc.httpProxy.luaCode.length} characters`,
+    );
+
     // Log the final Lua script (first 500 chars for debugging)
     console.log(`[ACME] === Final Lua script (first 500 chars) ===`);
     console.log(domainDoc.httpProxy.luaCode.substring(0, 500));
     console.log(`[ACME] === End of Lua script preview ===`);
   } else {
-    console.log(`[ACME] ⚠️  ACME handler already exists in Lua code, skipping injection`);
+    console.log(
+      `[ACME] ⚠️  ACME handler already exists in Lua code, skipping injection`,
+    );
   }
 
   await domainDoc.save();
@@ -70,7 +80,9 @@ end
   if (verifyDoc.httpProxy.ssl.acmeHttpChallenge.token === token) {
     console.log(`[ACME] ✅ Verified: HTTP challenge exists in database`);
   } else {
-    console.error(`[ACME] ❌ ERROR: HTTP challenge NOT found in database after save!`);
+    console.error(
+      `[ACME] ❌ ERROR: HTTP challenge NOT found in database after save!`,
+    );
     throw new Error(`Failed to save HTTP challenge to database`);
   }
 
@@ -78,60 +90,77 @@ end
   const maxWaitTime = 90000; // 90 seconds max
   const checkInterval = 5000; // Check every 5 seconds
   const challengeAddedAt = Date.now();
-  
+
   const Agent = (await import("@/models/Agent")).default;
-  
+
   // Get all active agents that need to receive the challenge
   const activeAgents = await Agent.find({ isActive: true });
   const totalAgents = activeAgents.length;
-  
-  console.log(`[ACME] Waiting for ALL ${totalAgents} active agent(s) to poll and receive the HTTP challenge...`);
-  
+
+  console.log(
+    `[ACME] Waiting for ALL ${totalAgents} active agent(s) to poll and receive the HTTP challenge...`,
+  );
+
   if (totalAgents === 0) {
     console.log(`[ACME] ⚠️  No active agents found!`);
     console.log(`[ACME] Proceeding anyway, but verification will likely fail`);
   } else {
     let waited = 0;
     let allAgentsPolled = false;
-    
+
     while (waited < maxWaitTime) {
       await new Promise((resolve) => setTimeout(resolve, checkInterval));
       waited += checkInterval;
-      
+
       // Check how many active agents have polled after we added the challenge
       const agentsPolledAfter = await Agent.find({
         isActive: true,
-        lastSeen: { $gte: new Date(challengeAddedAt) }
+        lastSeen: { $gte: new Date(challengeAddedAt) },
       });
-      
+
       const polledCount = agentsPolledAfter.length;
-      
-      console.log(`[ACME] Progress: ${polledCount}/${totalAgents} agents polled (${Math.round(polledCount/totalAgents*100)}%)`);
-      
+
+      console.log(
+        `[ACME] Progress: ${polledCount}/${totalAgents} agents polled (${Math.round((polledCount / totalAgents) * 100)}%)`,
+      );
+
       if (polledCount >= totalAgents) {
         allAgentsPolled = true;
-        console.log(`[ACME] ✅ All ${totalAgents} agent(s) have polled after HTTP challenge was added`);
-        
+        console.log(
+          `[ACME] ✅ All ${totalAgents} agent(s) have polled after HTTP challenge was added`,
+        );
+
         // List which agents polled
         for (const agent of agentsPolledAfter) {
-          console.log(`[ACME]    ✓ ${agent.name} (last seen: ${agent.lastSeen.toISOString()})`);
+          console.log(
+            `[ACME]    ✓ ${agent.name} (last seen: ${agent.lastSeen.toISOString()})`,
+          );
         }
-        
+
         console.log(`[ACME] Waiting additional 5 seconds for propagation...`);
         await new Promise((resolve) => setTimeout(resolve, 5000));
         break;
       }
-      
+
       const remaining = Math.ceil((maxWaitTime - waited) / 1000);
-      if (waited % 15000 === 0) { // Log every 15 seconds
-        console.log(`[ACME] Still waiting for all agents to poll... (${remaining}s remaining)`);
+      if (waited % 15000 === 0) {
+        // Log every 15 seconds
+        console.log(
+          `[ACME] Still waiting for all agents to poll... (${remaining}s remaining)`,
+        );
       }
     }
-    
+
     if (!allAgentsPolled) {
-      console.log(`[ACME] ⚠️  Not all agents polled within ${maxWaitTime / 1000}s`);
-      console.log(`[ACME] Only ${agentsPolledAfter.length}/${totalAgents} agents received the challenge`);
-      console.log(`[ACME] Proceeding anyway, but verification may fail if Let's Encrypt queries an outdated agent`);
+      console.log(
+        `[ACME] ⚠️  Not all agents polled within ${maxWaitTime / 1000}s`,
+      );
+      console.log(
+        `[ACME] Only ${agentsPolledAfter.length}/${totalAgents} agents received the challenge`,
+      );
+      console.log(
+        `[ACME] Proceeding anyway, but verification may fail if Let's Encrypt queries an outdated agent`,
+      );
     }
   }
 }
@@ -146,7 +175,7 @@ async function removeHttpChallenge(domain) {
   }
 
   console.log(`[ACME] Removing HTTP challenge for ${domain}`);
-  
+
   domainDoc.httpProxy.ssl.acmeHttpChallenge = {
     token: "",
     keyAuthorization: "",
@@ -154,36 +183,44 @@ async function removeHttpChallenge(domain) {
 
   // Remove ACME handler from Lua WAF code
   const currentLuaCode = domainDoc.httpProxy.luaCode || "";
-  
-  console.log(`[ACME] Current Lua code length: ${currentLuaCode.length} characters`);
-  
+
+  console.log(
+    `[ACME] Current Lua code length: ${currentLuaCode.length} characters`,
+  );
+
   // Find and remove the auto-injected section
   const beginMarker = "-- BEGIN ACME AUTO-INJECT (do not edit this section)";
   const endMarker = "-- END ACME AUTO-INJECT";
-  
+
   const beginIndex = currentLuaCode.indexOf(beginMarker);
   const endIndex = currentLuaCode.indexOf(endMarker);
-  
+
   if (beginIndex !== -1 && endIndex !== -1) {
-    console.log(`[ACME] Found ACME handler at position ${beginIndex}-${endIndex + endMarker.length}`);
-    
+    console.log(
+      `[ACME] Found ACME handler at position ${beginIndex}-${endIndex + endMarker.length}`,
+    );
+
     // Remove the ACME handler section (including the end marker and following newline)
     const before = currentLuaCode.substring(0, beginIndex);
     const after = currentLuaCode.substring(endIndex + endMarker.length);
-    
+
     // Clean up: remove the newline after END marker if it exists
     const cleanedAfter = after.startsWith("\n") ? after.substring(1) : after;
-    
+
     domainDoc.httpProxy.luaCode = before + cleanedAfter;
     console.log(`[ACME] ✅ ACME handler removed from Lua WAF code`);
-    console.log(`[ACME] Restored Lua code length: ${domainDoc.httpProxy.luaCode.length} characters`);
-    
+    console.log(
+      `[ACME] Restored Lua code length: ${domainDoc.httpProxy.luaCode.length} characters`,
+    );
+
     // Log the restored Lua script (first 500 chars for debugging)
     console.log(`[ACME] === Restored Lua script (first 500 chars) ===`);
     console.log(domainDoc.httpProxy.luaCode.substring(0, 500));
     console.log(`[ACME] === End of Lua script preview ===`);
   } else {
-    console.log(`[ACME] ⚠️  ACME handler markers not found in Lua code, nothing to remove`);
+    console.log(
+      `[ACME] ⚠️  ACME handler markers not found in Lua code, nothing to remove`,
+    );
   }
 
   await domainDoc.save();
@@ -226,11 +263,15 @@ export async function issueCertificate(domain, email) {
 
         if (challenge.type === "http-01") {
           const token = challenge.token;
-          
+
           console.log(`[ACME] Setting up HTTP-01 challenge`);
           console.log(`[ACME] Token: ${token}`);
-          console.log(`[ACME] Challenge URL: http://${authz.identifier.value}/.well-known/acme-challenge/${token}`);
-          console.log(`[ACME] Expected response: ${keyAuthorization.substring(0, 30)}...`);
+          console.log(
+            `[ACME] Challenge URL: http://${authz.identifier.value}/.well-known/acme-challenge/${token}`,
+          );
+          console.log(
+            `[ACME] Expected response: ${keyAuthorization.substring(0, 30)}...`,
+          );
 
           await setHttpChallenge(domain, token, keyAuthorization);
         }
@@ -240,9 +281,11 @@ export async function issueCertificate(domain, email) {
 
         if (challenge.type === "http-01") {
           // Wait a bit before removing to ensure Let's Encrypt has verified
-          console.log(`[ACME] Waiting 5 seconds before removing HTTP challenge...`);
+          console.log(
+            `[ACME] Waiting 5 seconds before removing HTTP challenge...`,
+          );
           await new Promise((resolve) => setTimeout(resolve, 5000));
-          
+
           await removeHttpChallenge(domain);
         }
       },

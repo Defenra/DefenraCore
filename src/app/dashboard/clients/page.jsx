@@ -36,7 +36,7 @@ export default function ClientsPage() {
     (client) =>
       client.ip.includes(searchQuery) ||
       client.country?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      client.agent?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+      client.agent?.name?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   if (isLoading) {
@@ -107,7 +107,9 @@ export default function ClientsPage() {
             <div className="text-5xl font-bold mb-2">
               {stats.uniqueCountries}
             </div>
-            <p className="text-sm text-muted-foreground">Географических локаций</p>
+            <p className="text-sm text-muted-foreground">
+              Географических локаций
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -161,7 +163,9 @@ export default function ClientsPage() {
                           )}
                         </div>
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <span>Агент: {client.agent?.name || "Неизвестен"}</span>
+                          <span>
+                            Агент: {client.agent?.name || "Неизвестен"}
+                          </span>
                           <span>•</span>
                           <span>{client.connections} подключений</span>
                           <span>•</span>
