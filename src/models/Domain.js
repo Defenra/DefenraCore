@@ -53,6 +53,11 @@ const DomainSchema = new mongoose.Schema(
           type: Boolean,
           default: false,
         },
+        encryptionMode: {
+          type: String,
+          enum: ["off", "flexible", "full", "full_strict"],
+          default: "full_strict",
+        },
         certificate: {
           type: String,
           default: "",

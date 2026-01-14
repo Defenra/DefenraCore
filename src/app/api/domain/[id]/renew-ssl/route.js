@@ -12,7 +12,7 @@ export async function POST(_request, { params }) {
     }
 
     await connectDB();
-    const { id } = params;
+    const { id } = await params;
 
     const domain = await Domain.findOne({
       _id: id,

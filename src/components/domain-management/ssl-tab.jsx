@@ -279,6 +279,154 @@ export function SslTab({ domain, onUpdate }) {
             </label>
           </div>
 
+          {/* SSL Encryption Mode */}
+          {domain.httpProxy?.ssl?.enabled && (
+            <div className="space-y-3 border rounded-lg p-4 bg-gradient-to-r from-blue-500/5 to-cyan-500/5">
+              <div className="flex items-center gap-2">
+                <IconShieldCheck className="h-5 w-5 text-blue-500" />
+                <h3 className="font-medium text-sm">SSL/TLS Encryption Mode</h3>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Select the encryption mode that Defenra uses to connect to your
+                origin server
+              </p>
+
+              <div className="space-y-2">
+                {/* Full (Strict) */}
+                <label className="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-accent/50 transition-colors">
+                  <input
+                    type="radio"
+                    name="encryptionMode"
+                    value="full_strict"
+                    checked={
+                      (domain.httpProxy?.ssl?.encryptionMode ||
+                        "full_strict") === "full_strict"
+                    }
+                    onChange={(e) =>
+                      onUpdate({
+                        ...domain,
+                        httpProxy: {
+                          ...domain.httpProxy,
+                          ssl: {
+                            ...domain.httpProxy?.ssl,
+                            encryptionMode: e.target.value,
+                          },
+                        },
+                      })
+                    }
+                    className="mt-1"
+                  />
+                  <div className="flex-1">
+                    <p className="font-medium text-sm">Full (Strict)</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Enable encryption end-to-end and enforce validation on
+                      origin certificates. Use Defenra's Origin CA to generate
+                      certificates for your origin.
+                    </p>
+                  </div>
+                </label>
+
+                {/* Full */}
+                <label className="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-accent/50 transition-colors">
+                  <input
+                    type="radio"
+                    name="encryptionMode"
+                    value="full"
+                    checked={domain.httpProxy?.ssl?.encryptionMode === "full"}
+                    onChange={(e) =>
+                      onUpdate({
+                        ...domain,
+                        httpProxy: {
+                          ...domain.httpProxy,
+                          ssl: {
+                            ...domain.httpProxy?.ssl,
+                            encryptionMode: e.target.value,
+                          },
+                        },
+                      })
+                    }
+                    className="mt-1"
+                  />
+                  <div className="flex-1">
+                    <p className="font-medium text-sm">Full</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Enable encryption end-to-end. Use this mode when your
+                      origin server supports SSL certification but does not use
+                      a valid, publicly trusted certificate.
+                    </p>
+                  </div>
+                </label>
+
+                {/* Flexible */}
+                <label className="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-accent/50 transition-colors">
+                  <input
+                    type="radio"
+                    name="encryptionMode"
+                    value="flexible"
+                    checked={
+                      domain.httpProxy?.ssl?.encryptionMode === "flexible"
+                    }
+                    onChange={(e) =>
+                      onUpdate({
+                        ...domain,
+                        httpProxy: {
+                          ...domain.httpProxy,
+                          ssl: {
+                            ...domain.httpProxy?.ssl,
+                            encryptionMode: e.target.value,
+                          },
+                        },
+                      })
+                    }
+                    className="mt-1"
+                  />
+                  <div className="flex-1">
+                    <p className="font-medium text-sm">Flexible</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Enable encryption only between your visitors and Defenra.
+                      This will avoid browser security warnings, but all
+                      connections between Defenra and your origin are made
+                      through HTTP.
+                    </p>
+                  </div>
+                </label>
+
+                {/* Off */}
+                <label className="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-accent/50 transition-colors border-red-500/20 bg-red-500/5">
+                  <input
+                    type="radio"
+                    name="encryptionMode"
+                    value="off"
+                    checked={domain.httpProxy?.ssl?.encryptionMode === "off"}
+                    onChange={(e) =>
+                      onUpdate({
+                        ...domain,
+                        httpProxy: {
+                          ...domain.httpProxy,
+                          ssl: {
+                            ...domain.httpProxy?.ssl,
+                            encryptionMode: e.target.value,
+                          },
+                        },
+                      })
+                    }
+                    className="mt-1"
+                  />
+                  <div className="flex-1">
+                    <p className="font-medium text-sm text-red-500">
+                      Off (not secure)
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      No encryption applied. Turning off SSL disables HTTPS and
+                      causes browsers to show a warning that your website is not
+                      secure.
+                    </p>
+                  </div>
+                </label>
+              </div>
+            </div>
+          )}
+
           {/* Certificate Upload */}
           {domain.httpProxy?.ssl?.enabled && (
             <>
