@@ -263,8 +263,32 @@ export async function POST(request) {
 
       const totalBytes = (inboundBytes || 0) + (outboundBytes || 0);
 
-      // Для агрегированной статистики (resourceId = "all") используем агента как resourceId
-      const finalResourceId = resourceId === "all" ? agent._id : resourceId;
+      // Для прокси resourceId это порт (строка), нужно найти прокси по порту
+      let finalResourceId;
+      if (resourceType === "proxy" && resourceId) {
+        // Пытаемся найти прокси по порту
+        const ProxyModel = (await import("@/models/Proxy")).default;
+        const sourcePort = Number.parseInt(resourceId, 10);
+
+        if (!Number.isNaN(sourcePort)) {
+          const proxy = await ProxyModel.findOne({
+            userId: agent.userId,
+            sourcePort: sourcePort,
+          });
+
+          if (proxy) {
+            finalResourceId = proxy._id;
+          } else {
+            // Если прокси не найден, используем агента как fallback
+            finalResourceId = agent._id;
+          }
+        } else {
+          finalResourceId = agent._id;
+        }
+      } else {
+        // Для доменов или агрегированной статистики используем агента
+        finalResourceId = resourceId === "all" ? agent._id : resourceId;
+      }
 
       const stats = await TrafficStats.create({
         userId: agent.userId,

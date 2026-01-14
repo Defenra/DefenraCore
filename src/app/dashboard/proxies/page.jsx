@@ -7,6 +7,8 @@ import {
   IconToggleLeft,
   IconToggleRight,
   IconTrash,
+  IconUsers,
+  IconChartBar,
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -43,6 +45,7 @@ import {
   useProxies,
   useUpdateProxy,
 } from "@/hooks/useProxies";
+import { useProxyClients } from "@/hooks/useProxyClients";
 
 export default function ProxiesPage() {
   const {
@@ -57,6 +60,7 @@ export default function ProxiesPage() {
   const deleteProxy = useDeleteProxy();
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [selectedProxy, setSelectedProxy] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
     type: "tcp",
@@ -69,6 +73,24 @@ export default function ProxiesPage() {
 
   const agents = allAgents.filter((a) => a.isConnected);
   const loading = proxiesLoading;
+
+  // Загружаем клиентов для выбранного прокси
+  const { data: clientsData, isLoading: clientsLoading } = useProxyClients(
+    selectedProxy?.id,
+  );
+
+  const formatBytes = (bytes) => {
+    if (!bytes || bytes === 0) return "0 B";
+    const k = 1024;
+    const sizes = ["B", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return `${(bytes / Math.pow(k, i)).toFixed(2)} ${sizes[i]}`;
+  };
+
+  const formatDuration = (duration) => {
+    if (!duration) return "—";
+    return duration;
+  };
 
   const handleCreateProxy = async () => {
     if (
@@ -359,6 +381,14 @@ export default function ProxiesPage() {
                     <Button
                       variant="ghost"
                       size="icon"
+                      onClick={() => setSelectedProxy(proxy)}
+                      title="Просмотр клиентов"
+                    >
+                      <IconUsers className="h-5 w-5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       onClick={() =>
                         handleToggleProxy(proxy.id, proxy.isActive)
                       }
@@ -384,6 +414,114 @@ export default function ProxiesPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Диалог просмотра клиентов */}
+      <Dialog
+        open={!!selectedProxy}
+        onOpenChange={(open) => !open && setSelectedProxy(null)}
+      >
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Активные клиенты: {selectedProxy?.name}</DialogTitle>
+            <DialogDescription>
+              {selectedProxy?.type.toUpperCase()} порт{" "}
+              {selectedProxy?.sourcePort} → {selectedProxy?.destinationHost}:
+              {selectedProxy?.destinationPort}
+            </DialogDescription>
+          </DialogHeader>
+
+          {clientsLoading ? (
+            <div className="text-center py-8 text-muted-foreground">
+              Загрузка клиентов...
+            </div>
+          ) : !clientsData?.clients || clientsData.clients.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              Нет активных подключений
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-accent/50 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <IconUsers className="h-5 w-5 text-muted-foreground" />
+                  <span className="font-semibold">
+                    Всего клиентов: {clientsData.totalClients}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <IconChartBar className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">
+                    Общий трафик:{" "}
+                    {formatBytes(
+                      clientsData.clients.reduce(
+                        (sum, c) => sum + (c.total_bytes || 0),
+                        0,
+                      ),
+                    )}
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                {clientsData.clients.map((client, idx) => (
+                  <div
+                    key={idx}
+                    className="p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                  >
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div>
+                        <div className="text-xs text-muted-foreground mb-1">
+                          IP адрес
+                        </div>
+                        <div className="font-mono text-sm">{client.ip}</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-muted-foreground mb-1">
+                          Агент
+                        </div>
+                        <div className="text-sm">{client.agentName || "—"}</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-muted-foreground mb-1">
+                          Длительность
+                        </div>
+                        <div className="text-sm">
+                          {formatDuration(client.duration)}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-muted-foreground mb-1">
+                          Трафик
+                        </div>
+                        <div className="text-sm">
+                          {formatBytes(client.total_bytes)}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t">
+                      <div>
+                        <div className="text-xs text-muted-foreground mb-1">
+                          Отправлено
+                        </div>
+                        <div className="text-sm text-green-600">
+                          ↑ {formatBytes(client.bytes_sent)}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-muted-foreground mb-1">
+                          Получено
+                        </div>
+                        <div className="text-sm text-blue-600">
+                          ↓ {formatBytes(client.bytes_received)}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
