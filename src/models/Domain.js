@@ -201,6 +201,108 @@ const DomainSchema = new mongoose.Schema(
         ],
       },
     ],
+    // Page Rules - CloudFlare-like rules for specific URL patterns
+    pageRules: [
+      {
+        enabled: {
+          type: Boolean,
+          default: true,
+        },
+        priority: {
+          type: Number,
+          default: 1,
+        },
+        urlPattern: {
+          type: String,
+          required: true,
+        },
+        actions: {
+          // Security Level
+          securityLevel: {
+            type: String,
+            enum: [
+              "off",
+              "essentially_off",
+              "low",
+              "medium",
+              "high",
+              "under_attack",
+            ],
+            default: null,
+          },
+          // Cache Level
+          cacheLevel: {
+            type: String,
+            enum: [
+              "bypass",
+              "no_query_string",
+              "ignore_query_string",
+              "standard",
+              "cache_everything",
+            ],
+            default: null,
+          },
+          // Browser Cache TTL
+          browserCacheTtl: {
+            type: Number,
+            default: null,
+          },
+          // Edge Cache TTL
+          edgeCacheTtl: {
+            type: Number,
+            default: null,
+          },
+          // Always Use HTTPS
+          alwaysUseHttps: {
+            type: Boolean,
+            default: null,
+          },
+          // Forwarding URL (redirect)
+          forwardingUrl: {
+            statusCode: {
+              type: Number,
+              enum: [301, 302],
+              default: null,
+            },
+            url: {
+              type: String,
+              default: null,
+            },
+          },
+          // Disable Security (bypass WAF)
+          disableSecurity: {
+            type: Boolean,
+            default: null,
+          },
+          // Disable Rate Limiting
+          disableRateLimiting: {
+            type: Boolean,
+            default: null,
+          },
+          // Custom Headers
+          customHeaders: {
+            type: Map,
+            of: String,
+            default: null,
+          },
+          // IP Geolocation Header
+          ipGeolocationHeader: {
+            type: Boolean,
+            default: null,
+          },
+          // Origin Cache Control
+          originCacheControl: {
+            type: Boolean,
+            default: null,
+          },
+          // Resolve Override (change backend)
+          resolveOverride: {
+            type: String,
+            default: null,
+          },
+        },
+      },
+    ],
   },
   {
     timestamps: true,

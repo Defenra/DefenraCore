@@ -202,6 +202,27 @@ export async function POST(request) {
 
         // Lua WAF Code
         luaCode: d.httpProxy?.luaCode || null,
+
+        // Page Rules
+        pageRules: (d.pageRules || []).map((rule) => ({
+          enabled: rule.enabled !== undefined ? rule.enabled : true,
+          priority: rule.priority || 1,
+          urlPattern: rule.urlPattern,
+          actions: {
+            securityLevel: rule.actions?.securityLevel || null,
+            cacheLevel: rule.actions?.cacheLevel || null,
+            browserCacheTtl: rule.actions?.browserCacheTtl || null,
+            edgeCacheTtl: rule.actions?.edgeCacheTtl || null,
+            alwaysUseHttps: rule.actions?.alwaysUseHttps || null,
+            forwardingUrl: rule.actions?.forwardingUrl || null,
+            disableSecurity: rule.actions?.disableSecurity || null,
+            disableRateLimiting: rule.actions?.disableRateLimiting || null,
+            customHeaders: rule.actions?.customHeaders || null,
+            ipGeolocationHeader: rule.actions?.ipGeolocationHeader || null,
+            originCacheControl: rule.actions?.originCacheControl || null,
+            resolveOverride: rule.actions?.resolveOverride || null,
+          },
+        })),
       };
     });
 
