@@ -137,31 +137,33 @@ export default function AgentsPage() {
   const pendingCount = agents.filter((a) => !a.isConnected).length;
 
   return (
-    <div className="flex flex-col gap-8 p-8">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col gap-4 p-4 md:gap-6 md:p-6 lg:gap-8 lg:p-8">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold mb-2">Агенты</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="text-xl md:text-2xl font-semibold mb-1 md:mb-2">
+            Агенты
+          </h1>
+          <p className="text-xs md:text-sm text-muted-foreground">
             {agents.length} подключённых агентов
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-2 md:gap-3">
           <Button
             variant="outline"
             size="icon"
             onClick={() => refetch()}
             disabled={isFetching}
-            className="h-10 w-10"
+            className="h-9 w-9 md:h-10 md:w-10"
           >
             <IconRefresh
-              className={`h-5 w-5 ${isFetching ? "animate-spin" : ""}`}
+              className={`h-4 w-4 md:h-5 md:w-5 ${isFetching ? "animate-spin" : ""}`}
             />
           </Button>
           <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="h-10">
-                <IconPlus className="mr-2 h-5 w-5" />
-                Добавить агента
+              <Button className="h-9 md:h-10">
+                <IconPlus className="mr-1 md:mr-2 h-4 w-4 md:h-5 md:w-5" />
+                <span className="text-sm md:text-base">Добавить агента</span>
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -246,38 +248,48 @@ export default function AgentsPage() {
       </div>
 
       {/* Stats Row */}
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-3 md:gap-6">
         <Card className="border-border">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-sm text-muted-foreground font-medium">
+          <CardHeader className="pb-3 md:pb-4">
+            <CardTitle className="text-xs md:text-sm text-muted-foreground font-medium">
               Активные
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-5xl font-bold mb-2">{activeCount}</div>
-            <p className="text-sm text-muted-foreground">В сети</p>
+            <div className="text-3xl md:text-4xl lg:text-5xl font-bold mb-1 md:mb-2">
+              {activeCount}
+            </div>
+            <p className="text-xs md:text-sm text-muted-foreground">В сети</p>
           </CardContent>
         </Card>
         <Card className="border-border">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-sm text-muted-foreground font-medium">
+          <CardHeader className="pb-3 md:pb-4">
+            <CardTitle className="text-xs md:text-sm text-muted-foreground font-medium">
               Неактивные
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-5xl font-bold mb-2">{inactiveCount}</div>
-            <p className="text-sm text-muted-foreground">Требуют внимания</p>
+            <div className="text-3xl md:text-4xl lg:text-5xl font-bold mb-1 md:mb-2">
+              {inactiveCount}
+            </div>
+            <p className="text-xs md:text-sm text-muted-foreground">
+              Требуют внимания
+            </p>
           </CardContent>
         </Card>
         <Card className="border-border">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-sm text-muted-foreground font-medium">
+          <CardHeader className="pb-3 md:pb-4">
+            <CardTitle className="text-xs md:text-sm text-muted-foreground font-medium">
               Ожидают
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-5xl font-bold mb-2">{pendingCount}</div>
-            <p className="text-sm text-muted-foreground">Подключения</p>
+            <div className="text-3xl md:text-4xl lg:text-5xl font-bold mb-1 md:mb-2">
+              {pendingCount}
+            </div>
+            <p className="text-xs md:text-sm text-muted-foreground">
+              Подключения
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -296,7 +308,7 @@ export default function AgentsPage() {
               Нет подключённых агентов
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3 md:space-y-4">
               {agents.map((agent) => {
                 const isExpanded = expandedAgents.has(agent.id);
                 return (
@@ -304,12 +316,12 @@ export default function AgentsPage() {
                     key={agent.id}
                     className="border border-border rounded-lg hover:bg-accent/50 transition-colors"
                   >
-                    <div className="flex items-start justify-between p-6">
-                      <div className="flex items-start gap-4 flex-1">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between p-4 md:p-6 gap-3">
+                      <div className="flex items-start gap-3 md:gap-4 flex-1 min-w-0">
                         {getStatusIcon(agent)}
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-3 mb-3">
-                            <h3 className="font-medium text-lg">
+                          <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-2 md:mb-3">
+                            <h3 className="font-medium text-base md:text-lg">
                               {agent.name}
                             </h3>
                             <span className="text-xs text-muted-foreground">
@@ -321,39 +333,46 @@ export default function AgentsPage() {
                                     : "Ожидает")}
                             </span>
                           </div>
-                          <div className="text-sm text-muted-foreground space-y-2">
+                          <div className="text-xs md:text-sm text-muted-foreground space-y-1.5 md:space-y-2">
                             <div className="flex items-center gap-2">
                               <span className="text-xs">ID:</span>
-                              <span className="font-mono text-xs">
+                              <span className="font-mono text-xs break-all">
                                 {agent.agentId}
                               </span>
                             </div>
                             {agent.ipAddress && (
-                              <div className="flex items-center gap-2">
-                                <IconWorld className="h-4 w-4" />
-                                <span className="font-mono text-xs">
-                                  {agent.ipAddress}
-                                </span>
-                                {agent.ipInfo?.city &&
-                                  agent.ipInfo?.country && (
-                                    <span className="text-xs">
-                                      • {agent.ipInfo.city},{" "}
-                                      {agent.ipInfo.country}
-                                    </span>
-                                  )}
+                              <div className="flex items-start gap-2">
+                                <IconWorld className="h-4 w-4 shrink-0 mt-0.5" />
+                                <div className="flex flex-wrap items-center gap-1">
+                                  <span className="font-mono text-xs">
+                                    {agent.ipAddress}
+                                  </span>
+                                  {agent.ipInfo?.city &&
+                                    agent.ipInfo?.country && (
+                                      <span className="text-xs">
+                                        • {agent.ipInfo.city},{" "}
+                                        {agent.ipInfo.country}
+                                      </span>
+                                    )}
+                                </div>
                               </div>
                             )}
-                            <div className="flex items-center gap-3 text-xs">
+                            <div className="flex flex-wrap items-center gap-2 md:gap-3 text-xs">
                               <span>Поллинг: {agent.pollingInterval}с</span>
                               <span>•</span>
                               <span>Timeout: {agent.inactivityThreshold}с</span>
                             </div>
                           </div>
                         </div>
-                        <div className="text-right space-y-1">
+                      </div>
+                      <div className="flex items-center justify-between sm:flex-col sm:items-end gap-2">
+                        <div className="text-left sm:text-right space-y-1">
                           {agent.lastSeen && (
                             <div className="text-xs text-muted-foreground">
-                              <div>Последняя активность:</div>
+                              <div className="hidden sm:block">
+                                Последняя активность:
+                              </div>
+                              <div className="sm:hidden">Активность:</div>
                               <div className="font-mono">
                                 {formatDate(agent.lastSeen)}
                               </div>
@@ -368,39 +387,39 @@ export default function AgentsPage() {
                             </div>
                           )}
                         </div>
-                      </div>
-                      <div className="flex gap-2 ml-4">
-                        {agent.ipInfo && (
+                        <div className="flex gap-1 md:gap-2">
+                          {agent.ipInfo && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => toggleAgentExpanded(agent.id)}
+                              className="h-8 w-8 md:h-9 md:w-9"
+                            >
+                              {isExpanded ? (
+                                <IconChevronUp className="h-4 w-4 md:h-5 md:w-5" />
+                              ) : (
+                                <IconChevronDown className="h-4 w-4 md:h-5 md:w-5" />
+                              )}
+                            </Button>
+                          )}
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => toggleAgentExpanded(agent.id)}
-                            className="h-9 w-9"
+                            onClick={() => handleDeleteAgent(agent.id)}
+                            className="h-8 w-8 md:h-9 md:w-9 hover:bg-accent"
                           >
-                            {isExpanded ? (
-                              <IconChevronUp className="h-5 w-5" />
-                            ) : (
-                              <IconChevronDown className="h-5 w-5" />
-                            )}
+                            <IconTrash className="h-4 w-4 md:h-5 md:w-5" />
                           </Button>
-                        )}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteAgent(agent.id)}
-                          className="h-9 w-9 hover:bg-accent"
-                        >
-                          <IconTrash className="h-5 w-5" />
-                        </Button>
+                        </div>
                       </div>
                     </div>
 
                     {isExpanded && agent.ipInfo && (
-                      <div className="px-6 pb-6 pt-4 border-t border-border">
-                        <h4 className="text-sm font-medium mb-4">
+                      <div className="px-4 pb-4 pt-3 md:px-6 md:pb-6 md:pt-4 border-t border-border">
+                        <h4 className="text-sm font-medium mb-3 md:mb-4">
                           Информация об IP
                         </h4>
-                        <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 text-xs md:text-sm">
                           <div>
                             <span className="text-muted-foreground">
                               IP адрес:
@@ -455,11 +474,11 @@ export default function AgentsPage() {
                         </div>
 
                         {agent.ipHistory && agent.ipHistory.length > 0 && (
-                          <div className="mt-4 pt-4 border-t">
-                            <h4 className="text-sm font-semibold mb-2">
+                          <div className="mt-3 pt-3 md:mt-4 md:pt-4 border-t">
+                            <h4 className="text-xs md:text-sm font-semibold mb-2">
                               История IP ({agent.ipHistory.length})
                             </h4>
-                            <div className="space-y-2 max-h-40 overflow-y-auto">
+                            <div className="space-y-2 max-h-32 md:max-h-40 overflow-y-auto">
                               {agent.ipHistory
                                 .slice()
                                 .reverse()

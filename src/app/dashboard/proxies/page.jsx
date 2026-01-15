@@ -161,11 +161,11 @@ export default function ProxiesPage() {
   };
 
   return (
-    <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 md:px-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">TCP/UDP Прокси</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="text-xl md:text-2xl font-bold">TCP/UDP Прокси</h1>
+          <p className="text-xs md:text-sm text-muted-foreground">
             Управление проксированием портов
           </p>
         </div>
@@ -175,6 +175,7 @@ export default function ProxiesPage() {
             size="icon"
             onClick={() => refetch()}
             disabled={isFetching}
+            className="h-9 w-9 md:h-10 md:w-10"
           >
             <IconRefresh
               className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`}
@@ -182,20 +183,20 @@ export default function ProxiesPage() {
           </Button>
           <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
-                <IconPlus className="mr-2 h-4 w-4" />
-                Создать прокси
+              <Button className="h-9 md:h-10">
+                <IconPlus className="mr-1 md:mr-2 h-4 w-4" />
+                <span className="text-sm md:text-base">Создать прокси</span>
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Создать TCP/UDP прокси</DialogTitle>
                 <DialogDescription>
                   Настройте проксирование порта на агентах
                 </DialogDescription>
               </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-3 md:gap-4 py-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">Название *</Label>
                     <Input
@@ -226,7 +227,7 @@ export default function ProxiesPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="sourcePort">Порт источника *</Label>
                     <Input
@@ -340,18 +341,20 @@ export default function ProxiesPage() {
               Нет настроенных прокси
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3 md:space-y-4">
               {proxies.map((proxy) => (
                 <div
                   key={proxy.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 md:p-4 border rounded-lg hover:bg-accent/50 transition-colors gap-3"
                 >
-                  <div className="flex items-center gap-4 flex-1">
-                    <IconNetwork className="h-5 w-5 text-muted-foreground" />
-                    <div className="flex-1">
-                      <h3 className="font-semibold">{proxy.name}</h3>
-                      <div className="text-sm text-muted-foreground space-y-1">
-                        <p>
+                  <div className="flex items-start gap-3 md:gap-4 flex-1 min-w-0">
+                    <IconNetwork className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground shrink-0 mt-0.5" />
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-sm md:text-base mb-1">
+                        {proxy.name}
+                      </h3>
+                      <div className="text-xs md:text-sm text-muted-foreground space-y-1">
+                        <p className="break-all">
                           <span className="font-mono">
                             {proxy.type.toUpperCase()}
                           </span>{" "}
@@ -364,7 +367,9 @@ export default function ProxiesPage() {
                         )}
                       </div>
                     </div>
-                    <div className="text-right text-sm">
+                  </div>
+                  <div className="flex items-center justify-between sm:flex-col sm:items-end gap-2">
+                    <div className="text-left sm:text-right text-xs md:text-sm">
                       <div
                         className={
                           proxy.isActive ? "text-green-500" : "text-zinc-500"
@@ -376,37 +381,39 @@ export default function ProxiesPage() {
                         {formatDate(proxy.createdAt)}
                       </div>
                     </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setSelectedProxy(proxy)}
-                      title="Просмотр клиентов"
-                    >
-                      <IconUsers className="h-5 w-5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() =>
-                        handleToggleProxy(proxy.id, proxy.isActive)
-                      }
-                    >
-                      {proxy.isActive ? (
-                        <IconToggleRight className="h-5 w-5 text-green-500" />
-                      ) : (
-                        <IconToggleLeft className="h-5 w-5 text-zinc-500" />
-                      )}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDeleteProxy(proxy.id)}
-                      className="text-red-500 hover:text-red-600 hover:bg-red-500/10"
-                    >
-                      <IconTrash className="h-4 w-4" />
-                    </Button>
+                    <div className="flex gap-1 md:gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setSelectedProxy(proxy)}
+                        title="Просмотр клиентов"
+                        className="h-8 w-8 md:h-9 md:w-9"
+                      >
+                        <IconUsers className="h-4 w-4 md:h-5 md:w-5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() =>
+                          handleToggleProxy(proxy.id, proxy.isActive)
+                        }
+                        className="h-8 w-8 md:h-9 md:w-9"
+                      >
+                        {proxy.isActive ? (
+                          <IconToggleRight className="h-4 w-4 md:h-5 md:w-5 text-green-500" />
+                        ) : (
+                          <IconToggleLeft className="h-4 w-4 md:h-5 md:w-5 text-zinc-500" />
+                        )}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeleteProxy(proxy.id)}
+                        className="h-8 w-8 md:h-9 md:w-9 text-red-500 hover:text-red-600 hover:bg-red-500/10"
+                      >
+                        <IconTrash className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -420,10 +427,12 @@ export default function ProxiesPage() {
         open={!!selectedProxy}
         onOpenChange={(open) => !open && setSelectedProxy(null)}
       >
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Активные клиенты: {selectedProxy?.name}</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-base md:text-lg">
+              Активные клиенты: {selectedProxy?.name}
+            </DialogTitle>
+            <DialogDescription className="text-xs md:text-sm">
               {selectedProxy?.type.toUpperCase()} порт{" "}
               {selectedProxy?.sourcePort} → {selectedProxy?.destinationHost}:
               {selectedProxy?.destinationPort}
@@ -431,25 +440,25 @@ export default function ProxiesPage() {
           </DialogHeader>
 
           {clientsLoading ? (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="text-center py-8 text-muted-foreground text-sm">
               Загрузка клиентов...
             </div>
           ) : !clientsData?.clients || clientsData.clients.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="text-center py-8 text-muted-foreground text-sm">
               Нет активных подключений
             </div>
           ) : (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-accent/50 rounded-lg">
+            <div className="space-y-3 md:space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 md:p-4 bg-accent/50 rounded-lg gap-2">
                 <div className="flex items-center gap-2">
-                  <IconUsers className="h-5 w-5 text-muted-foreground" />
-                  <span className="font-semibold">
+                  <IconUsers className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground" />
+                  <span className="text-sm md:text-base font-semibold">
                     Всего клиентов: {clientsData.totalClients}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <IconChartBar className="h-5 w-5 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
+                  <IconChartBar className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground" />
+                  <span className="text-xs md:text-sm text-muted-foreground">
                     Общий трафик:{" "}
                     {formatBytes(
                       clientsData.clients.reduce(
@@ -465,26 +474,30 @@ export default function ProxiesPage() {
                 {clientsData.clients.map((client, idx) => (
                   <div
                     key={idx}
-                    className="p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                    className="p-3 md:p-4 border rounded-lg hover:bg-accent/50 transition-colors"
                   >
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                       <div>
                         <div className="text-xs text-muted-foreground mb-1">
                           IP адрес
                         </div>
-                        <div className="font-mono text-sm">{client.ip}</div>
+                        <div className="font-mono text-xs md:text-sm break-all">
+                          {client.ip}
+                        </div>
                       </div>
                       <div>
                         <div className="text-xs text-muted-foreground mb-1">
                           Агент
                         </div>
-                        <div className="text-sm">{client.agentName || "—"}</div>
+                        <div className="text-xs md:text-sm">
+                          {client.agentName || "—"}
+                        </div>
                       </div>
                       <div>
                         <div className="text-xs text-muted-foreground mb-1">
                           Длительность
                         </div>
-                        <div className="text-sm">
+                        <div className="text-xs md:text-sm">
                           {formatDuration(client.duration)}
                         </div>
                       </div>
@@ -492,17 +505,17 @@ export default function ProxiesPage() {
                         <div className="text-xs text-muted-foreground mb-1">
                           Трафик
                         </div>
-                        <div className="text-sm">
+                        <div className="text-xs md:text-sm">
                           {formatBytes(client.total_bytes)}
                         </div>
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t">
+                    <div className="grid grid-cols-2 gap-3 md:gap-4 mt-2 md:mt-3 pt-2 md:pt-3 border-t">
                       <div>
                         <div className="text-xs text-muted-foreground mb-1">
                           Отправлено
                         </div>
-                        <div className="text-sm text-green-600">
+                        <div className="text-xs md:text-sm text-green-600">
                           ↑ {formatBytes(client.bytes_sent)}
                         </div>
                       </div>
@@ -510,7 +523,7 @@ export default function ProxiesPage() {
                         <div className="text-xs text-muted-foreground mb-1">
                           Получено
                         </div>
-                        <div className="text-sm text-blue-600">
+                        <div className="text-xs md:text-sm text-blue-600">
                           ↓ {formatBytes(client.bytes_received)}
                         </div>
                       </div>

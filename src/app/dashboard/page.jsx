@@ -98,9 +98,9 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="flex flex-col gap-8 p-8">
+    <div className="flex flex-col gap-4 p-4 md:gap-6 md:p-6 lg:gap-8 lg:p-8">
       {/* Stats Grid - Large blocks */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-4 md:gap-6 lg:grid-cols-2">
         {/* Agents Block */}
         <Link href="/dashboard/agents">
           <Card className="hover:bg-accent transition-colors cursor-pointer border-border h-full">
@@ -110,23 +110,25 @@ export default function DashboardPage() {
                 <CardTitle className="text-lg font-medium">Агенты</CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 md:space-y-6">
               <div>
-                <div className="text-6xl font-bold mb-2">
+                <div className="text-4xl md:text-5xl lg:text-6xl font-bold mb-2">
                   {stats.agents.active}
                 </div>
                 <p className="text-sm text-muted-foreground">
                   Активных из {stats.agents.total} всего
                 </p>
               </div>
-              <div className="flex items-center gap-4 pt-4 border-t border-border">
+              <div className="flex flex-wrap items-center gap-3 md:gap-4 pt-3 md:pt-4 border-t border-border">
                 <div className="flex items-center gap-2">
                   <IconActivity className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{stats.agents.active} онлайн</span>
+                  <span className="text-xs md:text-sm">
+                    {stats.agents.active} онлайн
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <IconClock className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">
+                  <span className="text-xs md:text-sm">
                     {stats.agents.inactive} неактивных
                   </span>
                 </div>
@@ -144,19 +146,21 @@ export default function DashboardPage() {
                 <CardTitle className="text-lg font-medium">Прокси</CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 md:space-y-6">
               <div>
-                <div className="text-6xl font-bold mb-2">
+                <div className="text-4xl md:text-5xl lg:text-6xl font-bold mb-2">
                   {stats.proxies.active}
                 </div>
                 <p className="text-sm text-muted-foreground">
                   Активных из {stats.proxies.total} всего
                 </p>
               </div>
-              <div className="flex items-center gap-4 pt-4 border-t border-border">
+              <div className="flex items-center gap-3 md:gap-4 pt-3 md:pt-4 border-t border-border">
                 <div className="flex items-center gap-2">
                   <IconWorld className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">TCP/UDP маршрутизация</span>
+                  <span className="text-xs md:text-sm">
+                    TCP/UDP маршрутизация
+                  </span>
                 </div>
               </div>
             </CardContent>
@@ -165,7 +169,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Two Column Layout */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-4 md:gap-6 lg:grid-cols-2">
         {/* Recent Activity */}
         <Card className="border-border">
           <CardHeader className="pb-4">
@@ -191,16 +195,18 @@ export default function DashboardPage() {
                 {recentActivity.slice(0, 6).map((item, idx) => (
                   <div
                     key={idx}
-                    className="flex items-start gap-4 p-4 rounded-lg hover:bg-accent transition-colors"
+                    className="flex items-start gap-3 md:gap-4 p-3 md:p-4 rounded-lg hover:bg-accent transition-colors"
                   >
                     {item.type === "agent" ? (
-                      <IconRobot className="h-5 w-5 text-muted-foreground mt-0.5" />
+                      <IconRobot className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground mt-0.5 shrink-0" />
                     ) : (
-                      <IconNetwork className="h-5 w-5 text-muted-foreground mt-0.5" />
+                      <IconNetwork className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground mt-0.5 shrink-0" />
                     )}
                     <div className="flex-1 min-w-0 space-y-1">
-                      <p className="font-medium truncate">{item.title}</p>
-                      <p className="text-sm text-muted-foreground truncate">
+                      <p className="font-medium text-sm md:text-base truncate">
+                        {item.title}
+                      </p>
+                      <p className="text-xs md:text-sm text-muted-foreground truncate">
                         {item.route || (
                           <>
                             {item.ip && (
@@ -225,7 +231,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* Quick Actions */}
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-4 md:gap-6">
           <Link href="/dashboard/agents" className="flex-1">
             <Card className="hover:bg-accent transition-colors cursor-pointer border-border h-full">
               <CardHeader className="pb-4">
