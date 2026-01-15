@@ -4,11 +4,8 @@ import {
   IconAlertTriangle,
   IconInfoCircle,
   IconNetwork,
-  IconPlus,
-  IconTrash,
 } from "@tabler/icons-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -60,7 +57,6 @@ export function AnycastRoutingTab({ domain, agents = [], onUpdate }) {
       httpProxy: {
         ...domain.httpProxy,
         routingMode: next.routingMode,
-        agentPool: next.agentPool,
         maxHops: next.maxHops,
       },
     });
@@ -81,57 +77,7 @@ export function AnycastRoutingTab({ domain, agents = [], onUpdate }) {
     }));
   };
 
-  const handleAddAgent = () => {
-    updateConfig((prev) => ({
-      ...prev,
-      agentPool: [
-        ...prev.agentPool,
-        {
-          id: "",
-          endpoint: "",
-          region: "",
-          priority: 0,
-        },
-      ],
-    }));
-  };
-
-  const handleRemoveAgent = (index) => {
-    updateConfig((prev) => ({
-      ...prev,
-      agentPool: prev.agentPool.filter((_, i) => i !== index),
-    }));
-  };
-
-  const handleAgentChange = (index, field, value) => {
-    updateConfig((prev) => ({
-      ...prev,
-      agentPool: prev.agentPool.map((agent, i) =>
-        i === index ? { ...agent, [field]: value } : agent,
-      ),
-    }));
-  };
-
-  const handleSelectExistingAgent = (index, agentId) => {
-    const selectedAgent = agents.find((a) => a._id === agentId);
-    if (!selectedAgent) return;
-
-    // Определяем endpoint на основе данных агента
-    const endpoint = selectedAgent.publicIp
-      ? `https://${selectedAgent.publicIp}`
-      : `https://${selectedAgent.agentId}.agent.local`;
-
-    handleAgentChange(index, "id", selectedAgent.agentId);
-    handleAgentChange(index, "endpoint", endpoint);
-    handleAgentChange(
-      index,
-      "region",
-      selectedAgent.location || selectedAgent.region || "",
-    );
-  };
-
   const isAnycastMode = config.routingMode === "anycast";
-  const hasAgents = config.agentPool.length > 0;
 
   return (
     <div className="space-y-6">
@@ -172,6 +118,14 @@ export function AnycastRoutingTab({ domain, agents = [], onUpdate }) {
                     → ... → Origin
                   </li>
                   <li>
+                    • Агенты автоматически обнаруживают друг друга через Core
+                    API
+                  </li>
+                  <li>
+                    • Выбор маршрута основан на: геолокации, здоровье агентов,
+                    задержке сети
+                  </li>
+                  <li>
                     • Каждый агент применяет WAF, rate limiting и firewall
                     правила
                   </li>
@@ -185,20 +139,35 @@ export function AnycastRoutingTab({ domain, agents = [], onUpdate }) {
             </div>
           </div>
 
-          {/* BETA Warning */}
-          <div className="border rounded-lg p-4 bg-yellow-500/5 border-yellow-500/20">
+          {/* Auto-Discovery Info */}
+          <div className="border rounded-lg p-4 bg-green-500/5 border-green-500/20">
             <div className="flex items-start gap-3">
-              <IconAlertTriangle className="h-5 w-5 text-yellow-500 mt-0.5 flex-shrink-0" />
+              <IconNetwork className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
               <div className="space-y-2 text-xs text-muted-foreground">
                 <p className="text-sm font-medium text-foreground">
-                  BETA ограничения
+                  Автоматическое обнаружение агентов
                 </p>
                 <ul className="space-y-1">
-                  <li>• Ручная настройка пула агентов (нет автообнаружения)</li>
-                  <li>• Простой алгоритм выбора (случайный с приоритетом)</li>
-                  <li>• Нет мониторинга здоровья агентов</li>
-                  <li>• Нет аутентификации между агентами</li>
-                  <li>• Производительность не оптимизирована</li>
+                  <li>
+                    • Агенты автоматически получают список других активных
+                    агентов
+                  </li>
+                  <li>• Обновление списка каждые 60 секунд через Core API</li>
+                  <li>
+                    • Проверка здоровья агентов каждые 30 секунд (latency,
+                    доступность)
+                  </li>
+                  <li>
+                    • Автоматическое исключение недоступных агентов из
+                    маршрутизации
+                  </li>
+                  <li>
+                    • Предотвращение циклов: агенты не маршрутизируют на уже
+                    посещённые узлы
+                  </li>
+                  <li>
+                    • Выбор оптимального агента на основе health score и latency
+                  </li>
                 </ul>
               </div>
             </div>
@@ -227,8 +196,11 @@ export function AnycastRoutingTab({ domain, agents = [], onUpdate }) {
                   <SelectItem value="anycast">
                     <div className="flex items-center gap-2">
                       <span>Anycast</span>
-                      <Badge variant="outline" className="text-xs">
-                        BETA
+                      <Badge
+                        variant="outline"
+                        className="text-xs bg-green-500/10 text-green-600 border-green-500/20"
+                      >
+                        Авто
                       </Badge>
                     </div>
                   </SelectItem>
@@ -237,7 +209,7 @@ export function AnycastRoutingTab({ domain, agents = [], onUpdate }) {
               <p className="text-xs text-muted-foreground">
                 {config.routingMode === "direct"
                   ? "Прямая маршрутизация на origin сервер"
-                  : "Маршрутизация через пул агентов перед origin"}
+                  : "Автоматическая маршрутизация через сеть агентов"}
               </p>
             </div>
 
@@ -261,174 +233,6 @@ export function AnycastRoutingTab({ domain, agents = [], onUpdate }) {
               </div>
             )}
           </section>
-
-          {/* Agent Pool */}
-          {isAnycastMode && (
-            <section className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-medium">Пул агентов</h3>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Агенты для маршрутизации трафика
-                  </p>
-                </div>
-                <Button
-                  onClick={handleAddAgent}
-                  variant="outline"
-                  size="sm"
-                  className="h-9"
-                >
-                  <IconPlus className="h-4 w-4 mr-2" />
-                  Добавить агент
-                </Button>
-              </div>
-
-              {!hasAgents && (
-                <div className="border rounded-lg p-8 text-center">
-                  <IconNetwork className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                  <p className="text-sm text-muted-foreground">
-                    Пул агентов пуст
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Добавьте агенты для anycast маршрутизации
-                  </p>
-                </div>
-              )}
-
-              {hasAgents && (
-                <div className="space-y-3">
-                  {config.agentPool.map((agent, index) => (
-                    <div
-                      key={index}
-                      className="border rounded-lg p-4 space-y-3 bg-card"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">
-                          Агент #{index + 1}
-                        </span>
-                        <Button
-                          onClick={() => handleRemoveAgent(index)}
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                        >
-                          <IconTrash className="h-4 w-4" />
-                        </Button>
-                      </div>
-
-                      <div className="grid gap-3 md:grid-cols-2">
-                        {/* Select from existing agents */}
-                        <div className="space-y-2 md:col-span-2">
-                          <label className="text-xs font-medium text-muted-foreground">
-                            Выбрать из существующих агентов
-                          </label>
-                          <Select
-                            value={agent.id}
-                            onValueChange={(value) =>
-                              handleSelectExistingAgent(index, value)
-                            }
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Выберите агент..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {agents.map((a) => (
-                                <SelectItem key={a._id} value={a._id}>
-                                  <div className="flex items-center gap-2">
-                                    <span>{a.agentId}</span>
-                                    {a.location && (
-                                      <Badge
-                                        variant="outline"
-                                        className="text-xs"
-                                      >
-                                        {a.location}
-                                      </Badge>
-                                    )}
-                                    {a.status === "online" ? (
-                                      <span className="h-2 w-2 rounded-full bg-green-500" />
-                                    ) : (
-                                      <span className="h-2 w-2 rounded-full bg-gray-400" />
-                                    )}
-                                  </div>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        {/* Manual configuration */}
-                        <div className="space-y-2">
-                          <label className="text-xs font-medium text-muted-foreground">
-                            ID агента
-                          </label>
-                          <Input
-                            value={agent.id}
-                            onChange={(e) =>
-                              handleAgentChange(index, "id", e.target.value)
-                            }
-                            placeholder="agent-eu-west"
-                            className="text-sm"
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <label className="text-xs font-medium text-muted-foreground">
-                            Endpoint (URL)
-                          </label>
-                          <Input
-                            value={agent.endpoint}
-                            onChange={(e) =>
-                              handleAgentChange(
-                                index,
-                                "endpoint",
-                                e.target.value,
-                              )
-                            }
-                            placeholder="https://agent.example.com"
-                            className="text-sm"
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <label className="text-xs font-medium text-muted-foreground">
-                            Регион (опционально)
-                          </label>
-                          <Input
-                            value={agent.region}
-                            onChange={(e) =>
-                              handleAgentChange(index, "region", e.target.value)
-                            }
-                            placeholder="eu-west"
-                            className="text-sm"
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <label className="text-xs font-medium text-muted-foreground">
-                            Приоритет (0 = высший)
-                          </label>
-                          <Input
-                            type="number"
-                            value={agent.priority}
-                            onChange={(e) =>
-                              handleAgentChange(
-                                index,
-                                "priority",
-                                Number(e.target.value) || 0,
-                              )
-                            }
-                            min={0}
-                            max={100}
-                            className="text-sm"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
-          )}
 
           {/* Use Cases */}
           <section className="space-y-4">
@@ -469,9 +273,9 @@ export function AnycastRoutingTab({ domain, agents = [], onUpdate }) {
           </section>
 
           {/* Monitoring */}
-          {isAnycastMode && hasAgents && (
+          {isAnycastMode && (
             <section className="space-y-4">
-              <h3 className="text-sm font-medium">Мониторинг</h3>
+              <h3 className="text-sm font-medium">Мониторинг и отладка</h3>
               <div className="border rounded-lg p-4 bg-muted/30">
                 <div className="space-y-2 text-xs text-muted-foreground">
                   <p className="text-sm font-medium text-foreground">
@@ -481,14 +285,19 @@ export function AnycastRoutingTab({ domain, agents = [], onUpdate }) {
                     <li>• Проверяйте логи агентов для решений маршрутизации</li>
                     <li>
                       • Заголовок <code>X-Defenra-Hop</code> показывает полный
-                      путь
+                      путь через агенты
                     </li>
                     <li>
-                      • Метрики: количество хопов, выбор агентов, fallback
-                      события
+                      • Метрики: health score, latency, количество хопов, выбор
+                      агентов
                     </li>
                     <li>
-                      • Автоматический fallback на origin если агент недоступен
+                      • Автоматический fallback на origin если все агенты
+                      недоступны
+                    </li>
+                    <li>
+                      • Логи показывают причину выбора каждого агента (health,
+                      latency, location)
                     </li>
                   </ul>
                 </div>

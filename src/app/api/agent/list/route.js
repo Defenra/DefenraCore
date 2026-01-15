@@ -43,6 +43,15 @@ export async function GET() {
           ipAddress: agent.ipAddress,
           ipInfo: agent.ipInfo,
           ipHistory: agent.ipHistory,
+          tags: agent.tags,
+          label: agent.label,
+          category: agent.category,
+          provider: agent.provider,
+          price: agent.price,
+          maxTraffic: agent.maxTraffic,
+          nextPaymentDate: agent.nextPaymentDate,
+          isPaid: agent.isPaid,
+          manualLocation: agent.manualLocation,
         };
       }),
     );

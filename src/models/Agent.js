@@ -106,6 +106,21 @@ const AgentSchema = new mongoose.Schema(
       type: Number, // in GB
       default: 0,
     },
+    // Payment tracking
+    nextPaymentDate: {
+      type: Date,
+      default: null,
+    },
+    isPaid: {
+      type: Boolean,
+      default: true,
+    },
+    // Manual location override
+    manualLocation: {
+      country: String,
+      city: String,
+      region: String,
+    },
   },
   {
     timestamps: true,

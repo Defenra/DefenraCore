@@ -67,6 +67,9 @@ export async function PATCH(_request, { params }) {
       "maxTraffic",
       "pollingInterval",
       "inactivityThreshold",
+      "nextPaymentDate",
+      "isPaid",
+      "manualLocation",
     ];
 
     allowedFields.forEach((field) => {

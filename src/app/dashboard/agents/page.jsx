@@ -116,6 +116,15 @@ export default function AgentsPage() {
       provider: agent.provider || "",
       price: agent.price || 0,
       maxTraffic: agent.maxTraffic || 0,
+      nextPaymentDate: agent.nextPaymentDate
+        ? new Date(agent.nextPaymentDate).toISOString().split("T")[0]
+        : "",
+      isPaid: agent.isPaid !== false,
+      manualLocation: {
+        country: agent.manualLocation?.country || "",
+        city: agent.manualLocation?.city || "",
+        region: agent.manualLocation?.region || "",
+      },
     });
     setEditDialogOpen(true);
   };
@@ -138,6 +147,13 @@ export default function AgentsPage() {
           provider: editingAgent.provider,
           price: parseFloat(editingAgent.price) || 0,
           maxTraffic: parseFloat(editingAgent.maxTraffic) || 0,
+          nextPaymentDate: editingAgent.nextPaymentDate || null,
+          isPaid: editingAgent.isPaid,
+          manualLocation: {
+            country: editingAgent.manualLocation.country || null,
+            city: editingAgent.manualLocation.city || null,
+            region: editingAgent.manualLocation.region || null,
+          },
         }),
       });
 
@@ -409,11 +425,25 @@ export default function AgentsPage() {
                                   <span className="font-mono text-xs">
                                     {agent.ipAddress}
                                   </span>
-                                  {agent.ipInfo?.city &&
-                                    agent.ipInfo?.country && (
+                                  {(agent.manualLocation?.city ||
+                                    agent.ipInfo?.city) &&
+                                    (agent.manualLocation?.country ||
+                                      agent.ipInfo?.country) && (
                                       <span className="text-xs">
-                                        • {agent.ipInfo.city},{" "}
-                                        {agent.ipInfo.country}
+                                        •{" "}
+                                        {agent.manualLocation?.city ||
+                                          agent.ipInfo.city}
+                                        ,{" "}
+                                        {agent.manualLocation?.country ||
+                                          agent.ipInfo.country}
+                                        {agent.manualLocation?.city && (
+                                          <Badge
+                                            variant="outline"
+                                            className="ml-1.5 text-xs"
+                                          >
+                                            Ручная
+                                          </Badge>
+                                        )}
                                       </span>
                                     )}
                                 </div>
@@ -448,6 +478,32 @@ export default function AgentsPage() {
                                       Лимит: {agent.maxTraffic} GB/мес
                                     </span>
                                   </>
+                                )}
+                              </div>
+                            )}
+                            {agent.nextPaymentDate && (
+                              <div className="flex flex-wrap items-center gap-2 text-xs">
+                                <span className="text-muted-foreground">
+                                  Следующая оплата:
+                                </span>
+                                <span
+                                  className={
+                                    agent.isPaid
+                                      ? "text-green-600"
+                                      : "text-red-600 font-medium"
+                                  }
+                                >
+                                  {new Date(
+                                    agent.nextPaymentDate,
+                                  ).toLocaleDateString("ru-RU")}
+                                </span>
+                                {!agent.isPaid && (
+                                  <Badge
+                                    variant="destructive"
+                                    className="text-xs"
+                                  >
+                                    Требует оплаты
+                                  </Badge>
                                 )}
                               </div>
                             )}
@@ -726,6 +782,107 @@ export default function AgentsPage() {
                       })
                     }
                   />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-payment-date">
+                    Дата следующей оплаты
+                  </Label>
+                  <Input
+                    id="edit-payment-date"
+                    type="date"
+                    value={editingAgent.nextPaymentDate}
+                    onChange={(e) =>
+                      setEditingAgent({
+                        ...editingAgent,
+                        nextPaymentDate: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-paid">Статус оплаты</Label>
+                  <div className="flex items-center gap-3 h-10">
+                    <input
+                      type="checkbox"
+                      id="edit-paid"
+                      checked={editingAgent.isPaid}
+                      onChange={(e) =>
+                        setEditingAgent({
+                          ...editingAgent,
+                          isPaid: e.target.checked,
+                        })
+                      }
+                      className="h-4 w-4"
+                    />
+                    <Label htmlFor="edit-paid" className="cursor-pointer">
+                      Оплачено
+                    </Label>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3 border-t pt-4">
+                <h4 className="text-sm font-medium">
+                  Ручная настройка локации
+                </h4>
+                <p className="text-xs text-muted-foreground">
+                  Переопределить автоматически определённую геолокацию
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-location-country">Страна</Label>
+                    <Input
+                      id="edit-location-country"
+                      placeholder="Russia"
+                      value={editingAgent.manualLocation.country}
+                      onChange={(e) =>
+                        setEditingAgent({
+                          ...editingAgent,
+                          manualLocation: {
+                            ...editingAgent.manualLocation,
+                            country: e.target.value,
+                          },
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-location-city">Город</Label>
+                    <Input
+                      id="edit-location-city"
+                      placeholder="Moscow"
+                      value={editingAgent.manualLocation.city}
+                      onChange={(e) =>
+                        setEditingAgent({
+                          ...editingAgent,
+                          manualLocation: {
+                            ...editingAgent.manualLocation,
+                            city: e.target.value,
+                          },
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-location-region">Регион</Label>
+                    <Input
+                      id="edit-location-region"
+                      placeholder="Moscow Oblast"
+                      value={editingAgent.manualLocation.region}
+                      onChange={(e) =>
+                        setEditingAgent({
+                          ...editingAgent,
+                          manualLocation: {
+                            ...editingAgent.manualLocation,
+                            region: e.target.value,
+                          },
+                        })
+                      }
+                    />
+                  </div>
                 </div>
               </div>
             </div>
