@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { usePermissions } from "@/hooks/usePermissions";
 import { getAllRoles } from "@/lib/permissions";
 
@@ -26,6 +26,7 @@ export default function UsersPage() {
   const [submitting, setSubmitting] = useState(false);
 
   const roles = getAllRoles();
+  const hasFetchedRef = useRef(false);
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -44,17 +45,26 @@ export default function UsersPage() {
   }, []);
 
   useEffect(() => {
+    // Wait for session and permissions to load
+    if (status === "loading" || permLoading) {
+      return;
+    }
+
+    // Redirect if not authenticated
     if (status === "unauthenticated") {
       router.push("/login");
       return;
     }
 
-    if (!permLoading && !hasPermission("users.read")) {
+    // Redirect if no permission to read users
+    if (!hasPermission("users.read")) {
       router.push("/dashboard");
       return;
     }
 
-    if (status === "authenticated" && hasPermission("users.read")) {
+    // Fetch users only once
+    if (!hasFetchedRef.current) {
+      hasFetchedRef.current = true;
       fetchUsers();
     }
   }, [status, permLoading, hasPermission, router, fetchUsers]);
@@ -93,6 +103,7 @@ export default function UsersPage() {
         throw new Error(data.error || "Failed to delete user");
       }
 
+      hasFetchedRef.current = false; // Reset flag to allow refetch
       fetchUsers();
     } catch (err) {
       alert(err.message);
@@ -125,6 +136,7 @@ export default function UsersPage() {
       }
 
       setShowModal(false);
+      hasFetchedRef.current = false; // Reset flag to allow refetch
       fetchUsers();
     } catch (err) {
       setFormError(err.message);

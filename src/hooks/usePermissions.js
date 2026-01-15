@@ -6,6 +6,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
+import { useCallback } from "react";
 import { hasPermission as checkPermission } from "@/lib/permissions";
 
 /**
@@ -20,24 +21,33 @@ export function usePermissions() {
    * @param {string} permission - Permission to check (e.g., "domains.write")
    * @returns {boolean} - True if user has permission
    */
-  const hasPermission = (permission) => {
-    if (!session?.user?.role) return false;
-    return checkPermission(session.user.role, permission);
-  };
+  const hasPermission = useCallback(
+    (permission) => {
+      if (!session?.user?.role) return false;
+      return checkPermission(session.user.role, permission);
+    },
+    [session?.user?.role],
+  );
 
   /**
    * Check if user can read a resource
    * @param {string} resource - Resource name (e.g., "domains")
    * @returns {boolean} - True if user can read
    */
-  const canRead = (resource) => hasPermission(`${resource}.read`);
+  const canRead = useCallback(
+    (resource) => hasPermission(`${resource}.read`),
+    [hasPermission],
+  );
 
   /**
    * Check if user can write a resource
    * @param {string} resource - Resource name (e.g., "domains")
    * @returns {boolean} - True if user can write
    */
-  const canWrite = (resource) => hasPermission(`${resource}.write`);
+  const canWrite = useCallback(
+    (resource) => hasPermission(`${resource}.write`),
+    [hasPermission],
+  );
 
   return {
     hasPermission,
