@@ -4,17 +4,34 @@ import { auth } from "@/lib/auth";
 import connectDB from "@/lib/mongodb";
 import Agent from "@/models/Agent";
 
-export async function GET() {
+export async function GET(request) {
   try {
-    const session = await auth();
-
-    if (!session || !session.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     await connectDB();
 
-    const agents = await Agent.find({ userId: session.user.id })
+    let userId = null;
+
+    // Check for agent authentication (Bearer token)
+    const authHeader = request.headers.get("authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+      const agentKey = authHeader.substring(7);
+
+      // Find agent by key to get userId
+      const agent = await Agent.findOne({ agentKey });
+      if (agent) {
+        userId = agent.userId;
+      }
+    }
+
+    // If no agent auth, try user session
+    if (!userId) {
+      const session = await auth();
+      if (!session || !session.user) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+      userId = session.user.id;
+    }
+
+    const agents = await Agent.find({ userId })
       .select("-agentKey -connectionToken")
       .sort({ createdAt: -1 });
 
