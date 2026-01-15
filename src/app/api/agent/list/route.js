@@ -69,6 +69,8 @@ export async function GET(request) {
           nextPaymentDate: agent.nextPaymentDate,
           isPaid: agent.isPaid,
           manualLocation: agent.manualLocation,
+          systemMetrics: agent.systemMetrics,
+          loadScore: agent.loadScore,
         };
       }),
     );

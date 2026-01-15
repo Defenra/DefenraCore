@@ -626,6 +626,140 @@ export default function AgentsPage() {
                           </div>
                         </div>
 
+                        {/* System Metrics Section */}
+                        {agent.systemMetrics && (
+                          <div className="mt-3 pt-3 md:mt-4 md:pt-4 border-t">
+                            <h4 className="text-sm font-medium mb-3 md:mb-4">
+                              Системные метрики
+                            </h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 text-xs md:text-sm">
+                              <div>
+                                <span className="text-muted-foreground">
+                                  CPU:
+                                </span>
+                                <div className="flex items-center gap-2">
+                                  <div className="flex-1 bg-secondary rounded-full h-2">
+                                    <div
+                                      className={`h-2 rounded-full transition-all ${
+                                        agent.systemMetrics.cpuUsagePercent > 80
+                                          ? "bg-red-500"
+                                          : agent.systemMetrics.cpuUsagePercent > 60
+                                            ? "bg-yellow-500"
+                                            : "bg-green-500"
+                                      }`}
+                                      style={{
+                                        width: `${agent.systemMetrics.cpuUsagePercent}%`,
+                                      }}
+                                    />
+                                  </div>
+                                  <span className="font-mono text-xs min-w-[3rem] text-right">
+                                    {agent.systemMetrics.cpuUsagePercent.toFixed(1)}%
+                                  </span>
+                                </div>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">
+                                  Memory:
+                                </span>
+                                <div className="flex items-center gap-2">
+                                  <div className="flex-1 bg-secondary rounded-full h-2">
+                                    <div
+                                      className={`h-2 rounded-full transition-all ${
+                                        agent.systemMetrics.memoryUsagePercent > 80
+                                          ? "bg-red-500"
+                                          : agent.systemMetrics.memoryUsagePercent > 60
+                                            ? "bg-yellow-500"
+                                            : "bg-green-500"
+                                      }`}
+                                      style={{
+                                        width: `${agent.systemMetrics.memoryUsagePercent}%`,
+                                      }}
+                                    />
+                                  </div>
+                                  <span className="font-mono text-xs min-w-[3rem] text-right">
+                                    {agent.systemMetrics.memoryUsagePercent.toFixed(1)}%
+                                  </span>
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {(agent.systemMetrics.memoryUsedBytes / 1024 / 1024 / 1024).toFixed(1)} GB / {(agent.systemMetrics.memoryTotalBytes / 1024 / 1024 / 1024).toFixed(1)} GB
+                                </p>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">
+                                  Load Average:
+                                </span>
+                                <p className="font-mono">
+                                  {agent.systemMetrics.loadAverage1Min?.toFixed(2) || "0.00"} / {agent.systemMetrics.loadAverage5Min?.toFixed(2) || "0.00"} / {agent.systemMetrics.loadAverage15Min?.toFixed(2) || "0.00"}
+                                </p>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">
+                                  Goroutines:
+                                </span>
+                                <p className="font-mono">
+                                  {agent.systemMetrics.numGoroutines || 0}
+                                </p>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">
+                                  Disk I/O:
+                                </span>
+                                <p className="text-xs">
+                                  ↓ {(agent.systemMetrics.diskReadBytesPS / 1024 / 1024).toFixed(1)} MB/s
+                                  {" / "}
+                                  ↑ {(agent.systemMetrics.diskWriteBytesPS / 1024 / 1024).toFixed(1)} MB/s
+                                </p>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">
+                                  Network I/O:
+                                </span>
+                                <p className="text-xs">
+                                  ↓ {(agent.systemMetrics.networkRxBytesPS / 1024 / 1024).toFixed(1)} MB/s
+                                  {" / "}
+                                  ↑ {(agent.systemMetrics.networkTxBytesPS / 1024 / 1024).toFixed(1)} MB/s
+                                </p>
+                              </div>
+                              {agent.loadScore !== undefined && (
+                                <div>
+                                  <span className="text-muted-foreground">
+                                    Load Score:
+                                  </span>
+                                  <div className="flex items-center gap-2">
+                                    <div className="flex-1 bg-secondary rounded-full h-2">
+                                      <div
+                                        className={`h-2 rounded-full transition-all ${
+                                          agent.loadScore > 80
+                                            ? "bg-red-500"
+                                            : agent.loadScore > 60
+                                              ? "bg-yellow-500"
+                                              : "bg-green-500"
+                                        }`}
+                                        style={{
+                                          width: `${agent.loadScore}%`,
+                                        }}
+                                      />
+                                    </div>
+                                    <span className="font-mono text-xs min-w-[3rem] text-right">
+                                      {agent.loadScore.toFixed(0)}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+                              {agent.systemMetrics.lastUpdated && (
+                                <div className="col-span-full">
+                                  <span className="text-muted-foreground">
+                                    Обновлено:
+                                  </span>
+                                  <p className="text-xs">
+                                    {formatDate(agent.systemMetrics.lastUpdated)}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
                         {agent.ipHistory && agent.ipHistory.length > 0 && (
                           <div className="mt-3 pt-3 md:mt-4 md:pt-4 border-t">
                             <h4 className="text-xs md:text-sm font-semibold mb-2">
