@@ -11,6 +11,7 @@ import {
   IconShieldLock,
   IconWorld,
   IconFileSettings,
+  IconRoute,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -22,6 +23,7 @@ import { LuaWafTab } from "@/components/domain-management/lua-waf-tab";
 import { SslTab } from "@/components/domain-management/ssl-tab";
 import { AntiDDoSTab } from "@/components/domain-management/anti-ddos-tab";
 import { PageRulesTab } from "@/components/domain-management/page-rules-tab";
+import { AnycastRoutingTab } from "@/components/domain-management/anycast-routing-tab";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/loading";
@@ -154,6 +156,13 @@ export default function DomainManagePage({ params }) {
               <span>Anti-DDoS</span>
             </TabsTrigger>
             <TabsTrigger
+              value="anycast"
+              className="w-full justify-start gap-3 px-4 py-3 data-[state=active]:bg-accent"
+            >
+              <IconRoute className="h-5 w-5" />
+              <span>Anycast</span>
+            </TabsTrigger>
+            <TabsTrigger
               value="pagerules"
               className="w-full justify-start gap-3 px-4 py-3 data-[state=active]:bg-accent"
             >
@@ -224,6 +233,15 @@ export default function DomainManagePage({ params }) {
             {/* Anti-DDoS Tab */}
             <TabsContent value="antiddos" className="mt-0">
               <AntiDDoSTab domain={domain} onUpdate={setDomain} />
+            </TabsContent>
+
+            {/* Anycast Routing Tab */}
+            <TabsContent value="anycast" className="mt-0">
+              <AnycastRoutingTab
+                domain={domain}
+                agents={agents}
+                onUpdate={setDomain}
+              />
             </TabsContent>
 
             {/* Page Rules Tab */}

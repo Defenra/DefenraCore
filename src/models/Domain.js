@@ -48,6 +48,42 @@ const DomainSchema = new mongoose.Schema(
         enum: ["http", "https", "both"],
         default: "both",
       },
+      enabled: {
+        type: Boolean,
+        default: true,
+      },
+      // Anycast Routing (BETA)
+      routingMode: {
+        type: String,
+        enum: ["direct", "anycast"],
+        default: "direct",
+      },
+      agentPool: [
+        {
+          id: {
+            type: String,
+            required: true,
+          },
+          endpoint: {
+            type: String,
+            required: true,
+          },
+          region: {
+            type: String,
+            default: "",
+          },
+          priority: {
+            type: Number,
+            default: 0,
+          },
+        },
+      ],
+      maxHops: {
+        type: Number,
+        default: 3,
+        min: 1,
+        max: 10,
+      },
       ssl: {
         enabled: {
           type: Boolean,
