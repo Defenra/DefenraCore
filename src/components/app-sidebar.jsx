@@ -8,11 +8,11 @@ import {
   IconNetwork,
   IconRobot,
   IconShieldLock,
+  IconUserCog,
   IconUsers,
   IconWorld,
 } from "@tabler/icons-react";
 import { useSession } from "next-auth/react";
-
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import {
@@ -24,54 +24,68 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { usePermissions } from "@/hooks/usePermissions";
 
-const navData = {
-  navMain: [
-    {
-      title: "Dashboard",
-      url: "/dashboard",
-      icon: IconDashboard,
-    },
-    {
-      title: "Агенты",
-      url: "/dashboard/agents",
-      icon: IconRobot,
-    },
-    {
-      title: "Прокси",
-      url: "/dashboard/proxies",
-      icon: IconNetwork,
-    },
-    {
-      title: "Домены",
-      url: "/dashboard/domains",
-      icon: IconWorld,
-    },
-    {
-      title: "Карта GeoDNS",
-      url: "/dashboard/geodns-map",
-      icon: IconMapPin,
-    },
-    {
-      title: "Клиенты",
-      url: "/dashboard/clients",
-      icon: IconUsers,
-    },
-    {
-      title: "Статистика",
-      url: "/dashboard/statistics",
-      icon: IconChartBar,
-    },
-    {
-      title: "Логи",
-      url: "/dashboard/logs",
-      icon: IconFileText,
-    },
-  ],
-};
+const allNavItems = [
+  {
+    title: "Dashboard",
+    url: "/dashboard",
+    icon: IconDashboard,
+    permission: null,
+  },
+  {
+    title: "Агенты",
+    url: "/dashboard/agents",
+    icon: IconRobot,
+    permission: "agents.read",
+  },
+  {
+    title: "Прокси",
+    url: "/dashboard/proxies",
+    icon: IconNetwork,
+    permission: "proxies.read",
+  },
+  {
+    title: "Домены",
+    url: "/dashboard/domains",
+    icon: IconWorld,
+    permission: "domains.read",
+  },
+  {
+    title: "Карта GeoDNS",
+    url: "/dashboard/geodns-map",
+    icon: IconMapPin,
+    permission: "domains.read",
+  },
+  {
+    title: "Клиенты",
+    url: "/dashboard/clients",
+    icon: IconUsers,
+    permission: null,
+  },
+  {
+    title: "Статистика",
+    url: "/dashboard/statistics",
+    icon: IconChartBar,
+    permission: null,
+  },
+  {
+    title: "Логи",
+    url: "/dashboard/logs",
+    icon: IconFileText,
+    permission: null,
+  },
+  {
+    title: "Пользователи",
+    url: "/dashboard/users",
+    icon: IconUserCog,
+    permission: "users.read",
+  },
+];
 
 export function AppSidebar({ ...props }) {
   const { data: session } = useSession();
+  const { hasPermission } = usePermissions();
 
   const user = session?.user
     ? {
@@ -84,6 +98,11 @@ export function AppSidebar({ ...props }) {
         email: "user@example.com",
         avatar: null,
       };
+
+  const filteredNavItems = allNavItems.filter((item) => {
+    if (!item.permission) return true;
+    return hasPermission(item.permission);
+  });
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -100,7 +119,7 @@ export function AppSidebar({ ...props }) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={navData.navMain} />
+        <NavMain items={filteredNavItems} />
       </SidebarContent>
       <SidebarFooter className="border-t border-border">
         <NavUser user={user} />
