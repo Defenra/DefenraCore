@@ -253,8 +253,15 @@ export function findBestAgentForLocation(locationCode, allAgents) {
   // Get target location coordinates
   const targetCoords = LOCATION_COORDINATES[locationCode.toLowerCase()];
 
-  // Find agents with matching location (exact match by IP geolocation)
+  // Find agents with matching location (exact match by manual location OR IP geolocation)
   const matchingAgents = activeAgents.filter((agent) => {
+    // Priority 1: Check manual location override first
+    if (agent.manualLocation && agent.manualLocation.country) {
+      const manualCountryCode = agent.manualLocation.country.toUpperCase();
+      return manualCountryCode === locationCode.toUpperCase();
+    }
+
+    // Priority 2: Fall back to IP geolocation
     if (!agent.ipInfo || !agent.ipInfo.countryCode) return false;
 
     const agentCountryCode = agent.ipInfo.countryCode.toUpperCase();
@@ -282,8 +289,13 @@ export function findBestAgentForLocation(locationCode, allAgents) {
   let isLastResort = false;
 
   if (locationCode.toLowerCase() === "ua") {
-    // Try to find agent excluding RU first
+    // Try to find agent excluding RU first (check manual location first, then IP geolocation)
     const nonRuAgents = activeAgents.filter((agent) => {
+      // Check manual location first
+      if (agent.manualLocation && agent.manualLocation.country) {
+        return agent.manualLocation.country.toUpperCase() !== "RU";
+      }
+      // Fall back to IP geolocation
       if (!agent.ipInfo || !agent.ipInfo.countryCode) return true; // Include unknown
       return agent.ipInfo.countryCode.toUpperCase() !== "RU";
     });
@@ -328,11 +340,19 @@ export function findBestAgentForLocation(locationCode, allAgents) {
       }
 
       // Fallback to old static distance map if no coordinates
-      if (!agent.ipInfo || !agent.ipInfo.countryCode) {
+      // Priority 1: Use manual location if set
+      let agentCountryCode = null;
+      if (agent.manualLocation && agent.manualLocation.country) {
+        agentCountryCode = agent.manualLocation.country.toUpperCase();
+      } else if (agent.ipInfo && agent.ipInfo.countryCode) {
+        // Priority 2: Use IP geolocation
+        agentCountryCode = agent.ipInfo.countryCode.toUpperCase();
+      }
+
+      if (!agentCountryCode) {
         return { agent, distance: 999, distanceKm: null };
       }
 
-      const agentCountryCode = agent.ipInfo.countryCode.toUpperCase();
       const agentLocation = LOCATION_DISTANCES[agentCountryCode];
       const agentLocationCode =
         typeof agentLocation === "string"

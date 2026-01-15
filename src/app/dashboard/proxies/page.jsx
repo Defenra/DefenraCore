@@ -75,9 +75,12 @@ export default function ProxiesPage() {
   const loading = proxiesLoading;
 
   // Загружаем клиентов для выбранного прокси
-  const { data: clientsData, isLoading: clientsLoading } = useProxyClients(
-    selectedProxy?.id,
-  );
+  const {
+    data: clientsData,
+    isLoading: clientsLoading,
+    isFetching: clientsFetching,
+    refetch: refetchClients,
+  } = useProxyClients(selectedProxy?.id);
 
   const formatBytes = (bytes) => {
     if (!bytes || bytes === 0) return "0 B";
@@ -429,14 +432,38 @@ export default function ProxiesPage() {
       >
         <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-base md:text-lg">
-              Активные клиенты: {selectedProxy?.name}
-            </DialogTitle>
-            <DialogDescription className="text-xs md:text-sm">
-              {selectedProxy?.type.toUpperCase()} порт{" "}
-              {selectedProxy?.sourcePort} → {selectedProxy?.destinationHost}:
-              {selectedProxy?.destinationPort}
-            </DialogDescription>
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <DialogTitle className="text-base md:text-lg">
+                  Активные клиенты: {selectedProxy?.name}
+                </DialogTitle>
+                <DialogDescription className="text-xs md:text-sm">
+                  {selectedProxy?.type.toUpperCase()} порт{" "}
+                  {selectedProxy?.sourcePort} → {selectedProxy?.destinationHost}
+                  :{selectedProxy?.destinationPort}
+                </DialogDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                {clientsFetching && !clientsLoading && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                    <span>Обновление...</span>
+                  </div>
+                )}
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => refetchClients()}
+                  disabled={clientsLoading}
+                  className="h-8 w-8"
+                  title="Обновить данные"
+                >
+                  <IconRefresh
+                    className={`h-4 w-4 ${clientsFetching ? "animate-spin" : ""}`}
+                  />
+                </Button>
+              </div>
+            </div>
           </DialogHeader>
 
           {clientsLoading ? (

@@ -117,12 +117,17 @@ export async function POST(request) {
     const allAgents = await Agent.find({
       isActive: true, // CRITICAL: Only active agents
       ipAddress: { $exists: true, $ne: null }, // Must have IP address
-    }).select("agentId ipAddress name isActive ipInfo");
+    }).select("agentId ipAddress name isActive ipInfo manualLocation");
 
     console.log(`[Active Agents] Found ${allAgents.length} active agents:`);
     allAgents.forEach((a) => {
+      const location =
+        a.manualLocation?.country || a.ipInfo?.countryCode || "UNKNOWN";
       console.log(
         `  - ${a.name} (${a.agentId.substring(0, 20)}...) → ${a.ipAddress}`,
+      );
+      console.log(
+        `    location: ${location} ${a.manualLocation?.country ? "(manual)" : "(auto)"}`,
       );
       console.log(
         `    ipInfo: ${a.ipInfo ? JSON.stringify({ country: a.ipInfo.country, countryCode: a.ipInfo.countryCode, city: a.ipInfo.city }) : "MISSING"}`,

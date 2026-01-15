@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import mongoose from "mongoose";
 import { auth } from "@/lib/auth";
 import connectDB from "@/lib/mongodb";
 import Agent from "@/models/Agent";
@@ -14,22 +15,28 @@ export async function GET(request) {
 
     await connectDB();
 
-    // Получаем query параметры
     const { searchParams } = new URL(request.url);
     const level = searchParams.get("level");
     const agentId = searchParams.get("agentId");
-    const limit = parseInt(searchParams.get("limit") || "100", 10);
     const search = searchParams.get("search");
+    const limit = parseInt(searchParams.get("limit") || "100", 10);
 
-    // Строим запрос
-    const query = { userId: session.user.id };
+    const query = {
+      userId: session.user.id,
+    };
 
     if (level && level !== "all") {
       query.level = level;
     }
 
     if (agentId && agentId !== "all") {
-      query.agentId = agentId;
+      const agent = await Agent.findOne({
+        userId: session.user.id,
+        agentId: agentId,
+      });
+      if (agent) {
+        query.agentId = agent._id;
+      }
     }
 
     if (search) {
@@ -39,15 +46,14 @@ export async function GET(request) {
       ];
     }
 
-    // Получаем логи
     const logs = await AgentLog.find(query)
-      .populate("agentId", "name agentId")
       .sort({ timestamp: -1 })
-      .limit(limit);
+      .limit(limit)
+      .populate("agentId", "name agentId")
+      .lean();
 
-    // Статистика по уровням
     const stats = await AgentLog.aggregate([
-      { $match: { userId: session.user.id } },
+      { $match: { userId: new mongoose.Types.ObjectId(session.user.id) } },
       {
         $group: {
           _id: "$level",
@@ -62,31 +68,28 @@ export async function GET(request) {
       error: 0,
     };
 
-    stats.forEach((stat) => {
+    for (const stat of stats) {
       levelStats[stat._id] = stat.count;
-    });
+    }
 
     return NextResponse.json({
       logs: logs.map((log) => ({
-        id: log._id,
+        id: log._id.toString(),
         level: log.level,
         message: log.message,
-        details: log.details,
+        details: log.details || "",
         timestamp: log.timestamp,
-        agent: log.agentId
-          ? {
-              id: log.agentId._id,
-              name: log.agentId.name,
-              agentId: log.agentId.agentId,
-            }
-          : null,
-        metadata: log.metadata,
+        agent: {
+          id: log.agentId?._id?.toString(),
+          name: log.agentId?.name,
+          agentId: log.agentId?.agentId,
+        },
       })),
       stats: levelStats,
       total: logs.length,
     });
   } catch (error) {
-    console.error("Logs list error:", error);
+    console.error("Logs error:", error);
     return NextResponse.json(
       { error: "Ошибка при получении логов" },
       { status: 500 },
@@ -94,16 +97,17 @@ export async function GET(request) {
   }
 }
 
-// POST для добавления лога (вызывается агентом)
 export async function POST(request) {
   try {
-    const session = await auth();
-
-    if (!session || !session.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     await connectDB();
+    const authHeader = request.headers.get("authorization");
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return NextResponse.json(
+        { error: "Missing or invalid authorization header" },
+        { status: 401 },
+      );
+    }
 
     const body = await request.json();
     const { agentId, level, message, details, metadata } = body;
@@ -115,39 +119,33 @@ export async function POST(request) {
       );
     }
 
-    // Проверяем уровень
     if (!["info", "warning", "error"].includes(level)) {
       return NextResponse.json(
-        { error: "Неверный уровень лога" },
+        { error: "level должен быть 'info', 'warning' или 'error'" },
         { status: 400 },
       );
     }
 
-    // Проверяем, что агент принадлежит пользователю
-    const agent = await Agent.findOne({
-      _id: agentId,
-      userId: session.user.id,
-    });
-
+    const agent = await Agent.findOne({ agentId });
     if (!agent) {
-      return NextResponse.json({ error: "Агент не найден" }, { status: 404 });
+      return NextResponse.json({ error: "Agent not found" }, { status: 404 });
     }
 
     const log = await AgentLog.create({
-      userId: session.user.id,
-      agentId,
+      userId: agent.userId,
+      agentId: agent._id,
       level,
       message,
-      details,
-      metadata,
+      details: details || "",
+      metadata: metadata || {},
       timestamp: new Date(),
     });
 
     return NextResponse.json({ log });
   } catch (error) {
-    console.error("Agent log create error:", error);
+    console.error("Log create error:", error);
     return NextResponse.json(
-      { error: "Ошибка при создании лога" },
+      { error: "Failed to create log" },
       { status: 500 },
     );
   }
