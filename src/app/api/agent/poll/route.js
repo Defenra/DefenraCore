@@ -43,26 +43,31 @@ export async function POST(request) {
     const now = new Date();
     let ipChanged = false;
 
-    if (currentIp && currentIp !== agent.ipAddress) {
+    // Update IP info if IP changed OR if ipInfo is missing
+    if (currentIp && (currentIp !== agent.ipAddress || !agent.ipInfo)) {
       const ipInfo = await getIpInfo(currentIp);
-      ipChanged = true;
 
-      if (agent.ipAddress) {
-        if (!agent.ipHistory) {
-          agent.ipHistory = [];
-        }
-        agent.ipHistory.push({
-          ip: agent.ipAddress,
-          changedAt: now,
-          ipInfo: {
-            country: agent.ipInfo?.country,
-            city: agent.ipInfo?.city,
-            isp: agent.ipInfo?.isp,
-          },
-        });
+      // Only mark as changed if IP actually changed (not just missing ipInfo)
+      if (currentIp !== agent.ipAddress) {
+        ipChanged = true;
 
-        if (agent.ipHistory.length > 10) {
-          agent.ipHistory = agent.ipHistory.slice(-10);
+        if (agent.ipAddress) {
+          if (!agent.ipHistory) {
+            agent.ipHistory = [];
+          }
+          agent.ipHistory.push({
+            ip: agent.ipAddress,
+            changedAt: now,
+            ipInfo: {
+              country: agent.ipInfo?.country,
+              city: agent.ipInfo?.city,
+              isp: agent.ipInfo?.isp,
+            },
+          });
+
+          if (agent.ipHistory.length > 10) {
+            agent.ipHistory = agent.ipHistory.slice(-10);
+          }
         }
       }
 

@@ -107,7 +107,7 @@ export function AnycastRoutingTab({ domain, agents = [], onUpdate }) {
     updateConfig((prev) => ({
       ...prev,
       agentPool: prev.agentPool.map((agent, i) =>
-        i === index ? { ...agent, [field]: value } : agent
+        i === index ? { ...agent, [field]: value } : agent,
       ),
     }));
   };
@@ -126,7 +126,7 @@ export function AnycastRoutingTab({ domain, agents = [], onUpdate }) {
     handleAgentChange(
       index,
       "region",
-      selectedAgent.location || selectedAgent.region || ""
+      selectedAgent.location || selectedAgent.region || "",
     );
   };
 
@@ -179,9 +179,7 @@ export function AnycastRoutingTab({ domain, agents = [], onUpdate }) {
                     • Заголовок <code>X-Defenra-Hop</code> отслеживает путь
                     маршрутизации
                   </li>
-                  <li>
-                    • Лимит хопов предотвращает циклы маршрутизации
-                  </li>
+                  <li>• Лимит хопов предотвращает циклы маршрутизации</li>
                 </ul>
               </div>
             </div>
@@ -383,7 +381,7 @@ export function AnycastRoutingTab({ domain, agents = [], onUpdate }) {
                               handleAgentChange(
                                 index,
                                 "endpoint",
-                                e.target.value
+                                e.target.value,
                               )
                             }
                             placeholder="https://agent.example.com"
@@ -416,7 +414,7 @@ export function AnycastRoutingTab({ domain, agents = [], onUpdate }) {
                               handleAgentChange(
                                 index,
                                 "priority",
-                                Number(e.target.value) || 0
+                                Number(e.target.value) || 0,
                               )
                             }
                             min={0}
@@ -446,7 +444,9 @@ export function AnycastRoutingTab({ domain, agents = [], onUpdate }) {
                 </p>
               </div>
               <div className="border rounded-lg p-4 space-y-2">
-                <p className="text-sm font-medium">🌍 Географическая оптимизация</p>
+                <p className="text-sm font-medium">
+                  🌍 Географическая оптимизация
+                </p>
                 <p className="text-xs text-muted-foreground">
                   Маршрутизация через агенты ближе к origin для снижения
                   задержки
@@ -455,7 +455,8 @@ export function AnycastRoutingTab({ domain, agents = [], onUpdate }) {
               <div className="border rounded-lg p-4 space-y-2">
                 <p className="text-sm font-medium">⚖️ Распределение нагрузки</p>
                 <p className="text-xs text-muted-foreground">
-                  Распределение трафика между несколькими агентами для балансировки
+                  Распределение трафика между несколькими агентами для
+                  балансировки
                 </p>
               </div>
               <div className="border rounded-lg p-4 space-y-2">
@@ -477,9 +478,7 @@ export function AnycastRoutingTab({ domain, agents = [], onUpdate }) {
                     Отслеживание маршрутизации
                   </p>
                   <ul className="space-y-1">
-                    <li>
-                      • Проверяйте логи агентов для решений маршрутизации
-                    </li>
+                    <li>• Проверяйте логи агентов для решений маршрутизации</li>
                     <li>
                       • Заголовок <code>X-Defenra-Hop</code> показывает полный
                       путь
