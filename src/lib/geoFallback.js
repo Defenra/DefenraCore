@@ -389,12 +389,15 @@ export function findBestAgentForLocation(locationCode, allAgents) {
  */
 export function buildAnycastRecords(domain, allAgents) {
   const records = [];
+  const processedLocations = new Set();
 
   console.log(`[Build Anycast] Domain: ${domain.domain}`);
   console.log(`  GeoDNS locations: ${domain.geoDnsConfig?.length || 0}`);
   console.log(`  Available agents: ${allAgents.length}`);
 
+  // Step 1: Process configured locations from geoDnsConfig
   for (const location of domain.geoDnsConfig || []) {
+    processedLocations.add(location.code.toLowerCase());
     const result = findBestAgentForLocation(location.code, allAgents);
 
     if (result) {
@@ -447,8 +450,59 @@ export function buildAnycastRecords(domain, allAgents) {
     }
   }
 
+  // Step 2: Auto-discover locations from active agents (not in geoDnsConfig)
+  console.log(`[Auto-Discovery] Checking for agents with unconfigured locations...`);
+  
+  const activeAgents = allAgents.filter((a) => a.isActive && a.ipAddress);
+  
+  for (const agent of activeAgents) {
+    // Get agent's country code (manual location takes priority)
+    let countryCode = null;
+    
+    if (agent.manualLocation && agent.manualLocation.country) {
+      countryCode = agent.manualLocation.country.toUpperCase();
+    } else if (agent.ipInfo && agent.ipInfo.countryCode) {
+      countryCode = agent.ipInfo.countryCode.toUpperCase();
+    }
+    
+    if (!countryCode) {
+      continue; // Skip agents without location
+    }
+    
+    const countryCodeLower = countryCode.toLowerCase();
+    
+    // Skip if this location is already processed
+    if (processedLocations.has(countryCodeLower)) {
+      continue;
+    }
+    
+    // Add this location automatically
+    processedLocations.add(countryCodeLower);
+    
+    const locationName = agent.manualLocation?.country || agent.ipInfo?.country || countryCode;
+    
+    records.push({
+      name: countryCodeLower,
+      type: "A",
+      value: agent.ipAddress,
+      ttl: 60,
+      agentId: agent.agentId,
+      agentName: agent.name,
+      locationCode: countryCodeLower,
+      distance: 0,
+      distanceKm: 0,
+      isDirect: true,
+      isAutoDiscovered: true, // Mark as auto-discovered
+      description: `Auto: ${agent.name} (${locationName})`,
+    });
+    
+    console.log(
+      `  🔍 ${countryCodeLower} → ${agent.ipAddress} (${agent.name}) AUTO-DISCOVERED`,
+    );
+  }
+
   console.log(
-    `[Build Anycast] Generated ${records.filter((r) => r.value).length}/${records.length} anycast records`,
+    `[Build Anycast] Generated ${records.filter((r) => r.value).length}/${records.length} anycast records (${records.filter((r) => r.isAutoDiscovered).length} auto-discovered)`,
   );
 
   return records;
