@@ -4,6 +4,63 @@ import connectDB from "@/lib/mongodb";
 import Agent from "@/models/Agent";
 import TrafficStats from "@/models/TrafficStats";
 
+// Calculate load score (0-100) based on system metrics
+// Higher score means more loaded/stressed system
+function calculateLoadScore(systemMetrics) {
+  let score = 0;
+  let factors = 0;
+
+  // CPU usage (0-100%) - weight: 30%
+  if (systemMetrics.cpuUsagePercent !== undefined) {
+    score += systemMetrics.cpuUsagePercent * 0.3;
+    factors += 0.3;
+  }
+
+  // Memory usage (0-100%) - weight: 25%
+  if (systemMetrics.memoryUsagePercent !== undefined) {
+    score += systemMetrics.memoryUsagePercent * 0.25;
+    factors += 0.25;
+  }
+
+  // Load average (normalized to 0-100 based on CPU count) - weight: 25%
+  if (systemMetrics.loadAverage1Min !== undefined && systemMetrics.loadAverage1Min > 0) {
+    // Assume 4 CPU cores if not available, normalize load to percentage
+    const cpuCores = 4; // Could be enhanced to get actual CPU count
+    const loadPercent = Math.min((systemMetrics.loadAverage1Min / cpuCores) * 100, 100);
+    score += loadPercent * 0.25;
+    factors += 0.25;
+  }
+
+  // Disk I/O (normalized to 0-100 based on typical values) - weight: 10%
+  if (systemMetrics.diskReadBytesPS !== undefined || systemMetrics.diskWriteBytesPS !== undefined) {
+    const totalDiskIO = (systemMetrics.diskReadBytesPS || 0) + (systemMetrics.diskWriteBytesPS || 0);
+    // Normalize: 100MB/s = 100% load (adjust based on typical server disk performance)
+    const diskLoadPercent = Math.min((totalDiskIO / (100 * 1024 * 1024)) * 100, 100);
+    score += diskLoadPercent * 0.1;
+    factors += 0.1;
+  }
+
+  // Network I/O (normalized to 0-100 based on typical values) - weight: 10%
+  if (systemMetrics.networkRxBytesPS !== undefined || systemMetrics.networkTxBytesPS !== undefined) {
+    const totalNetworkIO = (systemMetrics.networkRxBytesPS || 0) + (systemMetrics.networkTxBytesPS || 0);
+    // Normalize: 1GB/s = 100% load (adjust based on typical server network capacity)
+    const networkLoadPercent = Math.min((totalNetworkIO / (1024 * 1024 * 1024)) * 100, 100);
+    score += networkLoadPercent * 0.1;
+    factors += 0.1;
+  }
+
+  // If no factors were available, return 0
+  if (factors === 0) {
+    return 0;
+  }
+
+  // Normalize score based on available factors
+  const normalizedScore = (score / factors) * (factors / 1.0);
+  
+  // Ensure score is between 0 and 100
+  return Math.max(0, Math.min(100, Math.round(normalizedScore)));
+}
+
 export async function GET(request) {
   try {
     const session = await auth();
@@ -241,6 +298,7 @@ export async function POST(request) {
         rateLimitBlocks,
         firewallBlocks,
         l4Blocks,
+        systemMetrics,
       } = body;
 
       if (!agentId || !resourceType) {
@@ -260,6 +318,30 @@ export async function POST(request) {
       const agent = await Agent.findOne({ agentId });
       if (!agent)
         return NextResponse.json({ error: "Agent not found" }, { status: 404 });
+
+      // Update agent system metrics if provided
+      if (systemMetrics) {
+        const loadScore = calculateLoadScore(systemMetrics);
+        
+        await Agent.findByIdAndUpdate(agent._id, {
+          systemMetrics: {
+            cpuUsagePercent: systemMetrics.cpuUsagePercent || 0,
+            memoryUsagePercent: systemMetrics.memoryUsagePercent || 0,
+            memoryUsedBytes: systemMetrics.memoryUsedBytes || 0,
+            memoryTotalBytes: systemMetrics.memoryTotalBytes || 0,
+            diskReadBytesPS: systemMetrics.diskReadBytesPS || 0,
+            diskWriteBytesPS: systemMetrics.diskWriteBytesPS || 0,
+            networkRxBytesPS: systemMetrics.networkRxBytesPS || 0,
+            networkTxBytesPS: systemMetrics.networkTxBytesPS || 0,
+            loadAverage1Min: systemMetrics.loadAverage1Min || 0,
+            loadAverage5Min: systemMetrics.loadAverage5Min || 0,
+            loadAverage15Min: systemMetrics.loadAverage15Min || 0,
+            numGoroutines: systemMetrics.numGoroutines || 0,
+            lastUpdated: new Date(),
+          },
+          loadScore: loadScore,
+        });
+      }
 
       const totalBytes = (inboundBytes || 0) + (outboundBytes || 0);
 

@@ -121,6 +121,68 @@ const AgentSchema = new mongoose.Schema(
       city: String,
       region: String,
     },
+    // System metrics (latest values)
+    systemMetrics: {
+      cpuUsagePercent: {
+        type: Number,
+        default: 0,
+      },
+      memoryUsagePercent: {
+        type: Number,
+        default: 0,
+      },
+      memoryUsedBytes: {
+        type: Number,
+        default: 0,
+      },
+      memoryTotalBytes: {
+        type: Number,
+        default: 0,
+      },
+      diskReadBytesPS: {
+        type: Number,
+        default: 0,
+      },
+      diskWriteBytesPS: {
+        type: Number,
+        default: 0,
+      },
+      networkRxBytesPS: {
+        type: Number,
+        default: 0,
+      },
+      networkTxBytesPS: {
+        type: Number,
+        default: 0,
+      },
+      loadAverage1Min: {
+        type: Number,
+        default: 0,
+      },
+      loadAverage5Min: {
+        type: Number,
+        default: 0,
+      },
+      loadAverage15Min: {
+        type: Number,
+        default: 0,
+      },
+      numGoroutines: {
+        type: Number,
+        default: 0,
+      },
+      lastUpdated: {
+        type: Date,
+        default: null,
+      },
+    },
+    // System load score (0-100, higher = more loaded)
+    loadScore: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 100,
+    },
   },
   {
     timestamps: true,
