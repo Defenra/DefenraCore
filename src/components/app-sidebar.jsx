@@ -8,7 +8,6 @@ import {
   IconNetwork,
   IconRobot,
   IconShieldLock,
-  IconUserCircle,
   IconUsers,
   IconWorld,
 } from "@tabler/icons-react";

@@ -4,29 +4,28 @@ import {
   IconArrowLeft,
   IconCode,
   IconDeviceFloppy,
+  IconFileSettings,
   IconInfoCircle,
   IconMapPin,
   IconNetwork,
+  IconRoute,
   IconShieldCheck,
   IconShieldLock,
   IconWorld,
-  IconFileSettings,
-  IconRoute,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { use, useState } from "react";
 import { toast } from "sonner";
+import { AntiDDoSTab } from "@/components/domain-management/anti-ddos-tab";
+import { AnycastRoutingTab } from "@/components/domain-management/anycast-routing-tab";
 import { DnsRecordsTab } from "@/components/domain-management/dns-records-tab";
 import { GeoDnsTab } from "@/components/domain-management/geodns-tab";
 import { LuaWafTab } from "@/components/domain-management/lua-waf-tab";
-import { SslTab } from "@/components/domain-management/ssl-tab";
-import { AntiDDoSTab } from "@/components/domain-management/anti-ddos-tab";
 import { PageRulesTab } from "@/components/domain-management/page-rules-tab";
-import { AnycastRoutingTab } from "@/components/domain-management/anycast-routing-tab";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { SslTab } from "@/components/domain-management/ssl-tab";
 import { Loading } from "@/components/loading";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAgents } from "@/hooks/useAgents";
 import { useDomain, useUpdateDomain } from "@/hooks/useDomains";

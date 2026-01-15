@@ -2,9 +2,9 @@
 
 import {
   IconPlus,
-  IconTrash,
   IconToggleLeft,
   IconToggleRight,
+  IconTrash,
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -98,7 +98,7 @@ export function PageRulesTab({ domain, onUpdate }) {
       setRules(newRules);
       setDialogOpen(false);
       toast.success("Page Rule сохранён");
-    } catch (error) {
+    } catch (_error) {
       toast.error("Ошибка сохранения");
     }
   };
@@ -111,7 +111,7 @@ export function PageRulesTab({ domain, onUpdate }) {
       await onUpdate({ pageRules: newRules });
       setRules(newRules);
       toast.success("Page Rule удалён");
-    } catch (error) {
+    } catch (_error) {
       toast.error("Ошибка удаления");
     }
   };
@@ -124,7 +124,7 @@ export function PageRulesTab({ domain, onUpdate }) {
       await onUpdate({ pageRules: newRules });
       setRules(newRules);
       toast.success("Статус изменён");
-    } catch (error) {
+    } catch (_error) {
       toast.error("Ошибка изменения статуса");
     }
   };
@@ -289,11 +289,14 @@ export function PageRulesTab({ domain, onUpdate }) {
             <div className="space-y-2">
               <Label>Security Level</Label>
               <Select
-                value={formData.actions.securityLevel}
+                value={formData.actions.securityLevel || "none"}
                 onValueChange={(value) =>
                   setFormData({
                     ...formData,
-                    actions: { ...formData.actions, securityLevel: value },
+                    actions: {
+                      ...formData.actions,
+                      securityLevel: value === "none" ? "" : value,
+                    },
                   })
                 }
               >
@@ -301,7 +304,7 @@ export function PageRulesTab({ domain, onUpdate }) {
                   <SelectValue placeholder="Не изменять" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Не изменять</SelectItem>
+                  <SelectItem value="none">Не изменять</SelectItem>
                   <SelectItem value="off">Off</SelectItem>
                   <SelectItem value="essentially_off">
                     Essentially Off
@@ -317,11 +320,14 @@ export function PageRulesTab({ domain, onUpdate }) {
             <div className="space-y-2">
               <Label>Cache Level</Label>
               <Select
-                value={formData.actions.cacheLevel}
+                value={formData.actions.cacheLevel || "none"}
                 onValueChange={(value) =>
                   setFormData({
                     ...formData,
-                    actions: { ...formData.actions, cacheLevel: value },
+                    actions: {
+                      ...formData.actions,
+                      cacheLevel: value === "none" ? "" : value,
+                    },
                   })
                 }
               >
@@ -329,7 +335,7 @@ export function PageRulesTab({ domain, onUpdate }) {
                   <SelectValue placeholder="Не изменять" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Не изменять</SelectItem>
+                  <SelectItem value="none">Не изменять</SelectItem>
                   <SelectItem value="bypass">Bypass</SelectItem>
                   <SelectItem value="no_query_string">
                     No Query String

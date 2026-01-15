@@ -7,8 +7,8 @@ import {
   IconChevronUp,
   IconCircle,
   IconCircleFilled,
-  IconClock,
   IconCopy,
+  IconEdit,
   IconPlus,
   IconRefresh,
   IconTrash,
@@ -18,13 +18,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -44,6 +38,8 @@ export default function AgentsPage() {
   const deleteAgent = useDeleteAgent();
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingAgent, setEditingAgent] = useState(null);
   const [connectionUrl, setConnectionUrl] = useState("");
   const [newAgentName, setNewAgentName] = useState("");
   const [newAgentPolling, setNewAgentPolling] = useState("60");
@@ -107,6 +103,54 @@ export default function AgentsPage() {
       toast.success("Агент удалён");
     } catch (error) {
       toast.error(error.message || "Ошибка удаления агента");
+    }
+  };
+
+  const handleEditAgent = (agent) => {
+    setEditingAgent({
+      id: agent.id,
+      name: agent.name || "",
+      tags: agent.tags?.join(", ") || "",
+      label: agent.label || "",
+      category: agent.category || "",
+      provider: agent.provider || "",
+      price: agent.price || 0,
+      maxTraffic: agent.maxTraffic || 0,
+    });
+    setEditDialogOpen(true);
+  };
+
+  const handleSaveAgent = async () => {
+    if (!editingAgent) return;
+
+    try {
+      const response = await fetch(`/api/agent/${editingAgent.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: editingAgent.name,
+          tags: editingAgent.tags
+            .split(",")
+            .map((t) => t.trim())
+            .filter(Boolean),
+          label: editingAgent.label,
+          category: editingAgent.category,
+          provider: editingAgent.provider,
+          price: parseFloat(editingAgent.price) || 0,
+          maxTraffic: parseFloat(editingAgent.maxTraffic) || 0,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Ошибка обновления агента");
+      }
+
+      toast.success("Агент обновлён");
+      setEditDialogOpen(false);
+      setEditingAgent(null);
+      refetch();
+    } catch (error) {
+      toast.error(error.message || "Ошибка обновления агента");
     }
   };
 
@@ -324,6 +368,11 @@ export default function AgentsPage() {
                             <h3 className="font-medium text-base md:text-lg">
                               {agent.name}
                             </h3>
+                            {agent.label && (
+                              <Badge variant="outline" className="text-xs">
+                                {agent.label}
+                              </Badge>
+                            )}
                             <span className="text-xs text-muted-foreground">
                               {agent.statusText ||
                                 (agent.isActive
@@ -333,6 +382,19 @@ export default function AgentsPage() {
                                     : "Ожидает")}
                             </span>
                           </div>
+                          {agent.tags && agent.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 mb-2">
+                              {agent.tags.map((tag, idx) => (
+                                <Badge
+                                  key={idx}
+                                  variant="secondary"
+                                  className="text-xs"
+                                >
+                                  {tag}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
                           <div className="text-xs md:text-sm text-muted-foreground space-y-1.5 md:space-y-2">
                             <div className="flex items-center gap-2">
                               <span className="text-xs">ID:</span>
@@ -361,7 +423,34 @@ export default function AgentsPage() {
                               <span>Поллинг: {agent.pollingInterval}с</span>
                               <span>•</span>
                               <span>Timeout: {agent.inactivityThreshold}с</span>
+                              {agent.category && (
+                                <>
+                                  <span>•</span>
+                                  <span>Категория: {agent.category}</span>
+                                </>
+                              )}
+                              {agent.provider && (
+                                <>
+                                  <span>•</span>
+                                  <span>Провайдер: {agent.provider}</span>
+                                </>
+                              )}
                             </div>
+                            {(agent.price > 0 || agent.maxTraffic > 0) && (
+                              <div className="flex flex-wrap items-center gap-2 md:gap-3 text-xs text-muted-foreground">
+                                {agent.price > 0 && (
+                                  <span>Цена: ${agent.price}/мес</span>
+                                )}
+                                {agent.maxTraffic > 0 && (
+                                  <>
+                                    {agent.price > 0 && <span>•</span>}
+                                    <span>
+                                      Лимит: {agent.maxTraffic} GB/мес
+                                    </span>
+                                  </>
+                                )}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -388,6 +477,14 @@ export default function AgentsPage() {
                           )}
                         </div>
                         <div className="flex gap-1 md:gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEditAgent(agent)}
+                            className="h-8 w-8 md:h-9 md:w-9 hover:bg-accent"
+                          >
+                            <IconEdit className="h-4 w-4 md:h-5 md:w-5" />
+                          </Button>
                           {agent.ipInfo && (
                             <Button
                               variant="ghost"
@@ -513,6 +610,140 @@ export default function AgentsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit Agent Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Редактировать агента</DialogTitle>
+            <DialogDescription>
+              Настройте метаданные и параметры агента
+            </DialogDescription>
+          </DialogHeader>
+          {editingAgent && (
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-name">Название</Label>
+                  <Input
+                    id="edit-name"
+                    value={editingAgent.name}
+                    onChange={(e) =>
+                      setEditingAgent({ ...editingAgent, name: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-label">Подпись</Label>
+                  <Input
+                    id="edit-label"
+                    placeholder="Production Server"
+                    value={editingAgent.label}
+                    onChange={(e) =>
+                      setEditingAgent({
+                        ...editingAgent,
+                        label: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-tags">Теги (через запятую)</Label>
+                <Input
+                  id="edit-tags"
+                  placeholder="production, europe, high-priority"
+                  value={editingAgent.tags}
+                  onChange={(e) =>
+                    setEditingAgent({ ...editingAgent, tags: e.target.value })
+                  }
+                />
+                <p className="text-xs text-muted-foreground">
+                  Используйте теги для группировки и фильтрации агентов
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-category">Категория</Label>
+                  <Input
+                    id="edit-category"
+                    placeholder="Web Server, CDN, Edge"
+                    value={editingAgent.category}
+                    onChange={(e) =>
+                      setEditingAgent({
+                        ...editingAgent,
+                        category: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-provider">Провайдер</Label>
+                  <Input
+                    id="edit-provider"
+                    placeholder="AWS, Hetzner, OVH"
+                    value={editingAgent.provider}
+                    onChange={(e) =>
+                      setEditingAgent({
+                        ...editingAgent,
+                        provider: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-price">Цена ($/месяц)</Label>
+                  <Input
+                    id="edit-price"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={editingAgent.price}
+                    onChange={(e) =>
+                      setEditingAgent({
+                        ...editingAgent,
+                        price: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-traffic">Макс. трафик (GB/месяц)</Label>
+                  <Input
+                    id="edit-traffic"
+                    type="number"
+                    min="0"
+                    value={editingAgent.maxTraffic}
+                    onChange={(e) =>
+                      setEditingAgent({
+                        ...editingAgent,
+                        maxTraffic: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setEditDialogOpen(false);
+                setEditingAgent(null);
+              }}
+            >
+              Отмена
+            </Button>
+            <Button onClick={handleSaveAgent}>Сохранить</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

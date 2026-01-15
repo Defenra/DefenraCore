@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import connectDB from "@/lib/mongodb";
-import TrafficStats from "@/models/TrafficStats";
 import Agent from "@/models/Agent";
+import TrafficStats from "@/models/TrafficStats";
 
 export async function GET(request) {
   try {
@@ -20,7 +20,7 @@ export async function GET(request) {
     const resourceType = searchParams.get("resourceType");
 
     const now = new Date();
-    let startDate = new Date();
+    const startDate = new Date();
 
     switch (timeRange) {
       case "1h":
@@ -227,7 +227,7 @@ export async function POST(request) {
     const body = await request.json();
 
     // AGENT POST (Bearer token)
-    if (authHeader && authHeader.startsWith("Bearer ")) {
+    if (authHeader?.startsWith("Bearer ")) {
       const {
         agentId,
         resourceType,

@@ -26,6 +26,14 @@ const clientSchema = new mongoose.Schema(
       type: Number,
       default: 1,
     },
+    bytesSent: {
+      type: Number,
+      default: 0,
+    },
+    bytesReceived: {
+      type: Number,
+      default: 0,
+    },
     lastSeen: {
       type: Date,
       default: Date.now,

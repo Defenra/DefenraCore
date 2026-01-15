@@ -81,6 +81,31 @@ const AgentSchema = new mongoose.Schema(
       of: String,
       default: {},
     },
+    // Custom metadata fields for agent management
+    tags: {
+      type: [String],
+      default: [],
+    },
+    label: {
+      type: String,
+      default: "",
+    },
+    category: {
+      type: String,
+      default: "",
+    },
+    provider: {
+      type: String,
+      default: "",
+    },
+    price: {
+      type: Number,
+      default: 0,
+    },
+    maxTraffic: {
+      type: Number, // in GB
+      default: 0,
+    },
   },
   {
     timestamps: true,

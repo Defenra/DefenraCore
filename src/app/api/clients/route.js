@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import connectDB from "@/lib/mongodb";
-import Client from "@/models/Client";
 import Agent from "@/models/Agent";
+import Client from "@/models/Client";
 
 export async function GET(request) {
   try {
@@ -17,7 +17,7 @@ export async function GET(request) {
     // Получаем query параметры
     const { searchParams } = new URL(request.url);
     const agentId = searchParams.get("agentId");
-    const limit = parseInt(searchParams.get("limit") || "100");
+    const limit = parseInt(searchParams.get("limit") || "100", 10);
 
     // Строим запрос
     const query = { userId: session.user.id };
@@ -52,6 +52,8 @@ export async function GET(request) {
         countryCode: client.countryCode,
         userAgent: client.userAgent,
         connections: client.connections,
+        bytesSent: client.bytesSent || 0,
+        bytesReceived: client.bytesReceived || 0,
         lastSeen: client.lastSeen,
         firstSeen: client.firstSeen,
         agent: client.agentId
@@ -87,10 +89,19 @@ export async function POST(request) {
     let agent = null;
     let userId = null;
 
-    if (authHeader && authHeader.startsWith("Bearer ")) {
+    if (authHeader?.startsWith("Bearer ")) {
       // Agent authentication via Bearer token
       const body = await request.json();
-      const { ip, agentId, userAgent, country, city, countryCode } = body;
+      const {
+        ip,
+        agentId,
+        userAgent,
+        country,
+        city,
+        countryCode,
+        bytesSent,
+        bytesReceived,
+      } = body;
 
       if (!ip || !agentId) {
         return NextResponse.json(
@@ -107,21 +118,31 @@ export async function POST(request) {
       userId = agent.userId;
 
       // Update or create client
+      const updateData = {
+        $set: {
+          userAgent,
+          country,
+          city,
+          countryCode,
+          lastSeen: new Date(),
+        },
+        $inc: { connections: 1 },
+        $setOnInsert: {
+          firstSeen: new Date(),
+        },
+      };
+
+      // Add traffic data if provided
+      if (bytesSent !== undefined && bytesSent > 0) {
+        updateData.$inc.bytesSent = bytesSent;
+      }
+      if (bytesReceived !== undefined && bytesReceived > 0) {
+        updateData.$inc.bytesReceived = bytesReceived;
+      }
+
       const client = await Client.findOneAndUpdate(
         { userId, ip, agentId: agent._id },
-        {
-          $set: {
-            userAgent,
-            country,
-            city,
-            countryCode,
-            lastSeen: new Date(),
-          },
-          $inc: { connections: 1 },
-          $setOnInsert: {
-            firstSeen: new Date(),
-          },
-        },
+        updateData,
         { upsert: true, new: true },
       );
 

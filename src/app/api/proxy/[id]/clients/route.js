@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import connectDB from "@/lib/mongodb";
-import ProxyModel from "@/models/Proxy";
 import Agent from "@/models/Agent";
+import ProxyModel from "@/models/Proxy";
 
 export async function GET(_request, { params }) {
   try {

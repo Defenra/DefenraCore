@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import connectDB from "@/lib/mongodb";
-import AgentLog from "@/models/AgentLog";
 import Agent from "@/models/Agent";
+import AgentLog from "@/models/AgentLog";
 
 export async function GET(request) {
   try {
@@ -18,7 +18,7 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const level = searchParams.get("level");
     const agentId = searchParams.get("agentId");
-    const limit = parseInt(searchParams.get("limit") || "100");
+    const limit = parseInt(searchParams.get("limit") || "100", 10);
     const search = searchParams.get("search");
 
     // Строим запрос

@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  IconChartBar,
   IconNetwork,
   IconPlus,
   IconRefresh,
@@ -8,7 +9,6 @@ import {
   IconToggleRight,
   IconTrash,
   IconUsers,
-  IconChartBar,
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -84,7 +84,7 @@ export default function ProxiesPage() {
     const k = 1024;
     const sizes = ["B", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${(bytes / Math.pow(k, i)).toFixed(2)} ${sizes[i]}`;
+    return `${(bytes / k ** i).toFixed(2)} ${sizes[i]}`;
   };
 
   const formatDuration = (duration) => {

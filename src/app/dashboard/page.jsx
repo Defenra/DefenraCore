@@ -5,7 +5,6 @@ import {
   IconClock,
   IconNetwork,
   IconRobot,
-  IconTrendingUp,
   IconWorld,
 } from "@tabler/icons-react";
 import Link from "next/link";
