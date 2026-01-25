@@ -539,7 +539,7 @@ export default function AgentsPage() {
                     </div>
 
                     {/* System Metrics Preview */}
-                    {agent.systemMetrics && (
+                    {agent.systemMetrics && (agent.systemMetrics.cpuUsagePercent > 0 || agent.systemMetrics.memoryUsagePercent > 0 || agent.loadScore > 0) && (
                       <div className="space-y-3 mb-4">
                         <div className="grid grid-cols-3 gap-3">
                           <div className="text-center">
@@ -625,6 +625,16 @@ export default function AgentsPage() {
                               </div>
                             </div>
                           )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* System Metrics Unavailable Notice */}
+                    {(!agent.systemMetrics || (agent.systemMetrics.cpuUsagePercent === 0 && agent.systemMetrics.memoryUsagePercent === 0 && agent.loadScore === 0)) && (
+                      <div className="mb-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-dashed">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <IconServer className="h-3 w-3" />
+                          <span>Системные метрики загружаются...</span>
                         </div>
                       </div>
                     )}
