@@ -391,9 +391,14 @@ export function buildAnycastRecords(domain, allAgents) {
   const records = [];
   const processedLocations = new Set();
 
-  console.log(`[Build Anycast] Domain: ${domain.domain}`);
-  console.log(`  GeoDNS locations: ${domain.geoDnsConfig?.length || 0}`);
-  console.log(`  Available agents: ${allAgents.length}`);
+  // Only log detailed info occasionally to reduce spam
+  const shouldLogDetails = Math.random() < 0.02; // 2% chance to log details
+  
+  if (shouldLogDetails) {
+    console.log(`[Build Anycast] Domain: ${domain.domain}`);
+    console.log(`  GeoDNS locations: ${domain.geoDnsConfig?.length || 0}`);
+    console.log(`  Available agents: ${allAgents.length}`);
+  }
 
   // Step 1: Process configured locations from geoDnsConfig
   for (const location of domain.geoDnsConfig || []) {
@@ -450,10 +455,14 @@ export function buildAnycastRecords(domain, allAgents) {
     }
   }
 
-  // Step 2: Auto-discover locations from active agents (not in geoDnsConfig)
-  console.log(
-    `[Auto-Discovery] Checking for agents with unconfigured locations...`,
-  );
+  // Only log auto-discovery details occasionally to reduce spam
+  const shouldLogAutoDiscovery = Math.random() < 0.05; // 5% chance to log auto-discovery
+  
+  if (shouldLogAutoDiscovery) {
+    console.log(
+      `[Auto-Discovery] Checking for agents with unconfigured locations...`,
+    );
+  }
 
   const activeAgents = allAgents.filter((a) => a.isActive && a.ipAddress);
 
@@ -499,14 +508,22 @@ export function buildAnycastRecords(domain, allAgents) {
       description: `Auto: ${agent.name} (${locationName})`,
     });
 
-    console.log(
-      `  🔍 ${countryCodeLower} → ${agent.ipAddress} (${agent.name}) AUTO-DISCOVERED`,
-    );
+    if (shouldLogAutoDiscovery) {
+      console.log(
+        `  🔍 ${countryCodeLower} → ${agent.ipAddress} (${agent.name}) AUTO-DISCOVERED`,
+      );
+    }
   }
 
-  console.log(
-    `[Build Anycast] Generated ${records.filter((r) => r.value).length}/${records.length} anycast records (${records.filter((r) => r.isAutoDiscovered).length} auto-discovered)`,
-  );
+  // Only log summary occasionally to reduce spam
+  const autoDiscoveredCount = records.filter((r) => r.isAutoDiscovered).length;
+  const generatedCount = records.filter((r) => r.value).length;
+  
+  if (shouldLogDetails || autoDiscoveredCount > 0) {
+    console.log(
+      `[Build Anycast] Generated ${generatedCount}/${records.length} anycast records (${autoDiscoveredCount} auto-discovered)`,
+    );
+  }
 
   return records;
 }

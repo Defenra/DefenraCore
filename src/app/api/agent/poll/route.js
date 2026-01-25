@@ -43,8 +43,8 @@ export async function POST(request) {
     const now = new Date();
     let ipChanged = false;
 
-    // Update IP info if IP changed OR if ipInfo is missing
-    if (currentIp && (currentIp !== agent.ipAddress || !agent.ipInfo)) {
+    // Update IP info if IP changed OR if ipInfo is missing/unknown
+    if (currentIp && (currentIp !== agent.ipAddress || !agent.ipInfo || agent.ipInfo.country === "Unknown" || agent.ipInfo.countryCode === "Unknown")) {
       const ipInfo = await getIpInfo(currentIp);
 
       // Only mark as changed if IP actually changed (not just missing ipInfo)
@@ -73,6 +73,12 @@ export async function POST(request) {
 
       agent.ipAddress = currentIp;
       agent.ipInfo = ipInfo;
+      
+      // Log geolocation update only if it changed from Unknown
+      if (ipInfo.country !== "Unknown" && ipInfo.countryCode !== "Unknown" && 
+          (!agent.ipInfo || agent.ipInfo.country === "Unknown" || agent.ipInfo.countryCode === "Unknown")) {
+        console.log(`[Poll] Updated geolocation for ${agent.name}: ${ipInfo.country} (${ipInfo.countryCode}), ${ipInfo.city}`);
+      }
     }
 
     agent.lastSeen = now;
@@ -80,20 +86,29 @@ export async function POST(request) {
     agent.isActive = true;
     await agent.save();
 
-    console.log(`[Poll] Agent: ${agent.name} (${agentId})`);
-    console.log(
-      `  IP: ${agent.ipAddress} (${agent.ipInfo?.country || "unknown"})`,
-    );
-    console.log(`  Was inactive: ${wasInactive}`);
-    console.log(`  IP changed: ${ipChanged}`);
+    // Perform health check on other agents
+    const healthCheck = await checkAgentHealth();
 
-    // Check health of all agents (update their isActive status)
-    const healthCheck = await checkAgentHealth(Agent);
-    console.log(
-      `[Health Check] ${healthCheck.checkedCount} agents, ${healthCheck.activeCount} active, ${healthCheck.inactiveCount} inactive`,
-    );
-    if (healthCheck.deactivated.length > 0) {
-      console.log(`  Deactivated: ${healthCheck.deactivated.join(", ")}`);
+    // Reduce logging frequency - only log occasionally or when important changes happen
+    const shouldLogDetails = Math.random() < 0.05 || wasInactive || ipChanged; // 5% chance or important events
+    
+    if (shouldLogDetails) {
+      console.log(`[Poll] Agent: ${agent.name} (${agentId})`);
+      console.log(
+        `  IP: ${agent.ipAddress} (${agent.ipInfo?.country || "unknown"})`,
+      );
+      console.log(`  Was inactive: ${wasInactive}`);
+      console.log(`  IP changed: ${ipChanged}`);
+    }
+
+    // Only log health check details occasionally to reduce spam
+    if (shouldLogDetails || healthCheck.deactivated.length > 0) {
+      console.log(
+        `[Health Check] ${healthCheck.checkedCount} agents, ${healthCheck.activeCount} active, ${healthCheck.inactiveCount} inactive`,
+      );
+      if (healthCheck.deactivated.length > 0) {
+        console.log(`  Deactivated: ${healthCheck.deactivated.join(", ")}`);
+      }
     }
 
     // Get proxies for this specific agent
@@ -119,20 +134,23 @@ export async function POST(request) {
       ipAddress: { $exists: true, $ne: null }, // Must have IP address
     }).select("agentId ipAddress name isActive ipInfo manualLocation");
 
-    console.log(`[Active Agents] Found ${allAgents.length} active agents:`);
-    allAgents.forEach((a) => {
-      const location =
-        a.manualLocation?.country || a.ipInfo?.countryCode || "UNKNOWN";
-      console.log(
-        `  - ${a.name} (${a.agentId.substring(0, 20)}...) → ${a.ipAddress}`,
-      );
-      console.log(
-        `    location: ${location} ${a.manualLocation?.country ? "(manual)" : "(auto)"}`,
-      );
-      console.log(
-        `    ipInfo: ${a.ipInfo ? JSON.stringify({ country: a.ipInfo.country, countryCode: a.ipInfo.countryCode, city: a.ipInfo.city }) : "MISSING"}`,
-      );
-    });
+    // Only log agent details occasionally to reduce spam
+    if (shouldLogDetails) {
+      console.log(`[Active Agents] Found ${allAgents.length} active agents:`);
+      allAgents.forEach((a) => {
+        const location =
+          a.manualLocation?.country || a.ipInfo?.countryCode || "UNKNOWN";
+        console.log(
+          `  - ${a.name} (${a.agentId.substring(0, 20)}...) → ${a.ipAddress}`,
+        );
+        console.log(
+          `    location: ${location} ${a.manualLocation?.country ? "(manual)" : "(auto)"}`,
+        );
+        console.log(
+          `    ipInfo: ${a.ipInfo ? JSON.stringify({ country: a.ipInfo.country, countryCode: a.ipInfo.countryCode, city: a.ipInfo.city }) : "MISSING"}`,
+        );
+      });
+    }
 
     // Build comprehensive configuration for agent
     // ALL agents get ALL domains (they all act as NS servers)
