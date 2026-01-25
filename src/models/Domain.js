@@ -158,7 +158,7 @@ const DomainSchema = new mongoose.Schema(
           },
           maxRequests: {
             type: Number,
-            default: 100,
+            default: 30, // Reduced from 100
           },
         },
         blockDurationSeconds: {
@@ -227,15 +227,15 @@ const DomainSchema = new mongoose.Schema(
           },
           fingerprintRateLimit: {
             type: Number,
-            default: 50,
+            default: 20, // Reduced from 50
           },
           ipRateLimit: {
             type: Number,
-            default: 100,
+            default: 30, // Reduced from 100
           },
           failChallengeRateLimit: {
             type: Number,
-            default: 10,
+            default: 5, // Reduced from 10
           },
           suspiciousThreshold: {
             type: Number,
