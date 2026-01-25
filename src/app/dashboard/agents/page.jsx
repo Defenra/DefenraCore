@@ -13,6 +13,14 @@ import {
   IconRefresh,
   IconTrash,
   IconWorld,
+  IconCpu,
+  IconMemory,
+  IconActivity,
+  IconServer,
+  IconMapPin,
+  IconClock,
+  IconTrendingUp,
+  IconShield,
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -48,16 +56,16 @@ export default function AgentsPage() {
 
   const getStatusIcon = (agent) => {
     if (!agent.isConnected) {
-      return <IconCircle className="h-3 w-3 text-zinc-500" />;
+      return <IconCircle className="h-4 w-4 text-slate-400" />;
     }
     if (agent.isActive) {
-      return <IconCircleFilled className="h-3 w-3 text-green-500" />;
+      return <IconCircleFilled className="h-4 w-4 text-green-500" />;
     }
-    return <IconAlertCircle className="h-3 w-3 text-yellow-500" />;
+    return <IconAlertCircle className="h-4 w-4 text-yellow-500" />;
   };
 
-  const _getStatusColor = (agent) => {
-    if (!agent.isConnected) return "text-zinc-500";
+  const getStatusColor = (agent) => {
+    if (!agent.isConnected) return "text-slate-400";
     if (agent.isActive) return "text-green-500";
     return "text-yellow-500";
   };
@@ -190,40 +198,52 @@ export default function AgentsPage() {
     return new Date(date).toLocaleString("ru-RU");
   };
 
+  const formatBytes = (bytes) => {
+    if (bytes === 0) return "0 B";
+    const k = 1024;
+    const sizes = ["B", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return `${parseFloat((bytes / k ** i).toFixed(1))} ${sizes[i]}`;
+  };
+
   const activeCount = agents.filter((a) => a.isActive).length;
   const inactiveCount = agents.filter(
     (a) => !a.isActive && a.isConnected,
   ).length;
   const pendingCount = agents.filter((a) => !a.isConnected).length;
+  const avgLoadScore =
+    agents.length > 0
+      ? agents.reduce((sum, a) => sum + (a.loadScore || 0), 0) / agents.length
+      : 0;
 
   return (
-    <div className="flex flex-col gap-4 p-4 md:gap-6 md:p-6 lg:gap-8 lg:p-8">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-6 p-6 lg:gap-8 lg:p-8">
+      {/* Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl md:text-2xl font-semibold mb-1 md:mb-2">
-            Агенты
-          </h1>
-          <p className="text-xs md:text-sm text-muted-foreground">
-            {agents.length} подключённых агентов
+          <h1 className="text-3xl font-bold tracking-tight">Агенты</h1>
+          <p className="text-muted-foreground">
+            Управление распределённой сетью защиты
           </p>
         </div>
-        <div className="flex gap-2 md:gap-3">
+        <div className="flex gap-3">
           <Button
             variant="outline"
-            size="icon"
+            size="sm"
             onClick={() => refetch()}
             disabled={isFetching}
-            className="h-9 w-9 md:h-10 md:w-10"
+            className="h-10"
           >
             <IconRefresh
-              className={`h-4 w-4 md:h-5 md:w-5 ${isFetching ? "animate-spin" : ""}`}
+              className={`mr-2 h-4 w-4 ${isFetching ? "animate-spin" : ""}`}
             />
+            Обновить
           </Button>
           <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="h-9 md:h-10">
-                <IconPlus className="mr-1 md:mr-2 h-4 w-4 md:h-5 md:w-5" />
-                <span className="text-sm md:text-base">Добавить агента</span>
+              <Button className="h-10">
+                <IconPlus className="mr-2 h-4 w-4" />
+                Добавить агента
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -307,586 +327,519 @@ export default function AgentsPage() {
         </div>
       </div>
 
-      {/* Stats Row */}
-      <div className="grid gap-4 sm:grid-cols-4 md:gap-6">
-        <Card className="border-border">
-          <CardHeader className="pb-3 md:pb-4">
-            <CardTitle className="text-xs md:text-sm text-muted-foreground font-medium">
-              Активные
-            </CardTitle>
+      {/* Stats Overview */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="border-l-4 border-l-green-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Активные</CardTitle>
+            <IconShield className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl md:text-3xl lg:text-4xl font-bold mb-1 md:mb-2 text-green-600">
+            <div className="text-2xl font-bold text-green-600">
               {activeCount}
             </div>
-            <p className="text-xs md:text-sm text-muted-foreground">В сети</p>
+            <p className="text-xs text-muted-foreground">Защищают трафик</p>
           </CardContent>
         </Card>
-        <Card className="border-border">
-          <CardHeader className="pb-3 md:pb-4">
-            <CardTitle className="text-xs md:text-sm text-muted-foreground font-medium">
-              Неактивные
-            </CardTitle>
+
+        <Card className="border-l-4 border-l-yellow-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Неактивные</CardTitle>
+            <IconAlertCircle className="h-4 w-4 text-yellow-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl md:text-3xl lg:text-4xl font-bold mb-1 md:mb-2 text-yellow-600">
+            <div className="text-2xl font-bold text-yellow-600">
               {inactiveCount}
             </div>
-            <p className="text-xs md:text-sm text-muted-foreground">
-              Требуют внимания
-            </p>
+            <p className="text-xs text-muted-foreground">Требуют внимания</p>
           </CardContent>
         </Card>
-        <Card className="border-border">
-          <CardHeader className="pb-3 md:pb-4">
-            <CardTitle className="text-xs md:text-sm text-muted-foreground font-medium">
-              Ожидают
-            </CardTitle>
+
+        <Card className="border-l-4 border-l-slate-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Ожидают</CardTitle>
+            <IconClock className="h-4 w-4 text-slate-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl md:text-3xl lg:text-4xl font-bold mb-1 md:mb-2 text-slate-600">
+            <div className="text-2xl font-bold text-slate-600">
               {pendingCount}
             </div>
-            <p className="text-xs md:text-sm text-muted-foreground">
-              Подключения
-            </p>
+            <p className="text-xs text-muted-foreground">Подключения</p>
           </CardContent>
         </Card>
-        <Card className="border-border">
-          <CardHeader className="pb-3 md:pb-4">
-            <CardTitle className="text-xs md:text-sm text-muted-foreground font-medium">
-              Всего
+
+        <Card className="border-l-4 border-l-blue-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Средняя нагрузка
             </CardTitle>
+            <IconTrendingUp className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl md:text-3xl lg:text-4xl font-bold mb-1 md:mb-2">
-              {agents.length}
+            <div className="text-2xl font-bold text-blue-600">
+              {avgLoadScore.toFixed(0)}%
             </div>
-            <p className="text-xs md:text-sm text-muted-foreground">
-              Агентов
-            </p>
+            <p className="text-xs text-muted-foreground">По всей сети</p>
           </CardContent>
         </Card>
       </div>
 
-      <Card className="border-border">
-        <CardHeader className="pb-6">
-          <CardTitle className="text-lg font-medium">Список агентов</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="text-center py-12 text-muted-foreground">
-              Загрузка...
-            </div>
-          ) : agents.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              Нет подключённых агентов
-            </div>
-          ) : (
-            <div className="space-y-3 md:space-y-4">
-              {agents.map((agent) => {
-                const isExpanded = expandedAgents.has(agent.id);
-                return (
-                  <div
-                    key={agent.id}
-                    className="border border-border rounded-lg hover:bg-accent/50 transition-colors"
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between p-4 md:p-6 gap-3">
-                      <div className="flex items-start gap-3 md:gap-4 flex-1 min-w-0">
+      {/* Agents Grid */}
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold">Сетевые узлы</h2>
+          <div className="text-sm text-muted-foreground">
+            {agents.length} агентов
+          </div>
+        </div>
+
+        {isLoading ? (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {[...Array(6)].map((_, i) => (
+              <Card key={`skeleton-${i}`} className="animate-pulse">
+                <CardContent className="p-6">
+                  <div className="space-y-3">
+                    <div className="h-4 bg-slate-200 rounded w-3/4"></div>
+                    <div className="h-3 bg-slate-200 rounded w-1/2"></div>
+                    <div className="h-3 bg-slate-200 rounded w-2/3"></div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : agents.length === 0 ? (
+          <Card className="border-dashed">
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <IconServer className="h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Нет агентов</h3>
+              <p className="text-muted-foreground text-center mb-4">
+                Добавьте первый агент для начала защиты вашей инфраструктуры
+              </p>
+              <Button onClick={() => setCreateDialogOpen(true)}>
+                <IconPlus className="mr-2 h-4 w-4" />
+                Добавить агента
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {agents.map((agent) => {
+              const isExpanded = expandedAgents.has(agent.id);
+              return (
+                <Card
+                  key={agent.id}
+                  className={`transition-all duration-200 hover:shadow-md ${
+                    agent.isActive
+                      ? "border-green-200 bg-green-50/30 dark:border-green-800 dark:bg-green-900/10"
+                      : agent.isConnected
+                        ? "border-yellow-200 bg-yellow-50/30 dark:border-yellow-800 dark:bg-yellow-900/10"
+                        : "border-slate-200 bg-slate-50/30 dark:border-slate-700 dark:bg-slate-800/30"
+                  }`}
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
                         {getStatusIcon(agent)}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-2 md:mb-3">
-                            <h3 className="font-medium text-base md:text-lg">
-                              {agent.name}
-                            </h3>
+                        <div>
+                          <CardTitle className="text-lg font-semibold">
+                            {agent.name}
+                          </CardTitle>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span
+                              className={`text-sm font-medium ${getStatusColor(agent)}`}
+                            >
+                              {agent.isActive
+                                ? "Активен"
+                                : agent.isConnected
+                                  ? "Подключён"
+                                  : "Ожидает"}
+                            </span>
                             {agent.label && (
                               <Badge variant="outline" className="text-xs">
                                 {agent.label}
                               </Badge>
                             )}
-                            <span className="text-xs text-muted-foreground">
-                              {agent.statusText ||
-                                (agent.isActive
-                                  ? "Активен"
-                                  : agent.isConnected
-                                    ? "Подключён"
-                                    : "Ожидает")}
-                            </span>
                           </div>
-                          {agent.tags && agent.tags.length > 0 && (
-                            <div className="flex flex-wrap gap-1.5 mb-2">
-                              {agent.tags.map((tag, idx) => (
-                                <Badge
-                                  key={idx}
-                                  variant="secondary"
-                                  className="text-xs"
-                                >
-                                  {tag}
-                                </Badge>
-                              ))}
-                            </div>
-                          )}
-                          <div className="text-xs md:text-sm text-muted-foreground space-y-1.5 md:space-y-2">
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs">ID:</span>
-                              <span className="font-mono text-xs break-all">
-                                {agent.agentId}
-                              </span>
-                            </div>
-                            {agent.ipAddress && (
-                              <div className="flex items-start gap-2">
-                                <IconWorld className="h-4 w-4 shrink-0 mt-0.5" />
-                                <div className="flex flex-wrap items-center gap-1">
-                                  <span className="font-mono text-xs">
-                                    {agent.ipAddress}
-                                  </span>
-                                  {(agent.manualLocation?.city ||
-                                    agent.ipInfo?.city) &&
-                                    (agent.manualLocation?.country ||
-                                      agent.ipInfo?.country) && (
-                                      <span className="text-xs">
-                                        •{" "}
-                                        {agent.manualLocation?.city ||
-                                          agent.ipInfo.city}
-                                        ,{" "}
-                                        {agent.manualLocation?.country ||
-                                          agent.ipInfo.country}
-                                        {agent.manualLocation?.city && (
-                                          <Badge
-                                            variant="outline"
-                                            className="ml-1.5 text-xs"
-                                          >
-                                            Ручная
-                                          </Badge>
-                                        )}
-                                      </span>
-                                    )}
-                                </div>
-                              </div>
-                            )}
-                            <div className="flex flex-wrap items-center gap-2 md:gap-3 text-xs">
-                              <span>Поллинг: {agent.pollingInterval}с</span>
-                              <span>•</span>
-                              <span>Timeout: {agent.inactivityThreshold}с</span>
-                              {agent.category && (
-                                <>
-                                  <span>•</span>
-                                  <span>Категория: {agent.category}</span>
-                                </>
-                              )}
-                              {agent.provider && (
-                                <>
-                                  <span>•</span>
-                                  <span>Провайдер: {agent.provider}</span>
-                                </>
-                              )}
-                            </div>
-                            {(agent.price > 0 || agent.maxTraffic > 0) && (
-                              <div className="flex flex-wrap items-center gap-2 md:gap-3 text-xs text-muted-foreground">
-                                {agent.price > 0 && (
-                                  <span>Цена: ${agent.price}/мес</span>
-                                )}
-                                {agent.maxTraffic > 0 && (
-                                  <>
-                                    {agent.price > 0 && <span>•</span>}
-                                    <span>
-                                      Лимит: {agent.maxTraffic} GB/мес
-                                    </span>
-                                  </>
-                                )}
-                              </div>
-                            )}
-                            {agent.nextPaymentDate && (
-                              <div className="flex flex-wrap items-center gap-2 text-xs">
-                                <span className="text-muted-foreground">
-                                  Следующая оплата:
-                                </span>
-                                <span
-                                  className={
-                                    agent.isPaid
-                                      ? "text-green-600"
-                                      : "text-red-600 font-medium"
-                                  }
-                                >
-                                  {new Date(
-                                    agent.nextPaymentDate,
-                                  ).toLocaleDateString("ru-RU")}
-                                </span>
-                                {!agent.isPaid && (
-                                  <Badge
-                                    variant="destructive"
-                                    className="text-xs"
-                                  >
-                                    Требует оплаты
-                                  </Badge>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                          
-                          {/* Quick System Metrics Preview */}
-                          {agent.systemMetrics && (
-                            <div className="flex flex-wrap items-center gap-3 md:gap-4 text-xs mt-2">
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-muted-foreground">CPU:</span>
-                                <div className="flex items-center gap-1">
-                                  <div className="w-8 bg-secondary rounded-full h-1.5">
-                                    <div
-                                      className={`h-1.5 rounded-full transition-all ${
-                                        agent.systemMetrics.cpuUsagePercent > 80
-                                          ? "bg-red-500"
-                                          : agent.systemMetrics.cpuUsagePercent > 60
-                                            ? "bg-yellow-500"
-                                            : "bg-green-500"
-                                      }`}
-                                      style={{
-                                        width: `${Math.min(agent.systemMetrics.cpuUsagePercent, 100)}%`,
-                                      }}
-                                    />
-                                  </div>
-                                  <span className="font-mono text-xs">
-                                    {agent.systemMetrics.cpuUsagePercent.toFixed(0)}%
-                                  </span>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-muted-foreground">RAM:</span>
-                                <div className="flex items-center gap-1">
-                                  <div className="w-8 bg-secondary rounded-full h-1.5">
-                                    <div
-                                      className={`h-1.5 rounded-full transition-all ${
-                                        agent.systemMetrics.memoryUsagePercent > 80
-                                          ? "bg-red-500"
-                                          : agent.systemMetrics.memoryUsagePercent > 60
-                                            ? "bg-yellow-500"
-                                            : "bg-green-500"
-                                      }`}
-                                      style={{
-                                        width: `${Math.min(agent.systemMetrics.memoryUsagePercent, 100)}%`,
-                                      }}
-                                    />
-                                  </div>
-                                  <span className="font-mono text-xs">
-                                    {agent.systemMetrics.memoryUsagePercent.toFixed(0)}%
-                                  </span>
-                                </div>
-                              </div>
-                              {agent.loadScore !== undefined && (
-                                <div className="flex items-center gap-1.5">
-                                  <span className="text-muted-foreground">Load:</span>
-                                  <div className="flex items-center gap-1">
-                                    <div className="w-8 bg-secondary rounded-full h-1.5">
-                                      <div
-                                        className={`h-1.5 rounded-full transition-all ${
-                                          agent.loadScore > 80
-                                            ? "bg-red-500"
-                                            : agent.loadScore > 60
-                                              ? "bg-yellow-500"
-                                              : "bg-green-500"
-                                        }`}
-                                        style={{
-                                          width: `${Math.min(agent.loadScore, 100)}%`,
-                                        }}
-                                      />
-                                    </div>
-                                    <span className="font-mono text-xs">
-                                      {agent.loadScore.toFixed(0)}
-                                    </span>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          )}
                         </div>
                       </div>
-                      <div className="flex items-center justify-between sm:flex-col sm:items-end gap-2">
-                        <div className="text-left sm:text-right space-y-1">
-                          {agent.lastSeen && (
-                            <div className="text-xs text-muted-foreground">
-                              <div className="hidden sm:block">
-                                Последняя активность:
-                              </div>
-                              <div className="sm:hidden">Активность:</div>
-                              <div className="font-mono">
-                                {formatDate(agent.lastSeen)}
-                              </div>
-                            </div>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEditAgent(agent)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <IconEdit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleAgentExpanded(agent.id)}
+                          className="h-8 w-8 p-0"
+                        >
+                          {isExpanded ? (
+                            <IconChevronUp className="h-4 w-4" />
+                          ) : (
+                            <IconChevronDown className="h-4 w-4" />
                           )}
-                          {agent.connectedAt && !agent.lastSeen && (
-                            <div className="text-xs text-muted-foreground">
-                              <div>Подключён:</div>
-                              <div className="font-mono">
-                                {formatDate(agent.connectedAt)}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex gap-1 md:gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleEditAgent(agent)}
-                            className="h-8 w-8 md:h-9 md:w-9 hover:bg-accent"
-                          >
-                            <IconEdit className="h-4 w-4 md:h-5 md:w-5" />
-                          </Button>
-                          {agent.ipInfo && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => toggleAgentExpanded(agent.id)}
-                              className="h-8 w-8 md:h-9 md:w-9"
-                            >
-                              {isExpanded ? (
-                                <IconChevronUp className="h-4 w-4 md:h-5 md:w-5" />
-                              ) : (
-                                <IconChevronDown className="h-4 w-4 md:h-5 md:w-5" />
-                              )}
-                            </Button>
-                          )}
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDeleteAgent(agent.id)}
-                            className="h-8 w-8 md:h-9 md:w-9 hover:bg-accent"
-                          >
-                            <IconTrash className="h-4 w-4 md:h-5 md:w-5" />
-                          </Button>
-                        </div>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteAgent(agent.id)}
+                          className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <IconTrash className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
+                  </CardHeader>
 
-                    {isExpanded && agent.ipInfo && (
-                      <div className="px-4 pb-4 pt-3 md:px-6 md:pb-6 md:pt-4 border-t border-border">
-                        <h4 className="text-sm font-medium mb-3 md:mb-4">
-                          Информация об IP
-                        </h4>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 text-xs md:text-sm">
-                          <div>
+                  <CardContent className="pt-0">
+                    {/* Location & Basic Info */}
+                    <div className="space-y-3 mb-4">
+                      {agent.ipAddress && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <IconWorld className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-mono">{agent.ipAddress}</span>
+                          {(agent.manualLocation?.city ||
+                            agent.ipInfo?.city) && (
                             <span className="text-muted-foreground">
-                              IP адрес:
+                              •{" "}
+                              {agent.manualLocation?.city || agent.ipInfo?.city}
+                              ,{" "}
+                              {agent.manualLocation?.country ||
+                                agent.ipInfo?.country}
+                              {agent.manualLocation?.city && (
+                                <Badge
+                                  variant="outline"
+                                  className="ml-1 text-xs"
+                                >
+                                  manual
+                                </Badge>
+                              )}
                             </span>
-                            <p className="font-mono">{agent.ipAddress}</p>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">
-                              Страна:
-                            </span>
-                            <p>
-                              {agent.ipInfo.country} ({agent.ipInfo.countryCode}
-                              )
-                            </p>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">
-                              Регион:
-                            </span>
-                            <p>{agent.ipInfo.region}</p>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">
-                              Город:
-                            </span>
-                            <p>{agent.ipInfo.city}</p>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">
-                              Провайдер:
-                            </span>
-                            <p>{agent.ipInfo.isp}</p>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">
-                              Организация:
-                            </span>
-                            <p className="truncate">{agent.ipInfo.org}</p>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">
-                              Часовой пояс:
-                            </span>
-                            <p>{agent.ipInfo.timezone}</p>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">AS:</span>
-                            <p className="font-mono text-xs">
-                              {agent.ipInfo.as}
-                            </p>
-                          </div>
+                          )}
                         </div>
+                      )}
 
-                        {/* System Metrics Section */}
-                        {agent.systemMetrics && (
-                          <div className="mt-3 pt-3 md:mt-4 md:pt-4 border-t">
-                            <div className="flex items-center justify-between mb-3 md:mb-4">
-                              <h4 className="text-sm font-medium">
-                                Системные метрики
-                              </h4>
-                              {agent.systemMetrics.lastUpdated && (
-                                <span className="text-xs text-muted-foreground">
-                                  {formatDate(agent.systemMetrics.lastUpdated)}
-                                </span>
-                              )}
+                      {agent.tags && agent.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {agent.tags.map((tag, idx) => (
+                            <Badge
+                              key={idx}
+                              variant="secondary"
+                              className="text-xs"
+                            >
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* System Metrics Preview */}
+                    {agent.systemMetrics && (
+                      <div className="space-y-3 mb-4">
+                        <div className="grid grid-cols-3 gap-3">
+                          <div className="text-center">
+                            <div className="flex items-center justify-center mb-1">
+                              <IconCpu className="h-4 w-4 text-blue-500 mr-1" />
+                              <span className="text-xs text-muted-foreground">
+                                CPU
+                              </span>
                             </div>
-                            
-                            {/* Key Metrics Row */}
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4">
-                              <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3">
-                                <div className="text-xs text-muted-foreground mb-1">CPU</div>
-                                <div className="flex items-center gap-2">
-                                  <div className="flex-1 bg-secondary rounded-full h-2">
-                                    <div
-                                      className={`h-2 rounded-full transition-all ${
-                                        agent.systemMetrics.cpuUsagePercent > 80
-                                          ? "bg-red-500"
-                                          : agent.systemMetrics.cpuUsagePercent > 60
-                                            ? "bg-yellow-500"
-                                            : "bg-green-500"
-                                      }`}
-                                      style={{
-                                        width: `${Math.min(agent.systemMetrics.cpuUsagePercent, 100)}%`,
-                                      }}
-                                    />
-                                  </div>
-                                  <span className="font-mono text-xs min-w-[2.5rem] text-right font-medium">
-                                    {agent.systemMetrics.cpuUsagePercent.toFixed(1)}%
-                                  </span>
-                                </div>
-                              </div>
-                              
-                              <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3">
-                                <div className="text-xs text-muted-foreground mb-1">Memory</div>
-                                <div className="flex items-center gap-2">
-                                  <div className="flex-1 bg-secondary rounded-full h-2">
-                                    <div
-                                      className={`h-2 rounded-full transition-all ${
-                                        agent.systemMetrics.memoryUsagePercent > 80
-                                          ? "bg-red-500"
-                                          : agent.systemMetrics.memoryUsagePercent > 60
-                                            ? "bg-yellow-500"
-                                            : "bg-green-500"
-                                      }`}
-                                      style={{
-                                        width: `${Math.min(agent.systemMetrics.memoryUsagePercent, 100)}%`,
-                                      }}
-                                    />
-                                  </div>
-                                  <span className="font-mono text-xs min-w-[2.5rem] text-right font-medium">
-                                    {agent.systemMetrics.memoryUsagePercent.toFixed(1)}%
-                                  </span>
-                                </div>
-                                <div className="text-xs text-muted-foreground mt-1">
-                                  {(agent.systemMetrics.memoryUsedBytes / 1024 / 1024 / 1024).toFixed(1)}GB / {(agent.systemMetrics.memoryTotalBytes / 1024 / 1024 / 1024).toFixed(1)}GB
-                                </div>
-                              </div>
-                              
-                              {agent.loadScore !== undefined && (
-                                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3">
-                                  <div className="text-xs text-muted-foreground mb-1">Load Score</div>
-                                  <div className="flex items-center gap-2">
-                                    <div className="flex-1 bg-secondary rounded-full h-2">
-                                      <div
-                                        className={`h-2 rounded-full transition-all ${
-                                          agent.loadScore > 80
-                                            ? "bg-red-500"
-                                            : agent.loadScore > 60
-                                              ? "bg-yellow-500"
-                                              : "bg-green-500"
-                                        }`}
-                                        style={{
-                                          width: `${Math.min(agent.loadScore, 100)}%`,
-                                        }}
-                                      />
-                                    </div>
-                                    <span className="font-mono text-xs min-w-[2.5rem] text-right font-medium">
-                                      {agent.loadScore.toFixed(0)}
-                                    </span>
-                                  </div>
-                                </div>
+                            <div className="text-sm font-semibold">
+                              {agent.systemMetrics.cpuUsagePercent.toFixed(0)}%
+                            </div>
+                            <div className="w-full bg-secondary rounded-full h-1.5 mt-1">
+                              <div
+                                className={`h-1.5 rounded-full transition-all ${
+                                  agent.systemMetrics.cpuUsagePercent > 80
+                                    ? "bg-red-500"
+                                    : agent.systemMetrics.cpuUsagePercent > 60
+                                      ? "bg-yellow-500"
+                                      : "bg-green-500"
+                                }`}
+                                style={{
+                                  width: `${Math.min(agent.systemMetrics.cpuUsagePercent, 100)}%`,
+                                }}
+                              />
+                            </div>
+                          </div>
+
+                          <div className="text-center">
+                            <div className="flex items-center justify-center mb-1">
+                              <IconMemory className="h-4 w-4 text-purple-500 mr-1" />
+                              <span className="text-xs text-muted-foreground">
+                                RAM
+                              </span>
+                            </div>
+                            <div className="text-sm font-semibold">
+                              {agent.systemMetrics.memoryUsagePercent.toFixed(
+                                0,
                               )}
-                              
-                              <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3">
-                                <div className="text-xs text-muted-foreground mb-1">Goroutines</div>
-                                <div className="font-mono text-sm font-medium">
+                              %
+                            </div>
+                            <div className="w-full bg-secondary rounded-full h-1.5 mt-1">
+                              <div
+                                className={`h-1.5 rounded-full transition-all ${
+                                  agent.systemMetrics.memoryUsagePercent > 80
+                                    ? "bg-red-500"
+                                    : agent.systemMetrics.memoryUsagePercent >
+                                        60
+                                      ? "bg-yellow-500"
+                                      : "bg-green-500"
+                                }`}
+                                style={{
+                                  width: `${Math.min(agent.systemMetrics.memoryUsagePercent, 100)}%`,
+                                }}
+                              />
+                            </div>
+                          </div>
+
+                          {agent.loadScore !== undefined && (
+                            <div className="text-center">
+                              <div className="flex items-center justify-center mb-1">
+                                <IconActivity className="h-4 w-4 text-orange-500 mr-1" />
+                                <span className="text-xs text-muted-foreground">
+                                  Load
+                                </span>
+                              </div>
+                              <div className="text-sm font-semibold">
+                                {agent.loadScore.toFixed(0)}
+                              </div>
+                              <div className="w-full bg-secondary rounded-full h-1.5 mt-1">
+                                <div
+                                  className={`h-1.5 rounded-full transition-all ${
+                                    agent.loadScore > 80
+                                      ? "bg-red-500"
+                                      : agent.loadScore > 60
+                                        ? "bg-yellow-500"
+                                        : "bg-green-500"
+                                  }`}
+                                  style={{
+                                    width: `${Math.min(agent.loadScore, 100)}%`,
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Last Activity */}
+                    {agent.lastSeen && (
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <IconClock className="h-3 w-3" />
+                        <span>Активность: {formatDate(agent.lastSeen)}</span>
+                      </div>
+                    )}
+
+                    {/* Expanded Details */}
+                    {isExpanded && (
+                      <div className="mt-4 pt-4 border-t space-y-4">
+                        {/* Detailed System Metrics */}
+                        {agent.systemMetrics && (
+                          <div>
+                            <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                              <IconServer className="h-4 w-4" />
+                              Системные метрики
+                            </h4>
+                            <div className="grid grid-cols-2 gap-3 text-xs">
+                              <div>
+                                <span className="text-muted-foreground">
+                                  Memory:
+                                </span>
+                                <div className="font-mono">
+                                  {formatBytes(
+                                    agent.systemMetrics.memoryUsedBytes,
+                                  )}{" "}
+                                  /{" "}
+                                  {formatBytes(
+                                    agent.systemMetrics.memoryTotalBytes,
+                                  )}
+                                </div>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">
+                                  Goroutines:
+                                </span>
+                                <div className="font-mono">
                                   {agent.systemMetrics.numGoroutines || 0}
                                 </div>
                               </div>
-                            </div>
-                            
-                            {/* Detailed Metrics */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 text-xs md:text-sm">
                               <div>
                                 <span className="text-muted-foreground">
-                                  Load Average:
+                                  Load Avg:
                                 </span>
-                                <p className="font-mono">
-                                  {agent.systemMetrics.loadAverage1Min?.toFixed(2) || "0.00"} / {agent.systemMetrics.loadAverage5Min?.toFixed(2) || "0.00"} / {agent.systemMetrics.loadAverage15Min?.toFixed(2) || "0.00"}
-                                </p>
+                                <div className="font-mono">
+                                  {agent.systemMetrics.loadAverage1Min?.toFixed(
+                                    2,
+                                  ) || "0.00"}
+                                </div>
                               </div>
                               <div>
                                 <span className="text-muted-foreground">
                                   Disk I/O:
                                 </span>
-                                <p className="text-xs">
-                                  ↓ {(agent.systemMetrics.diskReadBytesPS / 1024 / 1024).toFixed(1)} MB/s
-                                  {" / "}
-                                  ↑ {(agent.systemMetrics.diskWriteBytesPS / 1024 / 1024).toFixed(1)} MB/s
-                                </p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">
-                                  Network I/O:
-                                </span>
-                                <p className="text-xs">
-                                  ↓ {(agent.systemMetrics.networkRxBytesPS / 1024 / 1024).toFixed(1)} MB/s
-                                  {" / "}
-                                  ↑ {(agent.systemMetrics.networkTxBytesPS / 1024 / 1024).toFixed(1)} MB/s
-                                </p>
+                                <div className="font-mono text-xs">
+                                  {(
+                                    agent.systemMetrics.diskReadBytesPS /
+                                    1024 /
+                                    1024
+                                  ).toFixed(1)}{" "}
+                                  MB/s
+                                </div>
                               </div>
                             </div>
                           </div>
                         )}
 
-                        {agent.ipHistory && agent.ipHistory.length > 0 && (
-                          <div className="mt-3 pt-3 md:mt-4 md:pt-4 border-t">
-                            <h4 className="text-xs md:text-sm font-semibold mb-2">
-                              История IP ({agent.ipHistory.length})
+                        {/* IP Info */}
+                        {agent.ipInfo && (
+                          <div>
+                            <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                              <IconMapPin className="h-4 w-4" />
+                              Геолокация
                             </h4>
-                            <div className="space-y-2 max-h-32 md:max-h-40 overflow-y-auto">
-                              {agent.ipHistory
-                                .slice()
-                                .reverse()
-                                .map((entry, idx) => (
-                                  <div
-                                    key={idx}
-                                    className="text-xs p-2 bg-background rounded border"
-                                  >
-                                    <span className="font-mono">
-                                      {entry.ip}
+                            <div className="grid grid-cols-2 gap-3 text-xs">
+                              <div>
+                                <span className="text-muted-foreground">
+                                  Страна:
+                                </span>
+                                <div>
+                                  {agent.ipInfo.country} (
+                                  {agent.ipInfo.countryCode})
+                                </div>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">
+                                  Регион:
+                                </span>
+                                <div>{agent.ipInfo.region}</div>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">
+                                  Провайдер:
+                                </span>
+                                <div className="truncate">
+                                  {agent.ipInfo.isp}
+                                </div>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">
+                                  Часовой пояс:
+                                </span>
+                                <div>{agent.ipInfo.timezone}</div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Configuration */}
+                        <div>
+                          <h4 className="text-sm font-semibold mb-3">
+                            Конфигурация
+                          </h4>
+                          <div className="grid grid-cols-2 gap-3 text-xs">
+                            <div>
+                              <span className="text-muted-foreground">
+                                Поллинг:
+                              </span>
+                              <div>{agent.pollingInterval}с</div>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">
+                                Timeout:
+                              </span>
+                              <div>{agent.inactivityThreshold}с</div>
+                            </div>
+                            {agent.category && (
+                              <div>
+                                <span className="text-muted-foreground">
+                                  Категория:
+                                </span>
+                                <div>{agent.category}</div>
+                              </div>
+                            )}
+                            {agent.provider && (
+                              <div>
+                                <span className="text-muted-foreground">
+                                  Провайдер:
+                                </span>
+                                <div>{agent.provider}</div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Billing Info */}
+                        {(agent.price > 0 ||
+                          agent.maxTraffic > 0 ||
+                          agent.nextPaymentDate) && (
+                          <div>
+                            <h4 className="text-sm font-semibold mb-3">
+                              Биллинг
+                            </h4>
+                            <div className="space-y-2 text-xs">
+                              {agent.price > 0 && (
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">
+                                    Цена:
+                                  </span>
+                                  <span>${agent.price}/мес</span>
+                                </div>
+                              )}
+                              {agent.maxTraffic > 0 && (
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">
+                                    Лимит трафика:
+                                  </span>
+                                  <span>{agent.maxTraffic} GB/мес</span>
+                                </div>
+                              )}
+                              {agent.nextPaymentDate && (
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">
+                                    Следующая оплата:
+                                  </span>
+                                  <div className="flex items-center gap-2">
+                                    <span
+                                      className={
+                                        agent.isPaid
+                                          ? "text-green-600"
+                                          : "text-red-600"
+                                      }
+                                    >
+                                      {new Date(
+                                        agent.nextPaymentDate,
+                                      ).toLocaleDateString("ru-RU")}
                                     </span>
-                                    {entry.ipInfo && (
-                                      <span className="text-muted-foreground ml-2">
-                                        {entry.ipInfo.city},{" "}
-                                        {entry.ipInfo.country}
-                                      </span>
+                                    {!agent.isPaid && (
+                                      <Badge
+                                        variant="destructive"
+                                        className="text-xs"
+                                      >
+                                        Требует оплаты
+                                      </Badge>
                                     )}
-                                    <div className="text-muted-foreground mt-1">
-                                      {formatDate(entry.changedAt)}
-                                    </div>
                                   </div>
-                                ))}
+                                </div>
+                              )}
                             </div>
                           </div>
                         )}
                       </div>
                     )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {/* Edit Agent Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>

@@ -451,36 +451,39 @@ export function buildAnycastRecords(domain, allAgents) {
   }
 
   // Step 2: Auto-discover locations from active agents (not in geoDnsConfig)
-  console.log(`[Auto-Discovery] Checking for agents with unconfigured locations...`);
-  
+  console.log(
+    `[Auto-Discovery] Checking for agents with unconfigured locations...`,
+  );
+
   const activeAgents = allAgents.filter((a) => a.isActive && a.ipAddress);
-  
+
   for (const agent of activeAgents) {
     // Get agent's country code (manual location takes priority)
     let countryCode = null;
-    
+
     if (agent.manualLocation && agent.manualLocation.country) {
       countryCode = agent.manualLocation.country.toUpperCase();
     } else if (agent.ipInfo && agent.ipInfo.countryCode) {
       countryCode = agent.ipInfo.countryCode.toUpperCase();
     }
-    
+
     if (!countryCode) {
       continue; // Skip agents without location
     }
-    
+
     const countryCodeLower = countryCode.toLowerCase();
-    
+
     // Skip if this location is already processed
     if (processedLocations.has(countryCodeLower)) {
       continue;
     }
-    
+
     // Add this location automatically
     processedLocations.add(countryCodeLower);
-    
-    const locationName = agent.manualLocation?.country || agent.ipInfo?.country || countryCode;
-    
+
+    const locationName =
+      agent.manualLocation?.country || agent.ipInfo?.country || countryCode;
+
     records.push({
       name: countryCodeLower,
       type: "A",
@@ -495,7 +498,7 @@ export function buildAnycastRecords(domain, allAgents) {
       isAutoDiscovered: true, // Mark as auto-discovered
       description: `Auto: ${agent.name} (${locationName})`,
     });
-    
+
     console.log(
       `  🔍 ${countryCodeLower} → ${agent.ipAddress} (${agent.name}) AUTO-DISCOVERED`,
     );
