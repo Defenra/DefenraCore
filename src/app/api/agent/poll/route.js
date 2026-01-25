@@ -260,6 +260,11 @@ export async function POST(request) {
       message: "Configuration retrieved successfully",
       timestamp: new Date().toISOString(),
 
+      // Agent's geo code for D-Agent-ID header
+      geoCode: agent.manualLocation?.country?.toUpperCase() || 
+               agent.ipInfo?.countryCode?.toUpperCase() || 
+               "XX",
+
       // Agent Information
       agent: {
         id: agentId,

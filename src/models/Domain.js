@@ -149,7 +149,7 @@ const DomainSchema = new mongoose.Schema(
       antiDDoS: {
         enabled: {
           type: Boolean,
-          default: false,
+          default: true, // Enable anti-DDoS protection by default
         },
         rateLimit: {
           windowSeconds: {
@@ -211,7 +211,7 @@ const DomainSchema = new mongoose.Schema(
         l7Protection: {
           enabled: {
             type: Boolean,
-            default: false,
+            default: true, // Enable L7 protection by default
           },
           tlsFingerprintEnabled: {
             type: Boolean,
