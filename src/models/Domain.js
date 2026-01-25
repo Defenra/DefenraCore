@@ -207,6 +207,109 @@ const DomainSchema = new mongoose.Schema(
           type: [String],
           default: [],
         },
+        // L7 Protection (Advanced Anti-DDoS)
+        l7Protection: {
+          enabled: {
+            type: Boolean,
+            default: false,
+          },
+          tlsFingerprintEnabled: {
+            type: Boolean,
+            default: true,
+          },
+          botDetectionEnabled: {
+            type: Boolean,
+            default: true,
+          },
+          browserValidationEnabled: {
+            type: Boolean,
+            default: true,
+          },
+          fingerprintRateLimit: {
+            type: Number,
+            default: 50,
+          },
+          ipRateLimit: {
+            type: Number,
+            default: 100,
+          },
+          failChallengeRateLimit: {
+            type: Number,
+            default: 10,
+          },
+          suspiciousThreshold: {
+            type: Number,
+            default: 1,
+          },
+          blockedFingerprints: {
+            type: [String],
+            default: [],
+          },
+          allowedFingerprints: {
+            type: [String],
+            default: [],
+          },
+        },
+        // Challenge Settings
+        challengeSettings: {
+          cookieChallenge: {
+            enabled: {
+              type: Boolean,
+              default: true,
+            },
+            ttl: {
+              type: Number,
+              default: 3600,
+            },
+          },
+          jsChallenge: {
+            enabled: {
+              type: Boolean,
+              default: true,
+            },
+            difficulty: {
+              type: Number,
+              default: 4,
+              min: 1,
+              max: 8,
+            },
+            ttl: {
+              type: Number,
+              default: 1800,
+            },
+          },
+          captchaChallenge: {
+            enabled: {
+              type: Boolean,
+              default: true,
+            },
+            ttl: {
+              type: Number,
+              default: 300,
+            },
+          },
+        },
+        // Custom Firewall Rules
+        customRules: [
+          {
+            name: {
+              type: String,
+              required: true,
+            },
+            expression: {
+              type: String,
+              required: true,
+            },
+            action: {
+              type: String,
+              required: true,
+            },
+            enabled: {
+              type: Boolean,
+              default: true,
+            },
+          },
+        ],
       },
     },
     dnsRecords: [DnsRecordSchema],
