@@ -87,7 +87,7 @@ export async function POST(request) {
     await agent.save();
 
     // Perform health check on other agents
-    const healthCheck = await checkAgentHealth();
+    const healthCheck = await checkAgentHealth(Agent);
 
     // Reduce logging frequency - only log occasionally or when important changes happen
     const shouldLogDetails = Math.random() < 0.05 || wasInactive || ipChanged; // 5% chance or important events

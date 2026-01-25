@@ -1,5 +1,5 @@
 import path from "node:path";
-import Reader from "@maxmind/geoip2-node";
+import { Reader } from "@maxmind/geoip2-node";
 
 let geoipReader = null;
 
