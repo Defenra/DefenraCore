@@ -14,7 +14,7 @@ import {
   IconTrash,
   IconWorld,
   IconCpu,
-  IconMemory,
+  IconDatabase,
   IconActivity,
   IconServer,
   IconMapPin,
@@ -570,7 +570,7 @@ export default function AgentsPage() {
 
                           <div className="text-center">
                             <div className="flex items-center justify-center mb-1">
-                              <IconMemory className="h-4 w-4 text-purple-500 mr-1" />
+                              <IconDatabase className="h-4 w-4 text-purple-500 mr-1" />
                               <span className="text-xs text-muted-foreground">
                                 RAM
                               </span>
