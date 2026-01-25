@@ -343,6 +343,13 @@ export async function POST(request) {
 
       // Update agent system metrics if provided
       if (systemMetrics) {
+        console.log(`[Statistics] Received system metrics for agent ${agentId}:`, {
+          cpu: systemMetrics.cpuUsagePercent,
+          memory: systemMetrics.memoryUsagePercent,
+          load: systemMetrics.loadAverage1Min,
+          goroutines: systemMetrics.numGoroutines
+        });
+
         const loadScore = calculateLoadScore(systemMetrics);
 
         await Agent.findByIdAndUpdate(agent._id, {
@@ -363,6 +370,10 @@ export async function POST(request) {
           },
           loadScore: loadScore,
         });
+
+        console.log(`[Statistics] Updated agent ${agentId} with load score: ${loadScore}`);
+      } else {
+        console.log(`[Statistics] No system metrics received for agent ${agentId}`);
       }
 
       const totalBytes = (inboundBytes || 0) + (outboundBytes || 0);
