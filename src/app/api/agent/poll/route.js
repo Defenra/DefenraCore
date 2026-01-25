@@ -304,6 +304,9 @@ export async function POST(request) {
 
       // Next poll timing
       nextPollInterval: agent.pollingInterval,
+      
+      // Force system metrics reporting (temporary fix for monitoring)
+      forceSystemMetrics: true,
     };
 
     return NextResponse.json(response);
