@@ -308,7 +308,7 @@ export default function AgentsPage() {
       </div>
 
       {/* Stats Row */}
-      <div className="grid gap-4 sm:grid-cols-3 md:gap-6">
+      <div className="grid gap-4 sm:grid-cols-4 md:gap-6">
         <Card className="border-border">
           <CardHeader className="pb-3 md:pb-4">
             <CardTitle className="text-xs md:text-sm text-muted-foreground font-medium">
@@ -316,7 +316,7 @@ export default function AgentsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl md:text-4xl lg:text-5xl font-bold mb-1 md:mb-2">
+            <div className="text-2xl md:text-3xl lg:text-4xl font-bold mb-1 md:mb-2 text-green-600">
               {activeCount}
             </div>
             <p className="text-xs md:text-sm text-muted-foreground">В сети</p>
@@ -329,7 +329,7 @@ export default function AgentsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl md:text-4xl lg:text-5xl font-bold mb-1 md:mb-2">
+            <div className="text-2xl md:text-3xl lg:text-4xl font-bold mb-1 md:mb-2 text-yellow-600">
               {inactiveCount}
             </div>
             <p className="text-xs md:text-sm text-muted-foreground">
@@ -344,11 +344,26 @@ export default function AgentsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl md:text-4xl lg:text-5xl font-bold mb-1 md:mb-2">
+            <div className="text-2xl md:text-3xl lg:text-4xl font-bold mb-1 md:mb-2 text-slate-600">
               {pendingCount}
             </div>
             <p className="text-xs md:text-sm text-muted-foreground">
               Подключения
+            </p>
+          </CardContent>
+        </Card>
+        <Card className="border-border">
+          <CardHeader className="pb-3 md:pb-4">
+            <CardTitle className="text-xs md:text-sm text-muted-foreground font-medium">
+              Всего
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl md:text-3xl lg:text-4xl font-bold mb-1 md:mb-2">
+              {agents.length}
+            </div>
+            <p className="text-xs md:text-sm text-muted-foreground">
+              Агентов
             </p>
           </CardContent>
         </Card>
@@ -508,6 +523,80 @@ export default function AgentsPage() {
                               </div>
                             )}
                           </div>
+                          
+                          {/* Quick System Metrics Preview */}
+                          {agent.systemMetrics && (
+                            <div className="flex flex-wrap items-center gap-3 md:gap-4 text-xs mt-2">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-muted-foreground">CPU:</span>
+                                <div className="flex items-center gap-1">
+                                  <div className="w-8 bg-secondary rounded-full h-1.5">
+                                    <div
+                                      className={`h-1.5 rounded-full transition-all ${
+                                        agent.systemMetrics.cpuUsagePercent > 80
+                                          ? "bg-red-500"
+                                          : agent.systemMetrics.cpuUsagePercent > 60
+                                            ? "bg-yellow-500"
+                                            : "bg-green-500"
+                                      }`}
+                                      style={{
+                                        width: `${Math.min(agent.systemMetrics.cpuUsagePercent, 100)}%`,
+                                      }}
+                                    />
+                                  </div>
+                                  <span className="font-mono text-xs">
+                                    {agent.systemMetrics.cpuUsagePercent.toFixed(0)}%
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-muted-foreground">RAM:</span>
+                                <div className="flex items-center gap-1">
+                                  <div className="w-8 bg-secondary rounded-full h-1.5">
+                                    <div
+                                      className={`h-1.5 rounded-full transition-all ${
+                                        agent.systemMetrics.memoryUsagePercent > 80
+                                          ? "bg-red-500"
+                                          : agent.systemMetrics.memoryUsagePercent > 60
+                                            ? "bg-yellow-500"
+                                            : "bg-green-500"
+                                      }`}
+                                      style={{
+                                        width: `${Math.min(agent.systemMetrics.memoryUsagePercent, 100)}%`,
+                                      }}
+                                    />
+                                  </div>
+                                  <span className="font-mono text-xs">
+                                    {agent.systemMetrics.memoryUsagePercent.toFixed(0)}%
+                                  </span>
+                                </div>
+                              </div>
+                              {agent.loadScore !== undefined && (
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-muted-foreground">Load:</span>
+                                  <div className="flex items-center gap-1">
+                                    <div className="w-8 bg-secondary rounded-full h-1.5">
+                                      <div
+                                        className={`h-1.5 rounded-full transition-all ${
+                                          agent.loadScore > 80
+                                            ? "bg-red-500"
+                                            : agent.loadScore > 60
+                                              ? "bg-yellow-500"
+                                              : "bg-green-500"
+                                        }`}
+                                        style={{
+                                          width: `${Math.min(agent.loadScore, 100)}%`,
+                                        }}
+                                      />
+                                    </div>
+                                    <span className="font-mono text-xs">
+                                      {agent.loadScore.toFixed(0)}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center justify-between sm:flex-col sm:items-end gap-2">
@@ -629,14 +718,21 @@ export default function AgentsPage() {
                         {/* System Metrics Section */}
                         {agent.systemMetrics && (
                           <div className="mt-3 pt-3 md:mt-4 md:pt-4 border-t">
-                            <h4 className="text-sm font-medium mb-3 md:mb-4">
-                              Системные метрики
-                            </h4>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 text-xs md:text-sm">
-                              <div>
-                                <span className="text-muted-foreground">
-                                  CPU:
+                            <div className="flex items-center justify-between mb-3 md:mb-4">
+                              <h4 className="text-sm font-medium">
+                                Системные метрики
+                              </h4>
+                              {agent.systemMetrics.lastUpdated && (
+                                <span className="text-xs text-muted-foreground">
+                                  {formatDate(agent.systemMetrics.lastUpdated)}
                                 </span>
+                              )}
+                            </div>
+                            
+                            {/* Key Metrics Row */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4">
+                              <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3">
+                                <div className="text-xs text-muted-foreground mb-1">CPU</div>
                                 <div className="flex items-center gap-2">
                                   <div className="flex-1 bg-secondary rounded-full h-2">
                                     <div
@@ -648,19 +744,18 @@ export default function AgentsPage() {
                                             : "bg-green-500"
                                       }`}
                                       style={{
-                                        width: `${agent.systemMetrics.cpuUsagePercent}%`,
+                                        width: `${Math.min(agent.systemMetrics.cpuUsagePercent, 100)}%`,
                                       }}
                                     />
                                   </div>
-                                  <span className="font-mono text-xs min-w-[3rem] text-right">
+                                  <span className="font-mono text-xs min-w-[2.5rem] text-right font-medium">
                                     {agent.systemMetrics.cpuUsagePercent.toFixed(1)}%
                                   </span>
                                 </div>
                               </div>
-                              <div>
-                                <span className="text-muted-foreground">
-                                  Memory:
-                                </span>
+                              
+                              <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3">
+                                <div className="text-xs text-muted-foreground mb-1">Memory</div>
                                 <div className="flex items-center gap-2">
                                   <div className="flex-1 bg-secondary rounded-full h-2">
                                     <div
@@ -672,32 +767,60 @@ export default function AgentsPage() {
                                             : "bg-green-500"
                                       }`}
                                       style={{
-                                        width: `${agent.systemMetrics.memoryUsagePercent}%`,
+                                        width: `${Math.min(agent.systemMetrics.memoryUsagePercent, 100)}%`,
                                       }}
                                     />
                                   </div>
-                                  <span className="font-mono text-xs min-w-[3rem] text-right">
+                                  <span className="font-mono text-xs min-w-[2.5rem] text-right font-medium">
                                     {agent.systemMetrics.memoryUsagePercent.toFixed(1)}%
                                   </span>
                                 </div>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                  {(agent.systemMetrics.memoryUsedBytes / 1024 / 1024 / 1024).toFixed(1)} GB / {(agent.systemMetrics.memoryTotalBytes / 1024 / 1024 / 1024).toFixed(1)} GB
-                                </p>
+                                <div className="text-xs text-muted-foreground mt-1">
+                                  {(agent.systemMetrics.memoryUsedBytes / 1024 / 1024 / 1024).toFixed(1)}GB / {(agent.systemMetrics.memoryTotalBytes / 1024 / 1024 / 1024).toFixed(1)}GB
+                                </div>
                               </div>
+                              
+                              {agent.loadScore !== undefined && (
+                                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3">
+                                  <div className="text-xs text-muted-foreground mb-1">Load Score</div>
+                                  <div className="flex items-center gap-2">
+                                    <div className="flex-1 bg-secondary rounded-full h-2">
+                                      <div
+                                        className={`h-2 rounded-full transition-all ${
+                                          agent.loadScore > 80
+                                            ? "bg-red-500"
+                                            : agent.loadScore > 60
+                                              ? "bg-yellow-500"
+                                              : "bg-green-500"
+                                        }`}
+                                        style={{
+                                          width: `${Math.min(agent.loadScore, 100)}%`,
+                                        }}
+                                      />
+                                    </div>
+                                    <span className="font-mono text-xs min-w-[2.5rem] text-right font-medium">
+                                      {agent.loadScore.toFixed(0)}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+                              
+                              <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3">
+                                <div className="text-xs text-muted-foreground mb-1">Goroutines</div>
+                                <div className="font-mono text-sm font-medium">
+                                  {agent.systemMetrics.numGoroutines || 0}
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {/* Detailed Metrics */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 text-xs md:text-sm">
                               <div>
                                 <span className="text-muted-foreground">
                                   Load Average:
                                 </span>
                                 <p className="font-mono">
                                   {agent.systemMetrics.loadAverage1Min?.toFixed(2) || "0.00"} / {agent.systemMetrics.loadAverage5Min?.toFixed(2) || "0.00"} / {agent.systemMetrics.loadAverage15Min?.toFixed(2) || "0.00"}
-                                </p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">
-                                  Goroutines:
-                                </span>
-                                <p className="font-mono">
-                                  {agent.systemMetrics.numGoroutines || 0}
                                 </p>
                               </div>
                               <div>
@@ -720,42 +843,6 @@ export default function AgentsPage() {
                                   ↑ {(agent.systemMetrics.networkTxBytesPS / 1024 / 1024).toFixed(1)} MB/s
                                 </p>
                               </div>
-                              {agent.loadScore !== undefined && (
-                                <div>
-                                  <span className="text-muted-foreground">
-                                    Load Score:
-                                  </span>
-                                  <div className="flex items-center gap-2">
-                                    <div className="flex-1 bg-secondary rounded-full h-2">
-                                      <div
-                                        className={`h-2 rounded-full transition-all ${
-                                          agent.loadScore > 80
-                                            ? "bg-red-500"
-                                            : agent.loadScore > 60
-                                              ? "bg-yellow-500"
-                                              : "bg-green-500"
-                                        }`}
-                                        style={{
-                                          width: `${agent.loadScore}%`,
-                                        }}
-                                      />
-                                    </div>
-                                    <span className="font-mono text-xs min-w-[3rem] text-right">
-                                      {agent.loadScore.toFixed(0)}
-                                    </span>
-                                  </div>
-                                </div>
-                              )}
-                              {agent.systemMetrics.lastUpdated && (
-                                <div className="col-span-full">
-                                  <span className="text-muted-foreground">
-                                    Обновлено:
-                                  </span>
-                                  <p className="text-xs">
-                                    {formatDate(agent.systemMetrics.lastUpdated)}
-                                  </p>
-                                </div>
-                              )}
                             </div>
                           </div>
                         )}
