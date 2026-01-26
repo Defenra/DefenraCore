@@ -63,7 +63,7 @@ async function setHttpChallenge(domain, token, keyAuthorization) {
     `[ACME] Original Lua code length: ${userLuaCode.length} characters`,
   );
 
-  // Check if ACME handler is already injected (shouldn't be, but just in case)
+  // Check if ACME handler is already injected
   if (!userLuaCode.includes("-- BEGIN ACME AUTO-INJECT")) {
     // Create handler for all stored challenges
     let acmeHandlers = '';
@@ -106,12 +106,13 @@ end`;
     const beginMarker = "-- BEGIN ACME AUTO-INJECT (do not edit this section)";
     const endMarker = "-- END ACME AUTO-INJECT";
     
-    const beginIndex = userLuaCode.indexOf(beginMarker);
-    const endIndex = userLuaCode.indexOf(endMarker);
+    const currentLuaCode = domainDoc.httpProxy.luaCode;
+    const beginIndex = currentLuaCode.indexOf(beginMarker);
+    const endIndex = currentLuaCode.indexOf(endMarker);
     
     if (beginIndex !== -1 && endIndex !== -1) {
-      const before = userLuaCode.substring(0, beginIndex);
-      const after = userLuaCode.substring(endIndex + endMarker.length);
+      const before = currentLuaCode.substring(0, beginIndex);
+      const after = currentLuaCode.substring(endIndex + endMarker.length);
       
       // Create updated handler for all challenges
       let acmeHandlers = '';
@@ -135,6 +136,9 @@ end`;
 
       domainDoc.httpProxy.luaCode = before + acmeHandler + after;
       console.log(`[ACME] ✅ ACME handler updated with all challenges`);
+      console.log(
+        `[ACME] Updated Lua code length: ${domainDoc.httpProxy.luaCode.length} characters`,
+      );
     }
   }
 
