@@ -227,8 +227,11 @@ async function removeHttpChallenge(domain) {
   console.log(`[ACME] ✅ HTTP challenge removed`);
 }
 
-export async function issueCertificate(domain, email) {
+export async function issueCertificate(domain, email, subdomains = []) {
   console.log(`[ACME] Starting certificate issuance for ${domain}`);
+  if (subdomains.length > 0) {
+    console.log(`[ACME] Including subdomains: ${subdomains.join(', ')}`);
+  }
 
   await connectDB();
   const domainDoc = await Domain.findOne({ domain });
@@ -248,9 +251,31 @@ export async function issueCertificate(domain, email) {
       accountKey: accountKey,
     });
 
-    const [key, csr] = await acme.crypto.createCsr({
+    // Create CSR with subdomains from DNS records
+    const csrOptions = {
       commonName: domain,
-    });
+    };
+
+    // Automatically detect subdomains from DNS records
+    const detectedSubdomains = [];
+    for (const record of domainDoc.dnsRecords) {
+      if (record.name && record.name !== "@" && record.name !== domain) {
+        const subdomain = `${record.name}.${domain}`;
+        if (!detectedSubdomains.includes(subdomain)) {
+          detectedSubdomains.push(subdomain);
+        }
+      }
+    }
+
+    // Combine provided subdomains with detected ones
+    const allSubdomains = [...new Set([...subdomains, ...detectedSubdomains])];
+    
+    if (allSubdomains.length > 0) {
+      csrOptions.altNames = allSubdomains;
+      console.log(`[ACME] Certificate will include subdomains: ${allSubdomains.join(', ')}`);
+    }
+
+    const [key, csr] = await acme.crypto.createCsr(csrOptions);
 
     const cert = await client.auto({
       csr,
@@ -263,17 +288,24 @@ export async function issueCertificate(domain, email) {
 
         if (challenge.type === "http-01") {
           const token = challenge.token;
+          const challengeDomain = authz.identifier.value;
 
-          console.log(`[ACME] Setting up HTTP-01 challenge`);
+          console.log(`[ACME] Setting up HTTP-01 challenge for ${challengeDomain}`);
           console.log(`[ACME] Token: ${token}`);
           console.log(
-            `[ACME] Challenge URL: http://${authz.identifier.value}/.well-known/acme-challenge/${token}`,
+            `[ACME] Challenge URL: http://${challengeDomain}/.well-known/acme-challenge/${token}`,
           );
           console.log(
             `[ACME] Expected response: ${keyAuthorization.substring(0, 30)}...`,
           );
 
-          await setHttpChallenge(domain, token, keyAuthorization);
+          // For subdomains, we need to set the challenge on the main domain
+          // because the agent configuration is stored there
+          const mainDomain = challengeDomain.includes('.') && challengeDomain !== domain 
+            ? domain  // Use main domain for subdomains
+            : challengeDomain; // Use the domain itself for main domain
+
+          await setHttpChallenge(mainDomain, token, keyAuthorization);
         }
       },
       challengeRemoveFn: async (authz, challenge, _keyAuthorization) => {
@@ -286,7 +318,12 @@ export async function issueCertificate(domain, email) {
           );
           await new Promise((resolve) => setTimeout(resolve, 5000));
 
-          await removeHttpChallenge(domain);
+          const challengeDomain = authz.identifier.value;
+          const mainDomain = challengeDomain.includes('.') && challengeDomain !== domain 
+            ? domain  // Use main domain for subdomains
+            : challengeDomain; // Use the domain itself for main domain
+
+          await removeHttpChallenge(mainDomain);
         }
       },
     });

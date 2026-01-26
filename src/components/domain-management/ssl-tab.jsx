@@ -195,6 +195,33 @@ export function SslTab({ domain, onUpdate }) {
                   <li>• Certificate is issued and distributed to agents</li>
                   <li>• Auto-renewal happens 30 days before expiry</li>
                 </ul>
+                
+                {/* Show subdomains that will be included */}
+                {domain.dnsRecords && domain.dnsRecords.length > 0 && (
+                  <div className="mt-4 pt-3 border-t border-blue-500/20">
+                    <p className="text-xs font-medium text-foreground mb-2">
+                      Certificate will include:
+                    </p>
+                    <div className="space-y-1">
+                      <div className="text-xs text-muted-foreground">
+                        • {domain.domain} (main domain)
+                      </div>
+                      {domain.dnsRecords
+                        .filter(record => record.name && record.name !== "@" && record.name !== domain.domain)
+                        .map((record, index) => (
+                          <div key={index} className="text-xs text-muted-foreground">
+                            • {record.name}.{domain.domain} (from DNS record)
+                          </div>
+                        ))}
+                    </div>
+                    {domain.dnsRecords.filter(record => record.name && record.name !== "@" && record.name !== domain.domain).length === 0 && (
+                      <div className="text-xs text-muted-foreground">
+                        • Only main domain (no subdomains found in DNS records)
+                      </div>
+                    )}
+                  </div>
+                )}
+                
                 <p className="text-xs text-muted-foreground mt-3 pt-3 border-t border-blue-500/20">
                   <strong>Requirements:</strong> Port 80 must be accessible. Lua
                   WAF on agents handles /.well-known/acme-challenge/*
