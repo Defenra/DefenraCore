@@ -482,13 +482,21 @@ export async function issueCertificate(domain, email, subdomains = []) {
       commonName: domain,
     };
 
-    // Automatically detect subdomains from DNS records
+    // Automatically detect subdomains from DNS records that have HTTP proxy enabled
     const detectedSubdomains = [];
     for (const record of domainDoc.dnsRecords) {
-      if (record.name && record.name !== "@" && record.name !== domain) {
+      if (
+        record.name &&
+        record.name !== "@" &&
+        record.name !== domain &&
+        record.httpProxyEnabled === true // Only include subdomains with HTTP proxy enabled
+      ) {
         const subdomain = `${record.name}.${domain}`;
         if (!detectedSubdomains.includes(subdomain)) {
           detectedSubdomains.push(subdomain);
+          console.log(
+            `[ACME] Including subdomain ${subdomain} (HTTP proxy enabled)`,
+          );
         }
       }
     }
@@ -500,6 +508,10 @@ export async function issueCertificate(domain, email, subdomains = []) {
       csrOptions.altNames = allSubdomains;
       console.log(
         `[ACME] Certificate will include subdomains: ${allSubdomains.join(", ")}`,
+      );
+    } else {
+      console.log(
+        `[ACME] Certificate will only include main domain (no proxied subdomains found)`,
       );
     }
 
