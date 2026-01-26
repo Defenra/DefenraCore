@@ -47,8 +47,9 @@ async function setHttpChallenge(domain, token, keyAuthorization) {
   if (domainDoc.httpProxy.ssl.acmeHttpChallenge) {
     const challenge = domainDoc.httpProxy.ssl.acmeHttpChallenge;
     
-    // Check if it's the old structure (has token/keyAuthorization directly)
-    if (challenge.token !== undefined || challenge.keyAuthorization !== undefined) {
+    // Check if it's the old structure (has token/keyAuthorization directly, not as nested objects)
+    if ((challenge.token !== undefined && typeof challenge.token === 'string') || 
+        (challenge.keyAuthorization !== undefined && typeof challenge.keyAuthorization === 'string')) {
       console.log(`[ACME] Migrating old acmeHttpChallenge structure to new object format`);
       
       // Force clear the old structure by unsetting the field completely
