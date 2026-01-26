@@ -70,8 +70,8 @@ async function setHttpChallenge(domain, token, keyAuthorization) {
   if (!domainDoc.httpProxy.ssl.acmeHttpChallenge) {
     domainDoc.httpProxy.ssl.acmeHttpChallenge = {};
   }
-  
   // Store challenge with domain-specific key to support multiple challenges
+  // Use the original requested domain (not the parent domain) for the key
   const challengeKey = domain.replace(/\./g, '_'); // Replace dots with underscores for MongoDB field names
   domainDoc.httpProxy.ssl.acmeHttpChallenge[challengeKey] = {
     token: token,
@@ -171,7 +171,7 @@ end`;
 
   // Verify by re-fetching
   const verifyDoc = await Domain.findOne({ domain: domainDoc.domain });
-  const verifyChallengeKey = domain.replace(/\./g, '_');
+  const verifyChallengeKey = domain.replace(/\./g, '_'); // Use original domain for verification key
   if (verifyDoc.httpProxy.ssl.acmeHttpChallenge && 
       verifyDoc.httpProxy.ssl.acmeHttpChallenge[verifyChallengeKey] &&
       verifyDoc.httpProxy.ssl.acmeHttpChallenge[verifyChallengeKey].token === token) {
@@ -180,6 +180,7 @@ end`;
     console.error(
       `[ACME] ❌ ERROR: HTTP challenge NOT found in database after save for ${domain}!`,
     );
+    console.log(`[ACME] Available challenges:`, Object.keys(verifyDoc.httpProxy.ssl.acmeHttpChallenge || {}));
     throw new Error(`Failed to save HTTP challenge to database for ${domain}`);
   }
 
@@ -289,11 +290,13 @@ async function removeHttpChallenge(domain) {
   console.log(`[ACME] Removing HTTP challenge for ${domain}`);
 
   // Remove specific challenge for this domain
-  const challengeKey = domain.replace(/\./g, '_');
+  const challengeKey = domain.replace(/\./g, '_'); // Use original domain for key
   if (domainDoc.httpProxy.ssl.acmeHttpChallenge && 
       domainDoc.httpProxy.ssl.acmeHttpChallenge[challengeKey]) {
     delete domainDoc.httpProxy.ssl.acmeHttpChallenge[challengeKey];
     console.log(`[ACME] Removed challenge for ${domain} (key: ${challengeKey})`);
+  } else {
+    console.log(`[ACME] No challenge found for ${domain} (key: ${challengeKey})`);
   }
 
   // Check if there are any remaining challenges
