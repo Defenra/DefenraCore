@@ -393,7 +393,7 @@ export function buildAnycastRecords(domain, allAgents) {
 
   // Only log detailed info occasionally to reduce spam
   const shouldLogDetails = Math.random() < 0.02; // 2% chance to log details
-  
+
   if (shouldLogDetails) {
     console.log(`[Build Anycast] Domain: ${domain.domain}`);
     console.log(`  GeoDNS locations: ${domain.geoDnsConfig?.length || 0}`);
@@ -428,19 +428,7 @@ export function buildAnycastRecords(domain, allAgents) {
               ? `Nearest: ${result.agentName} (${result.distanceKm}km)`
               : `Nearest: ${result.agentName} (distance: ${result.distance})`,
       });
-      console.log(
-        `  ✓ ${location.code} → ${result.agentIp} (${result.agentName}) ${
-          result.isDirect
-            ? "DIRECT"
-            : result.isLastResort
-              ? result.distanceKm
-                ? `LAST_RESORT:${result.distanceKm}km`
-                : `LAST_RESORT:${result.distance}`
-              : result.distanceKm
-                ? `fallback:${result.distanceKm}km`
-                : `fallback:${result.distance}`
-        }`,
-      );
+      // Removed excessive logging - only log errors or important events
     } else {
       // No agent available for this location - could add warning
       records.push({
@@ -457,12 +445,9 @@ export function buildAnycastRecords(domain, allAgents) {
 
   // Only log auto-discovery details occasionally to reduce spam
   const shouldLogAutoDiscovery = Math.random() < 0.05; // 5% chance to log auto-discovery
-  
-  if (shouldLogAutoDiscovery) {
-    console.log(
-      `[Auto-Discovery] Checking for agents with unconfigured locations...`,
-    );
-  }
+
+  // Removed excessive auto-discovery logging
+  // Only log when there are actual changes or errors
 
   const activeAgents = allAgents.filter((a) => a.isActive && a.ipAddress);
 
@@ -509,17 +494,16 @@ export function buildAnycastRecords(domain, allAgents) {
     });
 
     if (shouldLogAutoDiscovery) {
-      console.log(
-        `  🔍 ${countryCodeLower} → ${agent.ipAddress} (${agent.name}) AUTO-DISCOVERED`,
-      );
+      // Removed excessive auto-discovery logging
     }
   }
 
   // Only log summary occasionally to reduce spam
   const autoDiscoveredCount = records.filter((r) => r.isAutoDiscovered).length;
   const generatedCount = records.filter((r) => r.value).length;
-  
-  if (shouldLogDetails || autoDiscoveredCount > 0) {
+
+  // Only log if there are new auto-discoveries (not every poll)
+  if (autoDiscoveredCount > 0 && shouldLogDetails) {
     console.log(
       `[Build Anycast] Generated ${generatedCount}/${records.length} anycast records (${autoDiscoveredCount} auto-discovered)`,
     );

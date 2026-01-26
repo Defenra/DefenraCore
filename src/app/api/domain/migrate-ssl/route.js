@@ -12,11 +12,13 @@ export async function POST(request) {
 
     await connectDB();
 
-    console.log("[SSL Migration] Starting migration of acmeHttpChallenge structures...");
+    console.log(
+      "[SSL Migration] Starting migration of acmeHttpChallenge structures...",
+    );
 
     // Find all domains with old acmeHttpChallenge structure
     const domains = await Domain.find({
-      "httpProxy.ssl.acmeHttpChallenge": { $exists: true }
+      "httpProxy.ssl.acmeHttpChallenge": { $exists: true },
     });
 
     let migratedCount = 0;
@@ -24,43 +26,49 @@ export async function POST(request) {
 
     for (const domain of domains) {
       const challenge = domain.httpProxy.ssl.acmeHttpChallenge;
-      
+
       // Check if it's the old structure (has token/keyAuthorization directly)
-      if (challenge && typeof challenge === 'object' && 
-          (challenge.token !== undefined || challenge.keyAuthorization !== undefined)) {
-        
+      if (
+        challenge &&
+        typeof challenge === "object" &&
+        (challenge.token !== undefined ||
+          challenge.keyAuthorization !== undefined)
+      ) {
         console.log(`[SSL Migration] Migrating domain: ${domain.domain}`);
-        
+
         // Force clear the old structure using $unset
         await Domain.updateOne(
           { _id: domain._id },
-          { $unset: { "httpProxy.ssl.acmeHttpChallenge": "" } }
+          { $unset: { "httpProxy.ssl.acmeHttpChallenge": "" } },
         );
-        
+
         // Set it to empty object
         await Domain.updateOne(
           { _id: domain._id },
-          { $set: { "httpProxy.ssl.acmeHttpChallenge": {} } }
+          { $set: { "httpProxy.ssl.acmeHttpChallenge": {} } },
         );
-        
+
         migratedCount++;
         console.log(`[SSL Migration] ✅ Migrated ${domain.domain}`);
       } else {
         skippedCount++;
-        console.log(`[SSL Migration] ⏭️ Skipped ${domain.domain} (already new format or empty)`);
+        console.log(
+          `[SSL Migration] ⏭️ Skipped ${domain.domain} (already new format or empty)`,
+        );
       }
     }
 
-    console.log(`[SSL Migration] Migration completed: ${migratedCount} migrated, ${skippedCount} skipped`);
+    console.log(
+      `[SSL Migration] Migration completed: ${migratedCount} migrated, ${skippedCount} skipped`,
+    );
 
     return NextResponse.json({
       success: true,
       message: `SSL migration completed successfully`,
       migrated: migratedCount,
       skipped: skippedCount,
-      total: domains.length
+      total: domains.length,
     });
-
   } catch (error) {
     console.error("SSL migration error:", error);
     return NextResponse.json(

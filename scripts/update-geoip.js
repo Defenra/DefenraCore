@@ -5,19 +5,20 @@
  * Downloads the latest version from jsdelivr CDN
  */
 
-import fs from 'fs';
-import path from 'path';
-import { pipeline } from 'stream/promises';
-import { createGunzip } from 'zlib';
-import { Readable } from 'stream';
+import fs from "fs";
+import path from "path";
+import { pipeline } from "stream/promises";
+import { createGunzip } from "zlib";
+import { Readable } from "stream";
 
-const GEOIP_URL = 'https://cdn.jsdelivr.net/npm/geolite2-city/GeoLite2-City.mmdb.gz';
-const DATA_DIR = path.join(process.cwd(), 'data');
-const GEOIP_PATH = path.join(DATA_DIR, 'GeoLite2-City.mmdb');
+const GEOIP_URL =
+  "https://cdn.jsdelivr.net/npm/geolite2-city/GeoLite2-City.mmdb.gz";
+const DATA_DIR = path.join(process.cwd(), "data");
+const GEOIP_PATH = path.join(DATA_DIR, "GeoLite2-City.mmdb");
 
 async function downloadAndExtract() {
-  console.log('🌍 Downloading GeoLite2-City database...');
-  
+  console.log("🌍 Downloading GeoLite2-City database...");
+
   try {
     // Ensure data directory exists
     if (!fs.existsSync(DATA_DIR)) {
@@ -35,20 +36,15 @@ async function downloadAndExtract() {
     const writeStream = fs.createWriteStream(GEOIP_PATH);
 
     // Pipeline: fetch -> gunzip -> write to file
-    await pipeline(
-      Readable.fromWeb(response.body),
-      gzipStream,
-      writeStream
-    );
+    await pipeline(Readable.fromWeb(response.body), gzipStream, writeStream);
 
     // Check file size
     const stats = fs.statSync(GEOIP_PATH);
     console.log(`✅ GeoLite2-City.mmdb updated successfully`);
     console.log(`   Size: ${(stats.size / 1024 / 1024).toFixed(1)} MB`);
     console.log(`   Path: ${GEOIP_PATH}`);
-
   } catch (error) {
-    console.error('❌ Failed to update GeoIP database:', error.message);
+    console.error("❌ Failed to update GeoIP database:", error.message);
     process.exit(1);
   }
 }

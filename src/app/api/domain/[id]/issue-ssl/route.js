@@ -42,13 +42,20 @@ export async function POST(request, { params }) {
 
     // Log subdomains that will be included
     const subdomains = domain.dnsRecords
-      .filter(record => record.name && record.name !== "@" && record.name !== domain.domain)
-      .map(record => `${record.name}.${domain.domain}`);
-    
+      .filter(
+        (record) =>
+          record.name && record.name !== "@" && record.name !== domain.domain,
+      )
+      .map((record) => `${record.name}.${domain.domain}`);
+
     if (subdomains.length > 0) {
-      console.log(`[SSL] Certificate will include subdomains: ${subdomains.join(', ')}`);
+      console.log(
+        `[SSL] Certificate will include subdomains: ${subdomains.join(", ")}`,
+      );
     } else {
-      console.log(`[SSL] Certificate will only include main domain (no subdomains found)`);
+      console.log(
+        `[SSL] Certificate will only include main domain (no subdomains found)`,
+      );
     }
 
     const result = await issueCertificate(domain.domain, email);

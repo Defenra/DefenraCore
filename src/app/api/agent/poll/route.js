@@ -44,7 +44,13 @@ export async function POST(request) {
     let ipChanged = false;
 
     // Update IP info if IP changed OR if ipInfo is missing/unknown
-    if (currentIp && (currentIp !== agent.ipAddress || !agent.ipInfo || agent.ipInfo.country === "Unknown" || agent.ipInfo.countryCode === "Unknown")) {
+    if (
+      currentIp &&
+      (currentIp !== agent.ipAddress ||
+        !agent.ipInfo ||
+        agent.ipInfo.country === "Unknown" ||
+        agent.ipInfo.countryCode === "Unknown")
+    ) {
       const ipInfo = await getIpInfo(currentIp);
 
       // Only mark as changed if IP actually changed (not just missing ipInfo)
@@ -73,11 +79,18 @@ export async function POST(request) {
 
       agent.ipAddress = currentIp;
       agent.ipInfo = ipInfo;
-      
+
       // Log geolocation update only if it changed from Unknown
-      if (ipInfo.country !== "Unknown" && ipInfo.countryCode !== "Unknown" && 
-          (!agent.ipInfo || agent.ipInfo.country === "Unknown" || agent.ipInfo.countryCode === "Unknown")) {
-        console.log(`[Poll] Updated geolocation for ${agent.name}: ${ipInfo.country} (${ipInfo.countryCode}), ${ipInfo.city}`);
+      if (
+        ipInfo.country !== "Unknown" &&
+        ipInfo.countryCode !== "Unknown" &&
+        (!agent.ipInfo ||
+          agent.ipInfo.country === "Unknown" ||
+          agent.ipInfo.countryCode === "Unknown")
+      ) {
+        console.log(
+          `[Poll] Updated geolocation for ${agent.name}: ${ipInfo.country} (${ipInfo.countryCode}), ${ipInfo.city}`,
+        );
       }
     }
 
@@ -91,7 +104,7 @@ export async function POST(request) {
 
     // Reduce logging frequency - only log occasionally or when important changes happen
     const shouldLogDetails = Math.random() < 0.05 || wasInactive || ipChanged; // 5% chance or important events
-    
+
     if (shouldLogDetails) {
       console.log(`[Poll] Agent: ${agent.name} (${agentId})`);
       console.log(
@@ -186,9 +199,7 @@ export async function POST(request) {
           description: r.description,
         }));
 
-      console.log(
-        `  Domain ${d.domain}: ${regularDnsRecords.length} regular + ${allAnycastRecords.length} anycast records`,
-      );
+      // Removed excessive logging - only log errors or important events
 
       return {
         id: d._id.toString(),
@@ -261,9 +272,10 @@ export async function POST(request) {
       timestamp: new Date().toISOString(),
 
       // Agent's geo code for D-Agent-ID header
-      geoCode: agent.manualLocation?.country?.toUpperCase() || 
-               agent.ipInfo?.countryCode?.toUpperCase() || 
-               "XX",
+      geoCode:
+        agent.manualLocation?.country?.toUpperCase() ||
+        agent.ipInfo?.countryCode?.toUpperCase() ||
+        "XX",
 
       // Agent Information
       agent: {
@@ -304,7 +316,7 @@ export async function POST(request) {
 
       // Next poll timing
       nextPollInterval: agent.pollingInterval,
-      
+
       // Force system metrics reporting (temporary fix for monitoring)
       forceSystemMetrics: true,
     };

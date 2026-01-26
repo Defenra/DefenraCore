@@ -16,15 +16,17 @@ async function setHttpChallenge(domain, token, keyAuthorization) {
   // For subdomains, we need to find the main domain in database
   // e.g., if domain is "api.ghost-cheats.com", we need to find "ghost-cheats.com"
   let domainDoc = await Domain.findOne({ domain });
-  
+
   if (!domainDoc) {
     // Try to find parent domain for subdomains
-    const parts = domain.split('.');
+    const parts = domain.split(".");
     if (parts.length > 2) {
-      const parentDomain = parts.slice(1).join('.');
+      const parentDomain = parts.slice(1).join(".");
       domainDoc = await Domain.findOne({ domain: parentDomain });
       if (domainDoc) {
-        console.log(`[ACME] Using parent domain ${parentDomain} for subdomain ${domain}`);
+        console.log(
+          `[ACME] Using parent domain ${parentDomain} for subdomain ${domain}`,
+        );
       }
     }
   }
@@ -46,22 +48,27 @@ async function setHttpChallenge(domain, token, keyAuthorization) {
   // This handles the case where old structure has token/keyAuthorization directly
   if (domainDoc.httpProxy.ssl.acmeHttpChallenge) {
     const challenge = domainDoc.httpProxy.ssl.acmeHttpChallenge;
-    
+
     // Check if it's the old structure (has token/keyAuthorization directly, not as nested objects)
-    if ((challenge.token !== undefined && typeof challenge.token === 'string') || 
-        (challenge.keyAuthorization !== undefined && typeof challenge.keyAuthorization === 'string')) {
-      console.log(`[ACME] Migrating old acmeHttpChallenge structure to new object format`);
-      
+    if (
+      (challenge.token !== undefined && typeof challenge.token === "string") ||
+      (challenge.keyAuthorization !== undefined &&
+        typeof challenge.keyAuthorization === "string")
+    ) {
+      console.log(
+        `[ACME] Migrating old acmeHttpChallenge structure to new object format`,
+      );
+
       // Force clear the old structure by unsetting the field completely
       await Domain.updateOne(
         { _id: domainDoc._id },
-        { $unset: { "httpProxy.ssl.acmeHttpChallenge": "" } }
+        { $unset: { "httpProxy.ssl.acmeHttpChallenge": "" } },
       );
-      
+
       // Reload the document to get the clean state
       const reloadedDoc = await Domain.findById(domainDoc._id);
       domainDoc = reloadedDoc;
-      
+
       console.log(`[ACME] ✅ Cleared old acmeHttpChallenge structure`);
     }
   }
@@ -72,13 +79,15 @@ async function setHttpChallenge(domain, token, keyAuthorization) {
   }
   // Store challenge with domain-specific key to support multiple challenges
   // Use the original requested domain (not the parent domain) for the key
-  const challengeKey = domain.replace(/\./g, '_'); // Replace dots with underscores for MongoDB field names
+  const challengeKey = domain.replace(/\./g, "_"); // Replace dots with underscores for MongoDB field names
   domainDoc.httpProxy.ssl.acmeHttpChallenge[challengeKey] = {
     token: token,
     keyAuthorization: keyAuthorization,
   };
 
-  console.log(`[ACME] Stored challenge for ${domain} with key: ${challengeKey}`);
+  console.log(
+    `[ACME] Stored challenge for ${domain} with key: ${challengeKey}`,
+  );
 
   // Inject ACME handler into Lua WAF code
   const userLuaCode = domainDoc.httpProxy.luaCode || "";
@@ -90,13 +99,13 @@ async function setHttpChallenge(domain, token, keyAuthorization) {
   // Check if ACME handler is already injected
   if (!userLuaCode.includes("-- BEGIN ACME AUTO-INJECT")) {
     // Create handler for all stored challenges
-    let acmeHandlers = '';
+    let acmeHandlers = "";
     const allChallenges = domainDoc.httpProxy.ssl.acmeHttpChallenge;
-    
+
     for (const [key, challenge] of Object.entries(allChallenges)) {
       if (challenge.token && challenge.keyAuthorization) {
         acmeHandlers += `
--- Challenge for ${key.replace(/_/g, '.')}
+-- Challenge for ${key.replace(/_/g, ".")}
 if ngx.var.request_uri == "/.well-known/acme-challenge/${challenge.token}" then
     ngx.header["Content-Type"] = "text/plain"
     ngx.say("${challenge.keyAuthorization}")
@@ -125,27 +134,27 @@ end`;
     console.log(
       `[ACME] ⚠️  ACME handler already exists in Lua code, updating challenges`,
     );
-    
+
     // Update existing handler with new challenges
     const beginMarker = "-- BEGIN ACME AUTO-INJECT (do not edit this section)";
     const endMarker = "-- END ACME AUTO-INJECT";
-    
+
     const currentLuaCode = domainDoc.httpProxy.luaCode;
     const beginIndex = currentLuaCode.indexOf(beginMarker);
     const endIndex = currentLuaCode.indexOf(endMarker);
-    
+
     if (beginIndex !== -1 && endIndex !== -1) {
       const before = currentLuaCode.substring(0, beginIndex);
       const after = currentLuaCode.substring(endIndex + endMarker.length);
-      
+
       // Create updated handler for all challenges
-      let acmeHandlers = '';
+      let acmeHandlers = "";
       const allChallenges = domainDoc.httpProxy.ssl.acmeHttpChallenge;
-      
+
       for (const [key, challenge] of Object.entries(allChallenges)) {
         if (challenge.token && challenge.keyAuthorization) {
           acmeHandlers += `
--- Challenge for ${key.replace(/_/g, '.')}
+-- Challenge for ${key.replace(/_/g, ".")}
 if ngx.var.request_uri == "/.well-known/acme-challenge/${challenge.token}" then
     ngx.header["Content-Type"] = "text/plain"
     ngx.say("${challenge.keyAuthorization}")
@@ -169,18 +178,36 @@ end`;
   await domainDoc.save();
   console.log(`[ACME] ✅ HTTP challenge saved to database`);
 
-  // Verify by re-fetching
+  // Verify by re-fetching the parent domain document
   const verifyDoc = await Domain.findOne({ domain: domainDoc.domain });
-  const verifyChallengeKey = domain.replace(/\./g, '_'); // Use original domain for verification key
-  if (verifyDoc.httpProxy.ssl.acmeHttpChallenge && 
-      verifyDoc.httpProxy.ssl.acmeHttpChallenge[verifyChallengeKey] &&
-      verifyDoc.httpProxy.ssl.acmeHttpChallenge[verifyChallengeKey].token === token) {
-    console.log(`[ACME] ✅ Verified: HTTP challenge exists in database for ${domain}`);
+  const verifyChallengeKey = domain.replace(/\./g, "_"); // Use original domain for verification key
+
+  if (!verifyDoc) {
+    console.error(
+      `[ACME] ❌ ERROR: Domain document not found: ${domainDoc.domain}`,
+    );
+    throw new Error(
+      `Failed to verify HTTP challenge: domain document not found`,
+    );
+  }
+
+  const challenges = verifyDoc.httpProxy?.ssl?.acmeHttpChallenge || {};
+  const challengeExists = challenges[verifyChallengeKey]?.token === token;
+
+  if (challengeExists) {
+    console.log(
+      `[ACME] ✅ Verified: HTTP challenge exists in database for ${domain}`,
+    );
   } else {
     console.error(
       `[ACME] ❌ ERROR: HTTP challenge NOT found in database after save for ${domain}!`,
     );
-    console.log(`[ACME] Available challenges:`, Object.keys(verifyDoc.httpProxy.ssl.acmeHttpChallenge || {}));
+    console.error(`[ACME] Looking for key: ${verifyChallengeKey}`);
+    console.error(`[ACME] Available challenges:`, Object.keys(challenges));
+    console.error(
+      `[ACME] Challenge data:`,
+      JSON.stringify(challenges, null, 2),
+    );
     throw new Error(`Failed to save HTTP challenge to database for ${domain}`);
   }
 
@@ -269,15 +296,17 @@ async function removeHttpChallenge(domain) {
   // For subdomains, we need to find the main domain in database
   // e.g., if domain is "api.ghost-cheats.com", we need to find "ghost-cheats.com"
   let domainDoc = await Domain.findOne({ domain });
-  
+
   if (!domainDoc) {
     // Try to find parent domain for subdomains
-    const parts = domain.split('.');
+    const parts = domain.split(".");
     if (parts.length > 2) {
-      const parentDomain = parts.slice(1).join('.');
+      const parentDomain = parts.slice(1).join(".");
       domainDoc = await Domain.findOne({ domain: parentDomain });
       if (domainDoc) {
-        console.log(`[ACME] Using parent domain ${parentDomain} for subdomain ${domain} cleanup`);
+        console.log(
+          `[ACME] Using parent domain ${parentDomain} for subdomain ${domain} cleanup`,
+        );
       }
     }
   }
@@ -290,13 +319,19 @@ async function removeHttpChallenge(domain) {
   console.log(`[ACME] Removing HTTP challenge for ${domain}`);
 
   // Remove specific challenge for this domain
-  const challengeKey = domain.replace(/\./g, '_'); // Use original domain for key
-  if (domainDoc.httpProxy.ssl.acmeHttpChallenge && 
-      domainDoc.httpProxy.ssl.acmeHttpChallenge[challengeKey]) {
+  const challengeKey = domain.replace(/\./g, "_"); // Use original domain for key
+  if (
+    domainDoc.httpProxy.ssl.acmeHttpChallenge &&
+    domainDoc.httpProxy.ssl.acmeHttpChallenge[challengeKey]
+  ) {
     delete domainDoc.httpProxy.ssl.acmeHttpChallenge[challengeKey];
-    console.log(`[ACME] Removed challenge for ${domain} (key: ${challengeKey})`);
+    console.log(
+      `[ACME] Removed challenge for ${domain} (key: ${challengeKey})`,
+    );
   } else {
-    console.log(`[ACME] No challenge found for ${domain} (key: ${challengeKey})`);
+    console.log(
+      `[ACME] No challenge found for ${domain} (key: ${challengeKey})`,
+    );
   }
 
   // Check if there are any remaining challenges
@@ -350,25 +385,27 @@ async function removeHttpChallenge(domain) {
     }
   } else {
     // Update ACME handler with remaining challenges
-    console.log(`[ACME] Updating ACME handler with ${Object.keys(remainingChallenges).length} remaining challenges`);
-    
+    console.log(
+      `[ACME] Updating ACME handler with ${Object.keys(remainingChallenges).length} remaining challenges`,
+    );
+
     const currentLuaCode = domainDoc.httpProxy.luaCode || "";
     const beginMarker = "-- BEGIN ACME AUTO-INJECT (do not edit this section)";
     const endMarker = "-- END ACME AUTO-INJECT";
-    
+
     const beginIndex = currentLuaCode.indexOf(beginMarker);
     const endIndex = currentLuaCode.indexOf(endMarker);
-    
+
     if (beginIndex !== -1 && endIndex !== -1) {
       const before = currentLuaCode.substring(0, beginIndex);
       const after = currentLuaCode.substring(endIndex + endMarker.length);
-      
+
       // Create updated handler for remaining challenges
-      let acmeHandlers = '';
+      let acmeHandlers = "";
       for (const [key, challenge] of Object.entries(remainingChallenges)) {
         if (challenge.token && challenge.keyAuthorization) {
           acmeHandlers += `
--- Challenge for ${key.replace(/_/g, '.')}
+-- Challenge for ${key.replace(/_/g, ".")}
 if ngx.var.request_uri == "/.well-known/acme-challenge/${challenge.token}" then
     ngx.header["Content-Type"] = "text/plain"
     ngx.say("${challenge.keyAuthorization}")
@@ -393,7 +430,7 @@ end`;
 export async function issueCertificate(domain, email, subdomains = []) {
   console.log(`[ACME] Starting certificate issuance for ${domain}`);
   if (subdomains.length > 0) {
-    console.log(`[ACME] Including subdomains: ${subdomains.join(', ')}`);
+    console.log(`[ACME] Including subdomains: ${subdomains.join(", ")}`);
   }
 
   await connectDB();
@@ -432,10 +469,12 @@ export async function issueCertificate(domain, email, subdomains = []) {
 
     // Combine provided subdomains with detected ones
     const allSubdomains = [...new Set([...subdomains, ...detectedSubdomains])];
-    
+
     if (allSubdomains.length > 0) {
       csrOptions.altNames = allSubdomains;
-      console.log(`[ACME] Certificate will include subdomains: ${allSubdomains.join(', ')}`);
+      console.log(
+        `[ACME] Certificate will include subdomains: ${allSubdomains.join(", ")}`,
+      );
     }
 
     const [key, csr] = await acme.crypto.createCsr(csrOptions);
@@ -453,7 +492,9 @@ export async function issueCertificate(domain, email, subdomains = []) {
           const token = challenge.token;
           const challengeDomain = authz.identifier.value;
 
-          console.log(`[ACME] Setting up HTTP-01 challenge for ${challengeDomain}`);
+          console.log(
+            `[ACME] Setting up HTTP-01 challenge for ${challengeDomain}`,
+          );
           console.log(`[ACME] Token: ${token}`);
           console.log(
             `[ACME] Challenge URL: http://${challengeDomain}/.well-known/acme-challenge/${token}`,
@@ -478,7 +519,7 @@ export async function issueCertificate(domain, email, subdomains = []) {
           await new Promise((resolve) => setTimeout(resolve, 5000));
 
           const challengeDomain = authz.identifier.value;
-          
+
           // Pass the actual challenge domain (subdomain or main domain)
           // removeHttpChallenge() will handle finding the parent domain internally
           await removeHttpChallenge(challengeDomain);

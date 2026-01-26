@@ -539,98 +539,105 @@ export default function AgentsPage() {
                     </div>
 
                     {/* System Metrics Preview */}
-                    {agent.systemMetrics && (agent.systemMetrics.cpuUsagePercent > 0 || agent.systemMetrics.memoryUsagePercent > 0 || agent.loadScore > 0) && (
-                      <div className="space-y-3 mb-4">
-                        <div className="grid grid-cols-3 gap-3">
-                          <div className="text-center">
-                            <div className="flex items-center justify-center mb-1">
-                              <IconCpu className="h-4 w-4 text-blue-500 mr-1" />
-                              <span className="text-xs text-muted-foreground">
-                                CPU
-                              </span>
-                            </div>
-                            <div className="text-sm font-semibold">
-                              {agent.systemMetrics.cpuUsagePercent.toFixed(0)}%
-                            </div>
-                            <div className="w-full bg-secondary rounded-full h-1.5 mt-1">
-                              <div
-                                className={`h-1.5 rounded-full transition-all ${
-                                  agent.systemMetrics.cpuUsagePercent > 80
-                                    ? "bg-red-500"
-                                    : agent.systemMetrics.cpuUsagePercent > 60
-                                      ? "bg-yellow-500"
-                                      : "bg-green-500"
-                                }`}
-                                style={{
-                                  width: `${Math.min(agent.systemMetrics.cpuUsagePercent, 100)}%`,
-                                }}
-                              />
-                            </div>
-                          </div>
-
-                          <div className="text-center">
-                            <div className="flex items-center justify-center mb-1">
-                              <IconDatabase className="h-4 w-4 text-purple-500 mr-1" />
-                              <span className="text-xs text-muted-foreground">
-                                RAM
-                              </span>
-                            </div>
-                            <div className="text-sm font-semibold">
-                              {agent.systemMetrics.memoryUsagePercent.toFixed(
-                                0,
-                              )}
-                              %
-                            </div>
-                            <div className="w-full bg-secondary rounded-full h-1.5 mt-1">
-                              <div
-                                className={`h-1.5 rounded-full transition-all ${
-                                  agent.systemMetrics.memoryUsagePercent > 80
-                                    ? "bg-red-500"
-                                    : agent.systemMetrics.memoryUsagePercent >
-                                        60
-                                      ? "bg-yellow-500"
-                                      : "bg-green-500"
-                                }`}
-                                style={{
-                                  width: `${Math.min(agent.systemMetrics.memoryUsagePercent, 100)}%`,
-                                }}
-                              />
-                            </div>
-                          </div>
-
-                          {agent.loadScore !== undefined && (
+                    {agent.systemMetrics &&
+                      (agent.systemMetrics.cpuUsagePercent > 0 ||
+                        agent.systemMetrics.memoryUsagePercent > 0 ||
+                        agent.loadScore > 0) && (
+                        <div className="space-y-3 mb-4">
+                          <div className="grid grid-cols-3 gap-3">
                             <div className="text-center">
                               <div className="flex items-center justify-center mb-1">
-                                <IconActivity className="h-4 w-4 text-orange-500 mr-1" />
+                                <IconCpu className="h-4 w-4 text-blue-500 mr-1" />
                                 <span className="text-xs text-muted-foreground">
-                                  Load
+                                  CPU
                                 </span>
                               </div>
                               <div className="text-sm font-semibold">
-                                {agent.loadScore.toFixed(0)}
+                                {agent.systemMetrics.cpuUsagePercent.toFixed(0)}
+                                %
                               </div>
                               <div className="w-full bg-secondary rounded-full h-1.5 mt-1">
                                 <div
                                   className={`h-1.5 rounded-full transition-all ${
-                                    agent.loadScore > 80
+                                    agent.systemMetrics.cpuUsagePercent > 80
                                       ? "bg-red-500"
-                                      : agent.loadScore > 60
+                                      : agent.systemMetrics.cpuUsagePercent > 60
                                         ? "bg-yellow-500"
                                         : "bg-green-500"
                                   }`}
                                   style={{
-                                    width: `${Math.min(agent.loadScore, 100)}%`,
+                                    width: `${Math.min(agent.systemMetrics.cpuUsagePercent, 100)}%`,
                                   }}
                                 />
                               </div>
                             </div>
-                          )}
+
+                            <div className="text-center">
+                              <div className="flex items-center justify-center mb-1">
+                                <IconDatabase className="h-4 w-4 text-purple-500 mr-1" />
+                                <span className="text-xs text-muted-foreground">
+                                  RAM
+                                </span>
+                              </div>
+                              <div className="text-sm font-semibold">
+                                {agent.systemMetrics.memoryUsagePercent.toFixed(
+                                  0,
+                                )}
+                                %
+                              </div>
+                              <div className="w-full bg-secondary rounded-full h-1.5 mt-1">
+                                <div
+                                  className={`h-1.5 rounded-full transition-all ${
+                                    agent.systemMetrics.memoryUsagePercent > 80
+                                      ? "bg-red-500"
+                                      : agent.systemMetrics.memoryUsagePercent >
+                                          60
+                                        ? "bg-yellow-500"
+                                        : "bg-green-500"
+                                  }`}
+                                  style={{
+                                    width: `${Math.min(agent.systemMetrics.memoryUsagePercent, 100)}%`,
+                                  }}
+                                />
+                              </div>
+                            </div>
+
+                            {agent.loadScore !== undefined && (
+                              <div className="text-center">
+                                <div className="flex items-center justify-center mb-1">
+                                  <IconActivity className="h-4 w-4 text-orange-500 mr-1" />
+                                  <span className="text-xs text-muted-foreground">
+                                    Load
+                                  </span>
+                                </div>
+                                <div className="text-sm font-semibold">
+                                  {agent.loadScore.toFixed(0)}
+                                </div>
+                                <div className="w-full bg-secondary rounded-full h-1.5 mt-1">
+                                  <div
+                                    className={`h-1.5 rounded-full transition-all ${
+                                      agent.loadScore > 80
+                                        ? "bg-red-500"
+                                        : agent.loadScore > 60
+                                          ? "bg-yellow-500"
+                                          : "bg-green-500"
+                                    }`}
+                                    style={{
+                                      width: `${Math.min(agent.loadScore, 100)}%`,
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
 
                     {/* System Metrics Unavailable Notice */}
-                    {(!agent.systemMetrics || (agent.systemMetrics.cpuUsagePercent === 0 && agent.systemMetrics.memoryUsagePercent === 0 && agent.loadScore === 0)) && (
+                    {(!agent.systemMetrics ||
+                      (agent.systemMetrics.cpuUsagePercent === 0 &&
+                        agent.systemMetrics.memoryUsagePercent === 0 &&
+                        agent.loadScore === 0)) && (
                       <div className="mb-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-dashed">
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <IconServer className="h-3 w-3" />

@@ -24,7 +24,9 @@ export async function middleware(request) {
       return NextResponse.redirect(new URL("/login", request.url));
     }
   } catch (error) {
-    console.error("Middleware error:", error);
+    // Silently handle setup check errors - don't spam logs
+    // The setup check is not critical for most routes
+    // If setup is actually needed, the user will be redirected when they access protected routes
   }
 
   // Public routes that don't require authentication
