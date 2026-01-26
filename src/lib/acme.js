@@ -13,7 +13,22 @@ async function getOrCreateAccountKey() {
 async function setHttpChallenge(domain, token, keyAuthorization) {
   await connectDB();
 
-  const domainDoc = await Domain.findOne({ domain });
+  // For subdomains, we need to find the main domain in database
+  // e.g., if domain is "api.ghost-cheats.com", we need to find "ghost-cheats.com"
+  let domainDoc = await Domain.findOne({ domain });
+  
+  if (!domainDoc) {
+    // Try to find parent domain for subdomains
+    const parts = domain.split('.');
+    if (parts.length > 2) {
+      const parentDomain = parts.slice(1).join('.');
+      domainDoc = await Domain.findOne({ domain: parentDomain });
+      if (domainDoc) {
+        console.log(`[ACME] Using parent domain ${parentDomain} for subdomain ${domain}`);
+      }
+    }
+  }
+
   if (!domainDoc) {
     throw new Error(`Domain ${domain} not found`);
   }
@@ -76,7 +91,7 @@ end
   console.log(`[ACME] ✅ HTTP challenge saved to database`);
 
   // Verify by re-fetching
-  const verifyDoc = await Domain.findOne({ domain });
+  const verifyDoc = await Domain.findOne({ domain: domainDoc.domain });
   if (verifyDoc.httpProxy.ssl.acmeHttpChallenge.token === token) {
     console.log(`[ACME] ✅ Verified: HTTP challenge exists in database`);
   } else {
@@ -168,7 +183,22 @@ end
 async function removeHttpChallenge(domain) {
   await connectDB();
 
-  const domainDoc = await Domain.findOne({ domain });
+  // For subdomains, we need to find the main domain in database
+  // e.g., if domain is "api.ghost-cheats.com", we need to find "ghost-cheats.com"
+  let domainDoc = await Domain.findOne({ domain });
+  
+  if (!domainDoc) {
+    // Try to find parent domain for subdomains
+    const parts = domain.split('.');
+    if (parts.length > 2) {
+      const parentDomain = parts.slice(1).join('.');
+      domainDoc = await Domain.findOne({ domain: parentDomain });
+      if (domainDoc) {
+        console.log(`[ACME] Using parent domain ${parentDomain} for subdomain ${domain} cleanup`);
+      }
+    }
+  }
+
   if (!domainDoc) {
     console.log(`[ACME] Domain ${domain} not found for cleanup`);
     return;
