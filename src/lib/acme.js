@@ -43,10 +43,18 @@ async function setHttpChallenge(domain, token, keyAuthorization) {
   );
 
   // Save challenge to database
-  domainDoc.httpProxy.ssl.acmeHttpChallenge = {
+  if (!domainDoc.httpProxy.ssl.acmeHttpChallenge) {
+    domainDoc.httpProxy.ssl.acmeHttpChallenge = {};
+  }
+  
+  // Store challenge with domain-specific key to support multiple challenges
+  const challengeKey = domain.replace(/\./g, '_'); // Replace dots with underscores for MongoDB field names
+  domainDoc.httpProxy.ssl.acmeHttpChallenge[challengeKey] = {
     token: token,
     keyAuthorization: keyAuthorization,
   };
+
+  console.log(`[ACME] Stored challenge for ${domain} with key: ${challengeKey}`);
 
   // Inject ACME handler into Lua WAF code
   const userLuaCode = domainDoc.httpProxy.luaCode || "";
@@ -57,16 +65,24 @@ async function setHttpChallenge(domain, token, keyAuthorization) {
 
   // Check if ACME handler is already injected (shouldn't be, but just in case)
   if (!userLuaCode.includes("-- BEGIN ACME AUTO-INJECT")) {
-    const acmeHandler = `-- BEGIN ACME AUTO-INJECT (do not edit this section)
--- ACME HTTP-01 Challenge Handler (auto-injected by Core)
-local acme_token = "${token}"
-local acme_key_auth = "${keyAuthorization}"
-
-if ngx.var.request_uri == "/.well-known/acme-challenge/" .. acme_token then
+    // Create handler for all stored challenges
+    let acmeHandlers = '';
+    const allChallenges = domainDoc.httpProxy.ssl.acmeHttpChallenge;
+    
+    for (const [key, challenge] of Object.entries(allChallenges)) {
+      if (challenge.token && challenge.keyAuthorization) {
+        acmeHandlers += `
+-- Challenge for ${key.replace(/_/g, '.')}
+if ngx.var.request_uri == "/.well-known/acme-challenge/${challenge.token}" then
     ngx.header["Content-Type"] = "text/plain"
-    ngx.say(acme_key_auth)
+    ngx.say("${challenge.keyAuthorization}")
     return ngx.exit(200)
-end
+end`;
+      }
+    }
+
+    const acmeHandler = `-- BEGIN ACME AUTO-INJECT (do not edit this section)
+-- ACME HTTP-01 Challenge Handler (auto-injected by Core)${acmeHandlers}
 -- END ACME AUTO-INJECT
 
 `;
@@ -83,8 +99,43 @@ end
     console.log(`[ACME] === End of Lua script preview ===`);
   } else {
     console.log(
-      `[ACME] ⚠️  ACME handler already exists in Lua code, skipping injection`,
+      `[ACME] ⚠️  ACME handler already exists in Lua code, updating challenges`,
     );
+    
+    // Update existing handler with new challenges
+    const beginMarker = "-- BEGIN ACME AUTO-INJECT (do not edit this section)";
+    const endMarker = "-- END ACME AUTO-INJECT";
+    
+    const beginIndex = userLuaCode.indexOf(beginMarker);
+    const endIndex = userLuaCode.indexOf(endMarker);
+    
+    if (beginIndex !== -1 && endIndex !== -1) {
+      const before = userLuaCode.substring(0, beginIndex);
+      const after = userLuaCode.substring(endIndex + endMarker.length);
+      
+      // Create updated handler for all challenges
+      let acmeHandlers = '';
+      const allChallenges = domainDoc.httpProxy.ssl.acmeHttpChallenge;
+      
+      for (const [key, challenge] of Object.entries(allChallenges)) {
+        if (challenge.token && challenge.keyAuthorization) {
+          acmeHandlers += `
+-- Challenge for ${key.replace(/_/g, '.')}
+if ngx.var.request_uri == "/.well-known/acme-challenge/${challenge.token}" then
+    ngx.header["Content-Type"] = "text/plain"
+    ngx.say("${challenge.keyAuthorization}")
+    return ngx.exit(200)
+end`;
+        }
+      }
+
+      const acmeHandler = `-- BEGIN ACME AUTO-INJECT (do not edit this section)
+-- ACME HTTP-01 Challenge Handler (auto-injected by Core)${acmeHandlers}
+-- END ACME AUTO-INJECT`;
+
+      domainDoc.httpProxy.luaCode = before + acmeHandler + after;
+      console.log(`[ACME] ✅ ACME handler updated with all challenges`);
+    }
   }
 
   await domainDoc.save();
@@ -92,13 +143,16 @@ end
 
   // Verify by re-fetching
   const verifyDoc = await Domain.findOne({ domain: domainDoc.domain });
-  if (verifyDoc.httpProxy.ssl.acmeHttpChallenge.token === token) {
-    console.log(`[ACME] ✅ Verified: HTTP challenge exists in database`);
+  const verifyChallengeKey = domain.replace(/\./g, '_');
+  if (verifyDoc.httpProxy.ssl.acmeHttpChallenge && 
+      verifyDoc.httpProxy.ssl.acmeHttpChallenge[verifyChallengeKey] &&
+      verifyDoc.httpProxy.ssl.acmeHttpChallenge[verifyChallengeKey].token === token) {
+    console.log(`[ACME] ✅ Verified: HTTP challenge exists in database for ${domain}`);
   } else {
     console.error(
-      `[ACME] ❌ ERROR: HTTP challenge NOT found in database after save!`,
+      `[ACME] ❌ ERROR: HTTP challenge NOT found in database after save for ${domain}!`,
     );
-    throw new Error(`Failed to save HTTP challenge to database`);
+    throw new Error(`Failed to save HTTP challenge to database for ${domain}`);
   }
 
   // Wait for ALL active agents to poll and get the challenge
@@ -206,51 +260,99 @@ async function removeHttpChallenge(domain) {
 
   console.log(`[ACME] Removing HTTP challenge for ${domain}`);
 
-  domainDoc.httpProxy.ssl.acmeHttpChallenge = {
-    token: "",
-    keyAuthorization: "",
-  };
+  // Remove specific challenge for this domain
+  const challengeKey = domain.replace(/\./g, '_');
+  if (domainDoc.httpProxy.ssl.acmeHttpChallenge && 
+      domainDoc.httpProxy.ssl.acmeHttpChallenge[challengeKey]) {
+    delete domainDoc.httpProxy.ssl.acmeHttpChallenge[challengeKey];
+    console.log(`[ACME] Removed challenge for ${domain} (key: ${challengeKey})`);
+  }
 
-  // Remove ACME handler from Lua WAF code
-  const currentLuaCode = domainDoc.httpProxy.luaCode || "";
+  // Check if there are any remaining challenges
+  const remainingChallenges = domainDoc.httpProxy.ssl.acmeHttpChallenge || {};
+  const hasRemainingChallenges = Object.keys(remainingChallenges).length > 0;
 
-  console.log(
-    `[ACME] Current Lua code length: ${currentLuaCode.length} characters`,
-  );
+  if (!hasRemainingChallenges) {
+    // No more challenges, remove the entire ACME handler
+    domainDoc.httpProxy.ssl.acmeHttpChallenge = {};
 
-  // Find and remove the auto-injected section
-  const beginMarker = "-- BEGIN ACME AUTO-INJECT (do not edit this section)";
-  const endMarker = "-- END ACME AUTO-INJECT";
+    // Remove ACME handler from Lua WAF code
+    const currentLuaCode = domainDoc.httpProxy.luaCode || "";
 
-  const beginIndex = currentLuaCode.indexOf(beginMarker);
-  const endIndex = currentLuaCode.indexOf(endMarker);
-
-  if (beginIndex !== -1 && endIndex !== -1) {
     console.log(
-      `[ACME] Found ACME handler at position ${beginIndex}-${endIndex + endMarker.length}`,
+      `[ACME] Current Lua code length: ${currentLuaCode.length} characters`,
     );
 
-    // Remove the ACME handler section (including the end marker and following newline)
-    const before = currentLuaCode.substring(0, beginIndex);
-    const after = currentLuaCode.substring(endIndex + endMarker.length);
+    // Find and remove the auto-injected section
+    const beginMarker = "-- BEGIN ACME AUTO-INJECT (do not edit this section)";
+    const endMarker = "-- END ACME AUTO-INJECT";
 
-    // Clean up: remove the newline after END marker if it exists
-    const cleanedAfter = after.startsWith("\n") ? after.substring(1) : after;
+    const beginIndex = currentLuaCode.indexOf(beginMarker);
+    const endIndex = currentLuaCode.indexOf(endMarker);
 
-    domainDoc.httpProxy.luaCode = before + cleanedAfter;
-    console.log(`[ACME] ✅ ACME handler removed from Lua WAF code`);
-    console.log(
-      `[ACME] Restored Lua code length: ${domainDoc.httpProxy.luaCode.length} characters`,
-    );
+    if (beginIndex !== -1 && endIndex !== -1) {
+      console.log(
+        `[ACME] Found ACME handler at position ${beginIndex}-${endIndex + endMarker.length}`,
+      );
 
-    // Log the restored Lua script (first 500 chars for debugging)
-    console.log(`[ACME] === Restored Lua script (first 500 chars) ===`);
-    console.log(domainDoc.httpProxy.luaCode.substring(0, 500));
-    console.log(`[ACME] === End of Lua script preview ===`);
+      // Remove the ACME handler section (including the end marker and following newline)
+      const before = currentLuaCode.substring(0, beginIndex);
+      const after = currentLuaCode.substring(endIndex + endMarker.length);
+
+      // Clean up: remove the newline after END marker if it exists
+      const cleanedAfter = after.startsWith("\n") ? after.substring(1) : after;
+
+      domainDoc.httpProxy.luaCode = before + cleanedAfter;
+      console.log(`[ACME] ✅ ACME handler removed from Lua WAF code`);
+      console.log(
+        `[ACME] Restored Lua code length: ${domainDoc.httpProxy.luaCode.length} characters`,
+      );
+
+      // Log the restored Lua script (first 500 chars for debugging)
+      console.log(`[ACME] === Restored Lua script (first 500 chars) ===`);
+      console.log(domainDoc.httpProxy.luaCode.substring(0, 500));
+      console.log(`[ACME] === End of Lua script preview ===`);
+    } else {
+      console.log(
+        `[ACME] ⚠️  ACME handler markers not found in Lua code, nothing to remove`,
+      );
+    }
   } else {
-    console.log(
-      `[ACME] ⚠️  ACME handler markers not found in Lua code, nothing to remove`,
-    );
+    // Update ACME handler with remaining challenges
+    console.log(`[ACME] Updating ACME handler with ${Object.keys(remainingChallenges).length} remaining challenges`);
+    
+    const currentLuaCode = domainDoc.httpProxy.luaCode || "";
+    const beginMarker = "-- BEGIN ACME AUTO-INJECT (do not edit this section)";
+    const endMarker = "-- END ACME AUTO-INJECT";
+    
+    const beginIndex = currentLuaCode.indexOf(beginMarker);
+    const endIndex = currentLuaCode.indexOf(endMarker);
+    
+    if (beginIndex !== -1 && endIndex !== -1) {
+      const before = currentLuaCode.substring(0, beginIndex);
+      const after = currentLuaCode.substring(endIndex + endMarker.length);
+      
+      // Create updated handler for remaining challenges
+      let acmeHandlers = '';
+      for (const [key, challenge] of Object.entries(remainingChallenges)) {
+        if (challenge.token && challenge.keyAuthorization) {
+          acmeHandlers += `
+-- Challenge for ${key.replace(/_/g, '.')}
+if ngx.var.request_uri == "/.well-known/acme-challenge/${challenge.token}" then
+    ngx.header["Content-Type"] = "text/plain"
+    ngx.say("${challenge.keyAuthorization}")
+    return ngx.exit(200)
+end`;
+        }
+      }
+
+      const acmeHandler = `-- BEGIN ACME AUTO-INJECT (do not edit this section)
+-- ACME HTTP-01 Challenge Handler (auto-injected by Core)${acmeHandlers}
+-- END ACME AUTO-INJECT`;
+
+      domainDoc.httpProxy.luaCode = before + acmeHandler + after;
+      console.log(`[ACME] ✅ ACME handler updated with remaining challenges`);
+    }
   }
 
   await domainDoc.save();
