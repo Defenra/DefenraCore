@@ -132,17 +132,7 @@ const DomainSchema = new mongoose.Schema(
           default: "",
         },
         acmeHttpChallenge: {
-          type: Map,
-          of: {
-            token: {
-              type: String,
-              default: "",
-            },
-            keyAuthorization: {
-              type: String,
-              default: "",
-            },
-          },
+          type: mongoose.Schema.Types.Mixed,
           default: {},
         },
       },

@@ -27,17 +27,23 @@ export async function POST(request) {
       
       // Check if it's the old structure (has token/keyAuthorization directly)
       if (challenge && typeof challenge === 'object' && 
-          (challenge.token || challenge.keyAuthorization) &&
-          !challenge.constructor.name.includes('Map')) {
+          (challenge.token !== undefined || challenge.keyAuthorization !== undefined)) {
         
         console.log(`[SSL Migration] Migrating domain: ${domain.domain}`);
         
-        // Clear the old structure
-        domain.httpProxy.ssl.acmeHttpChallenge = {};
+        // Force clear the old structure using $unset
+        await Domain.updateOne(
+          { _id: domain._id },
+          { $unset: { "httpProxy.ssl.acmeHttpChallenge": "" } }
+        );
         
-        await domain.save();
+        // Set it to empty object
+        await Domain.updateOne(
+          { _id: domain._id },
+          { $set: { "httpProxy.ssl.acmeHttpChallenge": {} } }
+        );
+        
         migratedCount++;
-        
         console.log(`[SSL Migration] ✅ Migrated ${domain.domain}`);
       } else {
         skippedCount++;

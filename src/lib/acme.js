@@ -42,16 +42,30 @@ async function setHttpChallenge(domain, token, keyAuthorization) {
     `[ACME] URL: http://${domain}/.well-known/acme-challenge/${token}`,
   );
 
-  // Migrate old acmeHttpChallenge structure to new Map structure
-  if (domainDoc.httpProxy.ssl.acmeHttpChallenge && 
-      typeof domainDoc.httpProxy.ssl.acmeHttpChallenge === 'object' &&
-      !domainDoc.httpProxy.ssl.acmeHttpChallenge instanceof Map &&
-      (domainDoc.httpProxy.ssl.acmeHttpChallenge.token || domainDoc.httpProxy.ssl.acmeHttpChallenge.keyAuthorization)) {
-    console.log(`[ACME] Migrating old acmeHttpChallenge structure to new Map format`);
-    domainDoc.httpProxy.ssl.acmeHttpChallenge = {};
+  // Migrate old acmeHttpChallenge structure to new object structure
+  // This handles the case where old structure has token/keyAuthorization directly
+  if (domainDoc.httpProxy.ssl.acmeHttpChallenge) {
+    const challenge = domainDoc.httpProxy.ssl.acmeHttpChallenge;
+    
+    // Check if it's the old structure (has token/keyAuthorization directly)
+    if (challenge.token !== undefined || challenge.keyAuthorization !== undefined) {
+      console.log(`[ACME] Migrating old acmeHttpChallenge structure to new object format`);
+      
+      // Force clear the old structure by unsetting the field completely
+      await Domain.updateOne(
+        { _id: domainDoc._id },
+        { $unset: { "httpProxy.ssl.acmeHttpChallenge": "" } }
+      );
+      
+      // Reload the document to get the clean state
+      const reloadedDoc = await Domain.findById(domainDoc._id);
+      domainDoc = reloadedDoc;
+      
+      console.log(`[ACME] ✅ Cleared old acmeHttpChallenge structure`);
+    }
   }
 
-  // Save challenge to database
+  // Initialize acmeHttpChallenge as empty object if not exists
   if (!domainDoc.httpProxy.ssl.acmeHttpChallenge) {
     domainDoc.httpProxy.ssl.acmeHttpChallenge = {};
   }
