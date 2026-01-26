@@ -462,13 +462,9 @@ export async function issueCertificate(domain, email, subdomains = []) {
             `[ACME] Expected response: ${keyAuthorization.substring(0, 30)}...`,
           );
 
-          // For subdomains, we need to set the challenge on the main domain
-          // because the agent configuration is stored there
-          const mainDomain = challengeDomain.includes('.') && challengeDomain !== domain 
-            ? domain  // Use main domain for subdomains
-            : challengeDomain; // Use the domain itself for main domain
-
-          await setHttpChallenge(mainDomain, token, keyAuthorization);
+          // Pass the actual challenge domain (subdomain or main domain)
+          // setHttpChallenge() will handle finding the parent domain internally
+          await setHttpChallenge(challengeDomain, token, keyAuthorization);
         }
       },
       challengeRemoveFn: async (authz, challenge, _keyAuthorization) => {
@@ -482,11 +478,10 @@ export async function issueCertificate(domain, email, subdomains = []) {
           await new Promise((resolve) => setTimeout(resolve, 5000));
 
           const challengeDomain = authz.identifier.value;
-          const mainDomain = challengeDomain.includes('.') && challengeDomain !== domain 
-            ? domain  // Use main domain for subdomains
-            : challengeDomain; // Use the domain itself for main domain
-
-          await removeHttpChallenge(mainDomain);
+          
+          // Pass the actual challenge domain (subdomain or main domain)
+          // removeHttpChallenge() will handle finding the parent domain internally
+          await removeHttpChallenge(challengeDomain);
         }
       },
     });
