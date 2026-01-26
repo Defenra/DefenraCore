@@ -77,17 +77,30 @@ async function setHttpChallenge(domain, token, keyAuthorization) {
   if (!domainDoc.httpProxy.ssl.acmeHttpChallenge) {
     domainDoc.httpProxy.ssl.acmeHttpChallenge = {};
   }
+
   // Store challenge with domain-specific key to support multiple challenges
   // Use the original requested domain (not the parent domain) for the key
   const challengeKey = domain.replace(/\./g, "_"); // Replace dots with underscores for MongoDB field names
-  domainDoc.httpProxy.ssl.acmeHttpChallenge[challengeKey] = {
-    token: token,
-    keyAuthorization: keyAuthorization,
-  };
 
   console.log(
     `[ACME] Stored challenge for ${domain} with key: ${challengeKey}`,
   );
+
+  // Use atomic $set operation to avoid race conditions when multiple challenges are being set
+  await Domain.updateOne(
+    { _id: domainDoc._id },
+    {
+      $set: {
+        [`httpProxy.ssl.acmeHttpChallenge.${challengeKey}`]: {
+          token: token,
+          keyAuthorization: keyAuthorization,
+        },
+      },
+    },
+  );
+
+  // Reload document to get updated state with all challenges
+  domainDoc = await Domain.findById(domainDoc._id);
 
   // Inject ACME handler into Lua WAF code
   const userLuaCode = domainDoc.httpProxy.luaCode || "";
@@ -120,15 +133,22 @@ end`;
 
 `;
 
-    domainDoc.httpProxy.luaCode = acmeHandler + userLuaCode;
+    const newLuaCode = acmeHandler + userLuaCode;
+
+    // Use atomic update to avoid race conditions
+    await Domain.updateOne(
+      { _id: domainDoc._id },
+      { $set: { "httpProxy.luaCode": newLuaCode } },
+    );
+
     console.log(`[ACME] ✅ ACME handler injected into Lua WAF code`);
     console.log(
-      `[ACME] Modified Lua code length: ${domainDoc.httpProxy.luaCode.length} characters`,
+      `[ACME] Modified Lua code length: ${newLuaCode.length} characters`,
     );
 
     // Log the final Lua script (first 500 chars for debugging)
     console.log(`[ACME] === Final Lua script (first 500 chars) ===`);
-    console.log(domainDoc.httpProxy.luaCode.substring(0, 500));
+    console.log(newLuaCode.substring(0, 500));
     console.log(`[ACME] === End of Lua script preview ===`);
   } else {
     console.log(
@@ -167,15 +187,21 @@ end`;
 -- ACME HTTP-01 Challenge Handler (auto-injected by Core)${acmeHandlers}
 -- END ACME AUTO-INJECT`;
 
-      domainDoc.httpProxy.luaCode = before + acmeHandler + after;
+      const newLuaCode = before + acmeHandler + after;
+
+      // Use atomic update to avoid race conditions
+      await Domain.updateOne(
+        { _id: domainDoc._id },
+        { $set: { "httpProxy.luaCode": newLuaCode } },
+      );
+
       console.log(`[ACME] ✅ ACME handler updated with all challenges`);
       console.log(
-        `[ACME] Updated Lua code length: ${domainDoc.httpProxy.luaCode.length} characters`,
+        `[ACME] Updated Lua code length: ${newLuaCode.length} characters`,
       );
     }
   }
 
-  await domainDoc.save();
   console.log(`[ACME] ✅ HTTP challenge saved to database`);
 
   // Verify by re-fetching the parent domain document
