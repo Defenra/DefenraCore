@@ -42,6 +42,15 @@ async function setHttpChallenge(domain, token, keyAuthorization) {
     `[ACME] URL: http://${domain}/.well-known/acme-challenge/${token}`,
   );
 
+  // Migrate old acmeHttpChallenge structure to new Map structure
+  if (domainDoc.httpProxy.ssl.acmeHttpChallenge && 
+      typeof domainDoc.httpProxy.ssl.acmeHttpChallenge === 'object' &&
+      !domainDoc.httpProxy.ssl.acmeHttpChallenge instanceof Map &&
+      (domainDoc.httpProxy.ssl.acmeHttpChallenge.token || domainDoc.httpProxy.ssl.acmeHttpChallenge.keyAuthorization)) {
+    console.log(`[ACME] Migrating old acmeHttpChallenge structure to new Map format`);
+    domainDoc.httpProxy.ssl.acmeHttpChallenge = {};
+  }
+
   // Save challenge to database
   if (!domainDoc.httpProxy.ssl.acmeHttpChallenge) {
     domainDoc.httpProxy.ssl.acmeHttpChallenge = {};
