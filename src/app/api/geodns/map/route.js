@@ -32,6 +32,8 @@ export async function GET() {
         isConnected: agent.isConnected,
         ipAddress: agent.ipAddress,
         ipInfo: agent.ipInfo,
+        manualLocation: agent.manualLocation,
+        loadScore: agent.loadScore || 0,
       };
       agentMap.set(agent.agentId, agentData);
       allAgents.push(agentData);

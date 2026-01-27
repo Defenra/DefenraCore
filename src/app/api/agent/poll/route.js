@@ -145,7 +145,9 @@ export async function POST(request) {
     const allAgents = await Agent.find({
       isActive: true, // CRITICAL: Only active agents
       ipAddress: { $exists: true, $ne: null }, // Must have IP address
-    }).select("agentId ipAddress name isActive ipInfo manualLocation");
+    }).select(
+      "agentId ipAddress name isActive ipInfo manualLocation loadScore",
+    );
 
     // Only log agent details occasionally to reduce spam
     if (shouldLogDetails) {
@@ -170,7 +172,18 @@ export async function POST(request) {
     const domainsConfig = allDomains.map((d) => {
       // Build anycast DNS records with fallback logic
       // ALL agents get full GeoDNS map for answering client queries
-      const anycastRecords = buildAnycastRecords(d, allAgents);
+      // Transform agents to include loadScore for load-based selection
+      const agentsWithLoad = allAgents.map((a) => ({
+        agentId: a.agentId,
+        ipAddress: a.ipAddress,
+        name: a.name,
+        isActive: a.isActive,
+        ipInfo: a.ipInfo,
+        manualLocation: a.manualLocation,
+        loadScore: a.loadScore || 0,
+      }));
+
+      const anycastRecords = buildAnycastRecords(d, agentsWithLoad);
 
       // Regular DNS records (without httpProxyEnabled filter - agent needs all DNS records)
       const regularDnsRecords = (d.dnsRecords || []).map((r) => ({

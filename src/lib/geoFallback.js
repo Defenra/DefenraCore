@@ -236,11 +236,12 @@ function getDistance(from, to) {
 }
 
 /**
- * Find best ACTIVE agent for a location based on real geographic distance
+ * Find best ACTIVE agent for a location based on real geographic distance and load balancing
  * Uses Haversine formula with lat/lon coordinates
+ * Implements load-based selection: prefers agents with lower loadScore
  * @param {string} locationCode - Location code (us, europe, etc.)
- * @param {Array} allAgents - All available agents with IP addresses and ipInfo
- * @returns {Object|null} - { agentId, agentIp, locationCode, distance, distanceKm }
+ * @param {Array} allAgents - All available agents with IP addresses, ipInfo, and loadScore
+ * @returns {Object|null} - { agentId, agentIp, locationCode, distance, distanceKm, loadScore, poolSize }
  */
 export function findBestAgentForLocation(locationCode, allAgents) {
   // Filter only ACTIVE agents with IP addresses
@@ -270,17 +271,53 @@ export function findBestAgentForLocation(locationCode, allAgents) {
     return agentCountryCode === locationCode.toUpperCase();
   });
 
-  // If we have exact match - use first one
+  // If we have exact match - use load-based selection
   if (matchingAgents.length > 0) {
-    const agent = matchingAgents[0];
+    // Filter out overloaded agents (loadScore > 80%)
+    const healthyAgents = matchingAgents.filter(
+      (agent) => !agent.loadScore || agent.loadScore <= 80,
+    );
+
+    // If all agents are overloaded, use all matching agents (better than fallback to distant location)
+    const candidatePool =
+      healthyAgents.length > 0 ? healthyAgents : matchingAgents;
+
+    // Log load balancing decision (only occasionally to reduce spam)
+    if (Math.random() < 0.05 || candidatePool.length > 1) {
+      console.log(
+        `[Load Balance] Location ${locationCode}: ${matchingAgents.length} agents, ${healthyAgents.length} healthy`,
+      );
+      candidatePool.forEach((a) => {
+        console.log(
+          `  - ${a.name}: load=${a.loadScore || 0}% ${a.loadScore > 80 ? "⚠️ OVERLOADED" : "✓"}`,
+        );
+      });
+    }
+
+    // Select agent with lowest load score (best performance)
+    // If multiple agents have same load, this provides round-robin effect
+    const selectedAgent = candidatePool.reduce((best, current) => {
+      const bestLoad = best.loadScore || 0;
+      const currentLoad = current.loadScore || 0;
+      return currentLoad < bestLoad ? current : best;
+    });
+
+    if (Math.random() < 0.05 || candidatePool.length > 1) {
+      console.log(
+        `[Load Balance] Selected: ${selectedAgent.name} (load=${selectedAgent.loadScore || 0}%)`,
+      );
+    }
+
     return {
-      agentId: agent.agentId,
-      agentIp: agent.ipAddress,
-      agentName: agent.name,
+      agentId: selectedAgent.agentId,
+      agentIp: selectedAgent.ipAddress,
+      agentName: selectedAgent.name,
       locationCode: locationCode,
       distance: 0,
       distanceKm: 0,
       isDirect: true,
+      loadScore: selectedAgent.loadScore || 0,
+      poolSize: candidatePool.length,
     };
   }
 
