@@ -236,6 +236,65 @@ function getDistance(from, to) {
 }
 
 /**
+ * Find ALL ACTIVE agents for a location (for DNS load balancing)
+ * Returns array of agents sorted by load score (best first)
+ * @param {string} locationCode - Location code (us, europe, etc.)
+ * @param {Array} allAgents - All available agents with IP addresses, ipInfo, and loadScore
+ * @returns {Array} - Array of { agentId, agentIp, agentName, loadScore, weight }
+ */
+export function findAllAgentsForLocation(locationCode, allAgents) {
+  // Filter only ACTIVE agents with IP addresses
+  const activeAgents = allAgents.filter((a) => a.isActive && a.ipAddress);
+
+  if (activeAgents.length === 0) {
+    return []; // No active agents available
+  }
+
+  // Find agents with matching location (exact match by manual location OR IP geolocation)
+  const matchingAgents = activeAgents.filter((agent) => {
+    // Priority 1: Check manual location override first
+    if (agent.manualLocation && agent.manualLocation.country) {
+      const manualCountryCode = agent.manualLocation.country.toUpperCase();
+      return manualCountryCode === locationCode.toUpperCase();
+    }
+
+    // Priority 2: Fall back to IP geolocation
+    if (!agent.ipInfo || !agent.ipInfo.countryCode) return false;
+
+    const agentCountryCode = agent.ipInfo.countryCode.toUpperCase();
+
+    // Check if agent's location matches requested location (country codes only)
+    return agentCountryCode === locationCode.toUpperCase();
+  });
+
+  if (matchingAgents.length === 0) {
+    return []; // No matching agents for this location
+  }
+
+  // Calculate weight for each agent based on load score
+  // Lower load = higher weight (more traffic)
+  // Weight formula: 100 - loadScore (so 20% load = 80 weight, 80% load = 20 weight)
+  const agentsWithWeights = matchingAgents.map((agent) => {
+    const loadScore = agent.loadScore || 0;
+    const weight = Math.max(1, 100 - loadScore); // Minimum weight of 1
+
+    return {
+      agentId: agent.agentId,
+      agentIp: agent.ipAddress,
+      agentName: agent.name,
+      loadScore: loadScore,
+      weight: weight,
+      isOverloaded: loadScore > 80,
+    };
+  });
+
+  // Sort by load score (best agents first)
+  agentsWithWeights.sort((a, b) => a.loadScore - b.loadScore);
+
+  return agentsWithWeights;
+}
+
+/**
  * Find best ACTIVE agent for a location based on real geographic distance and load balancing
  * Uses Haversine formula with lat/lon coordinates
  * Implements load-based selection: prefers agents with lower loadScore
@@ -244,6 +303,56 @@ function getDistance(from, to) {
  * @returns {Object|null} - { agentId, agentIp, locationCode, distance, distanceKm, loadScore, poolSize }
  */
 export function findBestAgentForLocation(locationCode, allAgents) {
+  // Filter only ACTIVE agents with IP addresses
+  const activeAgents = allAgents.filter((a) => a.isActive && a.ipAddress);
+
+  if (activeAgents.length === 0) {
+    return []; // No active agents available
+  }
+
+  // Find agents with matching location (exact match by manual location OR IP geolocation)
+  const matchingAgents = activeAgents.filter((agent) => {
+    // Priority 1: Check manual location override first
+    if (agent.manualLocation && agent.manualLocation.country) {
+      const manualCountryCode = agent.manualLocation.country.toUpperCase();
+      return manualCountryCode === locationCode.toUpperCase();
+    }
+
+    // Priority 2: Fall back to IP geolocation
+    if (!agent.ipInfo || !agent.ipInfo.countryCode) return false;
+
+    const agentCountryCode = agent.ipInfo.countryCode.toUpperCase();
+
+    // Check if agent's location matches requested location (country codes only)
+    return agentCountryCode === locationCode.toUpperCase();
+  });
+
+  if (matchingAgents.length === 0) {
+    return []; // No matching agents for this location
+  }
+
+  // Calculate weight for each agent based on load score
+  // Lower load = higher weight (more traffic)
+  // Weight formula: 100 - loadScore (so 20% load = 80 weight, 80% load = 20 weight)
+  const agentsWithWeights = matchingAgents.map((agent) => {
+    const loadScore = agent.loadScore || 0;
+    const weight = Math.max(1, 100 - loadScore); // Minimum weight of 1
+
+    return {
+      agentId: agent.agentId,
+      agentIp: agent.ipAddress,
+      agentName: agent.name,
+      loadScore: loadScore,
+      weight: weight,
+      isOverloaded: loadScore > 80,
+    };
+  });
+
+  // Sort by load score (best agents first)
+  agentsWithWeights.sort((a, b) => a.loadScore - b.loadScore);
+
+  return agentsWithWeights;
+}
   // Filter only ACTIVE agents with IP addresses
   const activeAgents = allAgents.filter((a) => a.isActive && a.ipAddress);
 
@@ -440,38 +549,36 @@ export function buildAnycastRecords(domain, allAgents) {
   // Step 1: Process configured locations from geoDnsConfig
   for (const location of domain.geoDnsConfig || []) {
     processedLocations.add(location.code.toLowerCase());
-    const result = findBestAgentForLocation(location.code, allAgents);
 
-    if (result) {
+    // Get ALL agents for this location (for load balancing)
+    const locationAgents = findAllAgentsForLocation(location.code, allAgents);
+
+    if (locationAgents.length > 0) {
+      // Create record with array of agents for DNS load balancing
       records.push({
         name: location.code, // "europe", "us", etc.
         type: "A",
-        value: result.agentIp,
+        agents: locationAgents, // Array of agents with weights
         ttl: 60, // Low TTL for dynamic updates
-        agentId: result.agentId,
-        agentName: result.agentName,
         locationCode: location.code,
-        distance: result.distance,
-        distanceKm: result.distanceKm,
-        isDirect: result.isDirect,
-        isLastResort: result.isLastResort || false,
-        description: result.isDirect
-          ? `Direct: ${result.agentName}`
-          : result.isLastResort
-            ? result.distanceKm
-              ? `Last Resort: ${result.agentName} (${result.distanceKm}km)`
-              : `Last Resort: ${result.agentName} (distance: ${result.distance})`
-            : result.distanceKm
-              ? `Nearest: ${result.agentName} (${result.distanceKm}km)`
-              : `Nearest: ${result.agentName} (distance: ${result.distance})`,
+        isDirect: true,
+        description: `${locationAgents.length} agent(s) available`,
       });
-      // Removed excessive logging - only log errors or important events
+
+      if (shouldLogDetails) {
+        console.log(`  ✓ ${location.code} → ${locationAgents.length} agents:`);
+        locationAgents.forEach((a) => {
+          console.log(
+            `    - ${a.agentName} (${a.agentIp}): load=${a.loadScore}%, weight=${a.weight}`,
+          );
+        });
+      }
     } else {
-      // No agent available for this location - could add warning
+      // No agent available for this location
       records.push({
         name: `${location.code}`,
         type: "A",
-        value: null, // No agent available
+        agents: [], // No agents available
         ttl: 60,
         error: "No agent available for this location",
         locationCode: location.code,
@@ -487,6 +594,9 @@ export function buildAnycastRecords(domain, allAgents) {
   // Only log when there are actual changes or errors
 
   const activeAgents = allAgents.filter((a) => a.isActive && a.ipAddress);
+
+  // Group agents by country code for auto-discovery
+  const agentsByLocation = new Map();
 
   for (const agent of activeAgents) {
     // Get agent's country code (manual location takes priority)
@@ -509,40 +619,69 @@ export function buildAnycastRecords(domain, allAgents) {
       continue;
     }
 
-    // Add this location automatically
-    processedLocations.add(countryCodeLower);
+    // Add agent to location group
+    if (!agentsByLocation.has(countryCodeLower)) {
+      agentsByLocation.set(countryCodeLower, []);
+    }
 
-    const locationName =
-      agent.manualLocation?.country || agent.ipInfo?.country || countryCode;
+    const loadScore = agent.loadScore || 0;
+    const weight = Math.max(1, 100 - loadScore);
+
+    agentsByLocation.get(countryCodeLower).push({
+      agentId: agent.agentId,
+      agentIp: agent.ipAddress,
+      agentName: agent.name,
+      loadScore: loadScore,
+      weight: weight,
+      isOverloaded: loadScore > 80,
+      locationName:
+        agent.manualLocation?.country || agent.ipInfo?.country || countryCode,
+    });
+  }
+
+  // Add auto-discovered locations to records
+  for (const [locationCode, locationAgents] of agentsByLocation.entries()) {
+    processedLocations.add(locationCode);
+
+    // Sort by load score (best first)
+    locationAgents.sort((a, b) => a.loadScore - b.loadScore);
 
     records.push({
-      name: countryCodeLower,
+      name: locationCode,
       type: "A",
-      value: agent.ipAddress,
+      agents: locationAgents,
       ttl: 60,
-      agentId: agent.agentId,
-      agentName: agent.name,
-      locationCode: countryCodeLower,
-      distance: 0,
-      distanceKm: 0,
+      locationCode: locationCode,
       isDirect: true,
-      isAutoDiscovered: true, // Mark as auto-discovered
-      description: `Auto: ${agent.name} (${locationName})`,
+      isAutoDiscovered: true,
+      description: `Auto: ${locationAgents.length} agent(s) (${locationAgents[0].locationName})`,
     });
 
     if (shouldLogAutoDiscovery) {
-      // Removed excessive auto-discovery logging
+      console.log(
+        `  [Auto] ${locationCode} → ${locationAgents.length} agents:`,
+      );
+      locationAgents.forEach((a) => {
+        console.log(
+          `    - ${a.agentName} (${a.agentIp}): load=${a.loadScore}%, weight=${a.weight}`,
+        );
+      });
     }
   }
 
   // Only log summary occasionally to reduce spam
   const autoDiscoveredCount = records.filter((r) => r.isAutoDiscovered).length;
-  const generatedCount = records.filter((r) => r.value).length;
+  const generatedCount = records.filter((r) => r.agents && r.agents.length > 0)
+    .length;
+  const totalAgents = records.reduce(
+    (sum, r) => sum + (r.agents ? r.agents.length : 0),
+    0,
+  );
 
   // Only log if there are new auto-discoveries (not every poll)
   if (autoDiscoveredCount > 0 && shouldLogDetails) {
     console.log(
-      `[Build Anycast] Generated ${generatedCount}/${records.length} anycast records (${autoDiscoveredCount} auto-discovered)`,
+      `[Build Anycast] Generated ${generatedCount}/${records.length} location records with ${totalAgents} total agents (${autoDiscoveredCount} auto-discovered)`,
     );
   }
 

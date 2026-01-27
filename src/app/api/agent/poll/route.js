@@ -185,45 +185,45 @@ export async function POST(request) {
 
       const anycastRecords = buildAnycastRecords(d, agentsWithLoad);
 
-      // Regular DNS records (without httpProxyEnabled filter - agent needs all DNS records)
-      const regularDnsRecords = (d.dnsRecords || []).map((r) => ({
-        id: r._id?.toString(),
-        name: r.name,
-        type: r.type,
-        value: r.value,
-        ttl: r.ttl,
-        priority: r.priority,
-        httpProxyEnabled: r.httpProxyEnabled || false,
-      }));
+      // Build GeoDNS map from anycast records
+      // For each location, create map entry with array of agent IPs and weights
+      const geoDnsMap = {};
+      const geoDnsAgentPools = {}; // location -> array of {ip, weight, loadScore}
 
-      // ALL anycast records - agent needs full map to answer DNS queries
-      const allAnycastRecords = anycastRecords
-        .filter((r) => r.value) // Only records with assigned agents
-        .map((r) => ({
-          name: r.name, // "europe", "us", etc.
-          type: r.type,
-          value: r.value, // IP of nearest agent for this location
-          ttl: r.ttl,
-          locationCode: r.locationCode,
-          isFallback: r.isFallback,
-          distance: r.distance,
-          distanceKm: r.distanceKm, // Real distance in km (or null)
-          isLastResort: r.isLastResort || false, // Special fallback (e.g., RU for UA)
-          description: r.description,
+      for (const record of anycastRecords) {
+        if (!record.agents || record.agents.length === 0) {
+          continue; // Skip locations without agents
+        }
+
+        const locationCode = record.locationCode || record.name;
+
+        // Store agent pool for this location
+        geoDnsAgentPools[locationCode] = record.agents.map((a) => ({
+          ip: a.agentIp,
+          weight: a.weight,
+          loadScore: a.loadScore,
+          agentId: a.agentId,
+          agentName: a.agentName,
         }));
 
-      // Removed excessive logging - only log errors or important events
+        // For backward compatibility: store first (best) agent IP in simple map
+        // This is used by old DNS logic as fallback
+        geoDnsMap[locationCode] = record.agents[0].agentIp;
+      }
 
       return {
         id: d._id.toString(),
         domain: d.domain,
         description: d.description || "",
 
-        // DNS Records: regular + ALL anycast records (full GeoDNS map)
-        dnsRecords: [
-          ...regularDnsRecords,
-          ...allAnycastRecords, // Full map: location -> nearest agent IP
-        ],
+        // DNS Records: regular records only (GeoDNS handled separately)
+        dnsRecords: regularDnsRecords,
+
+        // GeoDNS Map: Simple map for backward compatibility (location -> best agent IP)
+        geoDnsMap: geoDnsMap,
+
+        // GeoDNS Agent Pools: Full data for load balancing (location -> array of agents with weights)
+        geoDnsAgentPools: geoDnsAgentPools,
 
         // GeoDNS Locations (ALL locations - agents are selected dynamically)
         geoDnsLocations: (d.geoDnsConfig || []).map((loc) => ({
