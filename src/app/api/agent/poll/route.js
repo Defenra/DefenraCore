@@ -211,6 +211,11 @@ export async function POST(request) {
         geoDnsMap[locationCode] = record.agents[0].agentIp;
       }
 
+      // Extract regular DNS records (filter out GeoDNS location records)
+      const regularDnsRecords = (d.dnsRecords || []).filter(
+        (record) => !record.isGeoDnsLocation,
+      );
+
       return {
         id: d._id.toString(),
         domain: d.domain,
