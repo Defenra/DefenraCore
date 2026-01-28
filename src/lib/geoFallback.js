@@ -80,6 +80,7 @@ export const LOCATION_COORDINATES = {
   ir: { lat: 32.4279, lon: 53.688 }, // Iran
   ae: { lat: 23.4241, lon: 53.8478 }, // UAE
   sg: { lat: 1.3521, lon: 103.8198 }, // Singapore
+  hk: { lat: 22.3193, lon: 114.1694 }, // Hong Kong
   id: { lat: -0.7893, lon: 113.9213 }, // Indonesia
   th: { lat: 15.87, lon: 100.9925 }, // Thailand
   my: { lat: 4.2105, lon: 101.9758 }, // Malaysia

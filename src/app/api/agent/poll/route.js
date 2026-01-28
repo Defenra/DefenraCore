@@ -212,9 +212,9 @@ export async function POST(request) {
         geoDnsMap[locationCode] = record.agents[0].agentIp;
       }
 
-      // Build fallback map: for each country without direct agent, find nearest agent
-      // This allows DNS to serve nearby agents when exact country match doesn't exist
-      // Uses geographic distance calculation with political restrictions
+      // Build fallback map: for EVERY country, find nearest agent
+      // This ensures clients always get geographically optimal routing
+      // Even if exact country match exists, fallback provides secondary option
       
       const allCountryCodes = Object.keys(LOCATION_COORDINATES);
       const politicalRestrictions = {
@@ -240,22 +240,24 @@ export async function POST(request) {
         return restrictions.includes(toCountry.toLowerCase());
       };
 
-      // Build fallback entries for countries without direct agents
+      // Build fallback entries for ALL countries (not just those without direct agents)
+      // This ensures proper geographic fallback when primary agent is unavailable
       for (const country of allCountryCodes) {
         const countryLower = country.toLowerCase();
-        
-        // Skip if country already has direct agent
-        if (geoDnsMap[countryLower]) {
-          continue;
-        }
 
         // Find nearest agent by geographic distance
         let nearestAgent = null;
         let nearestDistance = 999999;
+        let nearestCountry = null;
 
         for (const [agentCountry, agentIp] of Object.entries(geoDnsMap)) {
           // Skip "default" key (origin IP)
           if (agentCountry === 'default') {
+            continue;
+          }
+
+          // Skip same country (we want fallback, not primary)
+          if (agentCountry.toLowerCase() === countryLower) {
             continue;
           }
 
@@ -270,11 +272,17 @@ export async function POST(request) {
           if (distance < nearestDistance) {
             nearestDistance = distance;
             nearestAgent = agentIp;
+            nearestCountry = agentCountry;
           }
         }
 
         if (nearestAgent) {
           geoDnsFallbackMap[countryLower] = nearestAgent;
+          
+          // Log fallback mapping occasionally for debugging
+          if (Math.random() < 0.1) {
+            console.log(`[GeoDNS Fallback] ${countryLower.toUpperCase()} -> ${nearestCountry?.toUpperCase()} (${Math.round(nearestDistance)}km)`);
+          }
         }
       }
 
