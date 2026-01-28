@@ -71,6 +71,12 @@ const DEFAULT_CONFIG = {
       enabled: false,
       ttl: 7200,
     },
+    autoOffloading: {
+      enabled: true,
+      failureThreshold: 5,
+      timeWindowSeconds: 10,
+      banDurationMinutes: 60,
+    },
   },
   customRules: [],
 };
@@ -115,6 +121,10 @@ function normalizeConfig(config) {
       captchaChallenge: {
         ...DEFAULT_CONFIG.challengeSettings.captchaChallenge,
         ...config.challengeSettings?.captchaChallenge,
+      },
+      autoOffloading: {
+        ...DEFAULT_CONFIG.challengeSettings.autoOffloading,
+        ...config.challengeSettings?.autoOffloading,
       },
     },
     ipWhitelist: Array.isArray(config.ipWhitelist)
@@ -800,6 +810,117 @@ export function AntiDDoSTab({ domain, onUpdate }) {
                       ])}
                       min={60}
                     />
+                  </div>
+                </div>
+              </section>
+
+              <section className="space-y-4">
+                <h3 className="text-sm font-medium flex items-center gap-2">
+                  <IconShieldLock className="h-4 w-4 text-orange-500" />
+                  Auto-Offloading (L7→L3)
+                </h3>
+                <div className="border rounded-lg p-4 bg-orange-500/5 border-orange-500/20">
+                  <div className="flex items-start gap-3 mb-4">
+                    <IconInfoCircle className="h-5 w-5 text-orange-500 mt-0.5 flex-shrink-0" />
+                    <div className="space-y-1 text-xs text-muted-foreground">
+                      <p className="text-sm font-medium text-foreground">
+                        Автоматическая блокировка на kernel level
+                      </p>
+                      <p>
+                        Боты, которые повторно не проходят challenge, автоматически отправляются в iptables.
+                        Это разгружает CPU и очищает логи от спама.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                      <div>
+                        <p className="text-sm font-medium">Включить Auto-Offloading</p>
+                        <p className="text-xs text-muted-foreground">
+                          L7 → L3 автоматическая блокировка
+                        </p>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={
+                          antiDDoS.challengeSettings.autoOffloading?.enabled ?? true
+                        }
+                        onChange={handleToggle([
+                          "challengeSettings",
+                          "autoOffloading",
+                          "enabled",
+                        ])}
+                        className="h-4 w-4"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-muted-foreground">
+                        Порог неудач
+                      </label>
+                      <Input
+                        type="number"
+                        value={antiDDoS.challengeSettings.autoOffloading?.failureThreshold ?? 5}
+                        onChange={handleNumberChange([
+                          "challengeSettings",
+                          "autoOffloading",
+                          "failureThreshold",
+                        ])}
+                        min={1}
+                        max={20}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Количество неудачных попыток (default: 5)
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-muted-foreground">
+                        Временное окно (сек)
+                      </label>
+                      <Input
+                        type="number"
+                        value={antiDDoS.challengeSettings.autoOffloading?.timeWindowSeconds ?? 10}
+                        onChange={handleNumberChange([
+                          "challengeSettings",
+                          "autoOffloading",
+                          "timeWindowSeconds",
+                        ])}
+                        min={1}
+                        max={60}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        За сколько секунд считать неудачи (default: 10)
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-muted-foreground">
+                        Длительность бана (мин)
+                      </label>
+                      <Input
+                        type="number"
+                        value={antiDDoS.challengeSettings.autoOffloading?.banDurationMinutes ?? 60}
+                        onChange={handleNumberChange([
+                          "challengeSettings",
+                          "autoOffloading",
+                          "banDurationMinutes",
+                        ])}
+                        min={1}
+                        max={1440}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        На сколько минут банить в iptables (default: 60)
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+                    <p className="text-xs text-muted-foreground">
+                      <strong>Пример:</strong> 5 неудачных попыток за 10 секунд → бан на 60 минут в iptables.
+                      Следующие пакеты от этого IP блокируются ядром, не доходя до Go.
+                    </p>
                   </div>
                 </div>
               </section>
