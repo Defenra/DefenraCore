@@ -240,7 +240,10 @@ export async function POST(request) {
 
         // HTTP Proxy Configuration
         httpProxy: {
+          enabled: d.httpProxy?.enabled || false, // CRITICAL: DNS needs this to return agent IP
           type: d.httpProxy?.type || "both", // http, https, both
+          originHost: d.httpProxy?.originHost || null,
+          originPort: d.httpProxy?.originPort || null,
           antiDDoS: d.httpProxy?.antiDDoS || null,
         },
 
