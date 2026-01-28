@@ -240,6 +240,62 @@ export async function POST(request) {
         return restrictions.includes(toCountry.toLowerCase());
       };
 
+      // Helper: get continent for country (for countries without coordinates)
+      const getContinentForCountry = (countryCode) => {
+        const code = countryCode.toUpperCase();
+        
+        // Europe
+        if (['AL','AD','AT','BY','BE','BA','BG','HR','CY','CZ','DK','EE','FO','FI','FR','DE','GI','GR','GG','HU','IS','IE','IM','IT','JE','XK','LV','LI','LT','LU','MK','MT','MD','MC','ME','NL','NO','PL','PT','RO','RU','SM','RS','SK','SI','ES','SJ','SE','CH','UA','GB','VA'].includes(code)) {
+          return 'europe';
+        }
+        // Asia
+        if (['AF','AM','AZ','BH','BD','BT','BN','KH','CN','CX','CC','IO','GE','HK','IN','ID','IR','IQ','IL','JP','JO','KZ','KP','KR','KW','KG','LA','LB','MO','MY','MV','MN','MM','NP','OM','PK','PS','PH','QA','SA','SG','LK','SY','TW','TJ','TH','TL','TR','TM','AE','UZ','VN','YE'].includes(code)) {
+          return 'asia';
+        }
+        // North America
+        if (['AI','AG','AW','BS','BB','BZ','BM','BQ','CA','KY','CR','CU','CW','DM','DO','SV','GL','GD','GP','GT','HT','HN','JM','MQ','MX','MS','NI','PA','PM','PR','BL','KN','LC','MF','VC','SX','TT','TC','US','VG','VI'].includes(code)) {
+          return 'north-america';
+        }
+        // South America
+        if (['AR','BO','BR','CL','CO','EC','FK','GF','GY','PY','PE','SR','UY','VE'].includes(code)) {
+          return 'south-america';
+        }
+        // Africa
+        if (['DZ','AO','BJ','BW','BF','BI','CM','CV','CF','TD','KM','CG','CD','CI','DJ','EG','GQ','ER','ET','GA','GM','GH','GN','GW','KE','LS','LR','LY','MG','MW','ML','MR','MU','YT','MA','MZ','NA','NE','NG','RE','RW','ST','SN','SC','SL','SO','ZA','SS','SD','SZ','TZ','TG','TN','UG','EH','ZM','ZW'].includes(code)) {
+          return 'africa';
+        }
+        // Oceania
+        if (['AS','AU','CK','FJ','PF','GU','KI','MH','FM','NR','NC','NZ','NU','NF','MP','PW','PG','PN','WS','SB','TK','TO','TV','VU','WF'].includes(code)) {
+          return 'oceania';
+        }
+        
+        return 'unknown';
+      };
+
+      // Helper: find best agent for continent (for countries without coordinates)
+      const findContinentAgent = (continent, excludeCountry) => {
+        let bestAgent = null;
+        let bestDistance = 999999;
+        
+        for (const [agentCountry, agentIp] of Object.entries(geoDnsMap)) {
+          if (agentCountry === 'default' || agentCountry === excludeCountry) continue;
+          
+          const agentContinent = getContinentForCountry(agentCountry);
+          if (agentContinent === continent) {
+            // Same continent - prefer this
+            return agentIp;
+          }
+        }
+        
+        // No agent in same continent - return any agent
+        for (const [agentCountry, agentIp] of Object.entries(geoDnsMap)) {
+          if (agentCountry === 'default' || agentCountry === excludeCountry) continue;
+          return agentIp;
+        }
+        
+        return null;
+      };
+
       // Build fallback entries for ALL countries (not just those without direct agents)
       // This ensures proper geographic fallback when primary agent is unavailable
       for (const country of allCountryCodes) {
@@ -280,9 +336,36 @@ export async function POST(request) {
           geoDnsFallbackMap[countryLower] = nearestAgent;
           
           // Log fallback mapping occasionally for debugging
-          if (Math.random() < 0.1) {
+          if (Math.random() < 0.05) {
             console.log(`[GeoDNS Fallback] ${countryLower.toUpperCase()} -> ${nearestCountry?.toUpperCase()} (${Math.round(nearestDistance)}km)`);
           }
+        }
+      }
+
+      // For countries without coordinates, use continental fallback
+      const allIsoCodes = [
+        'af','ax','al','dz','as','ad','ao','ai','aq','ag','ar','am','aw','au','at','az','bs','bh','bd','bb','by','be','bz','bj','bm','bt','bo','bq','ba','bw','bv','br','io','bn','bg','bf','bi','cv','kh','cm','ca','ky','cf','td','cl','cn','cx','cc','co','km','cd','cg','ck','cr','ci','hr','cu','cw','cy','cz','dk','dj','dm','do','ec','eg','sv','gq','er','ee','sz','et','fk','fo','fj','fi','fr','gf','pf','tf','ga','gm','ge','de','gh','gi','gr','gl','gd','gp','gu','gt','gg','gn','gw','gy','ht','hm','va','hn','hk','hu','is','in','id','ir','iq','ie','im','il','it','jm','jp','je','jo','kz','ke','ki','kp','kr','kw','kg','la','lv','lb','ls','lr','ly','li','lt','lu','mo','mg','mw','my','mv','ml','mt','mh','mq','mr','mu','yt','mx','fm','md','mc','mn','me','ms','ma','mz','mm','na','nr','np','nl','nc','nz','ni','ne','ng','nu','nf','mk','mp','no','om','pk','pw','ps','pa','pg','py','pe','ph','pn','pl','pt','pr','qa','re','ro','ru','rw','bl','sh','kn','lc','mf','pm','vc','ws','sm','st','sa','sn','rs','sc','sl','sg','sx','sk','si','sb','so','za','gs','ss','es','lk','sd','sr','sj','se','ch','sy','tw','tj','tz','th','tl','tg','tk','to','tt','tn','tr','tm','tc','tv','ug','ua','ae','gb','um','us','uy','uz','vu','ve','vn','vg','vi','wf','eh','ye','zm','zw'
+      ];
+      
+      for (const countryCode of allIsoCodes) {
+        const countryLower = countryCode.toLowerCase();
+        
+        // Skip if already has fallback from coordinate-based calculation
+        if (geoDnsFallbackMap[countryLower]) {
+          continue;
+        }
+        
+        // Skip if has direct agent
+        if (geoDnsMap[countryLower]) {
+          continue;
+        }
+        
+        // Use continental fallback
+        const continent = getContinentForCountry(countryCode);
+        const fallbackAgent = findContinentAgent(continent, countryLower);
+        
+        if (fallbackAgent) {
+          geoDnsFallbackMap[countryLower] = fallbackAgent;
         }
       }
 
