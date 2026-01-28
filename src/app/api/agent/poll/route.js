@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { checkAgentHealth } from "@/lib/agentHealthCheck";
-import { buildAnycastRecords } from "@/lib/geoFallback";
+import { buildAnycastRecords, calculateHaversineDistance, LOCATION_COORDINATES } from "@/lib/geoFallback";
 import { extractIpFromRequest, getIpInfo } from "@/lib/ipInfo";
 import connectDB from "@/lib/mongodb";
 import Agent from "@/models/Agent";
@@ -214,145 +214,67 @@ export async function POST(request) {
 
       // Build fallback map: for each country without direct agent, find nearest agent
       // This allows DNS to serve nearby agents when exact country match doesn't exist
-      const europeanCountries = [
-        "at",
-        "be",
-        "bg",
-        "hr",
-        "cy",
-        "cz",
-        "dk",
-        "ee",
-        "fi",
-        "fr",
-        "de",
-        "gr",
-        "hu",
-        "ie",
-        "it",
-        "lv",
-        "lt",
-        "lu",
-        "mt",
-        "nl",
-        "pl",
-        "pt",
-        "ro",
-        "sk",
-        "si",
-        "es",
-        "se",
-        "gb",
-        "no",
-        "ch",
-        "is",
-        "ua",
-        "ru",
-        "tr",
-      ];
-      const asianCountries = [
-        "cn",
-        "jp",
-        "kr",
-        "in",
-        "id",
-        "th",
-        "vn",
-        "ph",
-        "my",
-        "sg",
-        "kz",
-        "uz",
-        "pk",
-        "bd",
-        "ae",
-        "sa",
-        "il",
-        "iq",
-        "ir",
-      ];
-      const northAmericanCountries = ["us", "ca", "mx"];
-      const southAmericanCountries = [
-        "br",
-        "ar",
-        "cl",
-        "co",
-        "pe",
-        "ve",
-        "ec",
-        "uy",
-      ];
-      const africanCountries = [
-        "za",
-        "eg",
-        "ng",
-        "ke",
-        "ma",
-        "tz",
-        "gh",
-        "dz",
-        "ug",
-        "ao",
-      ];
-      const oceaniaCountries = ["au", "nz", "fj", "pg"];
+      // Uses geographic distance calculation with political restrictions
+      
+      const allCountryCodes = Object.keys(LOCATION_COORDINATES);
+      const politicalRestrictions = {
+        // Ukraine clients should NOT be routed to Russia
+        ua: ['ru'],
+        // Add more restrictions if needed
+      };
 
-      // Helper: find best agent for continent
-      const findContinentAgent = (continentCountries) => {
-        for (const country of continentCountries) {
-          if (geoDnsMap[country]) {
-            return geoDnsMap[country];
-          }
-        }
-        return null;
+      // Helper: calculate distance between two countries
+      const calculateCountryDistance = (fromCountry, toCountry) => {
+        const from = LOCATION_COORDINATES[fromCountry.toLowerCase()];
+        const to = LOCATION_COORDINATES[toCountry.toLowerCase()];
+        
+        if (!from || !to) return 999999; // Unknown location = very far
+        
+        return calculateHaversineDistance(from.lat, from.lon, to.lat, to.lon);
+      };
+
+      // Helper: check if routing is politically restricted
+      const isRoutingRestricted = (fromCountry, toCountry) => {
+        const restrictions = politicalRestrictions[fromCountry.toLowerCase()];
+        if (!restrictions) return false;
+        return restrictions.includes(toCountry.toLowerCase());
       };
 
       // Build fallback entries for countries without direct agents
-      for (const country of europeanCountries) {
-        if (!geoDnsMap[country]) {
-          const fallbackIp = findContinentAgent(europeanCountries);
-          if (fallbackIp) {
-            geoDnsFallbackMap[country] = fallbackIp;
+      for (const country of allCountryCodes) {
+        const countryLower = country.toLowerCase();
+        
+        // Skip if country already has direct agent
+        if (geoDnsMap[countryLower]) {
+          continue;
+        }
+
+        // Find nearest agent by geographic distance
+        let nearestAgent = null;
+        let nearestDistance = 999999;
+
+        for (const [agentCountry, agentIp] of Object.entries(geoDnsMap)) {
+          // Skip "default" key (origin IP)
+          if (agentCountry === 'default') {
+            continue;
+          }
+
+          // Check political restrictions
+          if (isRoutingRestricted(countryLower, agentCountry)) {
+            continue;
+          }
+
+          // Calculate distance
+          const distance = calculateCountryDistance(countryLower, agentCountry);
+          
+          if (distance < nearestDistance) {
+            nearestDistance = distance;
+            nearestAgent = agentIp;
           }
         }
-      }
-      for (const country of asianCountries) {
-        if (!geoDnsMap[country]) {
-          const fallbackIp = findContinentAgent(asianCountries);
-          if (fallbackIp) {
-            geoDnsFallbackMap[country] = fallbackIp;
-          }
-        }
-      }
-      for (const country of northAmericanCountries) {
-        if (!geoDnsMap[country]) {
-          const fallbackIp = findContinentAgent(northAmericanCountries);
-          if (fallbackIp) {
-            geoDnsFallbackMap[country] = fallbackIp;
-          }
-        }
-      }
-      for (const country of southAmericanCountries) {
-        if (!geoDnsMap[country]) {
-          const fallbackIp = findContinentAgent(southAmericanCountries);
-          if (fallbackIp) {
-            geoDnsFallbackMap[country] = fallbackIp;
-          }
-        }
-      }
-      for (const country of africanCountries) {
-        if (!geoDnsMap[country]) {
-          const fallbackIp = findContinentAgent(africanCountries);
-          if (fallbackIp) {
-            geoDnsFallbackMap[country] = fallbackIp;
-          }
-        }
-      }
-      for (const country of oceaniaCountries) {
-        if (!geoDnsMap[country]) {
-          const fallbackIp = findContinentAgent(oceaniaCountries);
-          if (fallbackIp) {
-            geoDnsFallbackMap[country] = fallbackIp;
-          }
+
+        if (nearestAgent) {
+          geoDnsFallbackMap[countryLower] = nearestAgent;
         }
       }
 

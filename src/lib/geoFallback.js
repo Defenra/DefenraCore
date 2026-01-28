@@ -8,7 +8,7 @@
  * @param {number} lon2 - Longitude of point 2
  * @returns {number} - Distance in kilometers
  */
-function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
+export function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
   const R = 6371; // Earth radius in kilometers
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
@@ -24,7 +24,7 @@ function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
 
 // Central coordinates for countries (lat, lon)
 // Geographic center of each country for distance calculations
-const LOCATION_COORDINATES = {
+export const LOCATION_COORDINATES = {
   // North America
   us: { lat: 39.8283, lon: -98.5795 }, // United States
   ca: { lat: 56.1304, lon: -106.3468 }, // Canada
@@ -46,6 +46,15 @@ const LOCATION_COORDINATES = {
   es: { lat: 40.4637, lon: -3.7492 }, // Spain
   pl: { lat: 51.9194, lon: 19.1451 }, // Poland
   ua: { lat: 48.3794, lon: 31.1656 }, // Ukraine
+  by: { lat: 53.7098, lon: 27.9534 }, // Belarus
+  md: { lat: 47.4116, lon: 28.3699 }, // Moldova
+  am: { lat: 40.0691, lon: 45.0382 }, // Armenia
+  ge: { lat: 42.3154, lon: 43.3569 }, // Georgia
+  az: { lat: 40.1431, lon: 47.5769 }, // Azerbaijan
+  uz: { lat: 41.3775, lon: 64.5853 }, // Uzbekistan
+  tm: { lat: 38.9697, lon: 59.5563 }, // Turkmenistan
+  kg: { lat: 41.2044, lon: 74.7661 }, // Kyrgyzstan
+  tj: { lat: 38.861, lon: 71.2761 }, // Tajikistan
   nl: { lat: 52.1326, lon: 5.2913 }, // Netherlands
   se: { lat: 60.1282, lon: 18.6435 }, // Sweden
   no: { lat: 60.472, lon: 8.4689 }, // Norway
