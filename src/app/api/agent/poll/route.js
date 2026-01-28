@@ -189,6 +189,7 @@ export async function POST(request) {
       // For each location, create map entry with array of agent IPs and weights
       const geoDnsMap = {};
       const geoDnsAgentPools = {}; // location -> array of {ip, weight, loadScore}
+      const geoDnsFallbackMap = {}; // country -> nearest agent IP (for countries without direct agents)
 
       for (const record of anycastRecords) {
         if (!record.agents || record.agents.length === 0) {
@@ -211,6 +212,150 @@ export async function POST(request) {
         geoDnsMap[locationCode] = record.agents[0].agentIp;
       }
 
+      // Build fallback map: for each country without direct agent, find nearest agent
+      // This allows DNS to serve nearby agents when exact country match doesn't exist
+      const europeanCountries = [
+        "at",
+        "be",
+        "bg",
+        "hr",
+        "cy",
+        "cz",
+        "dk",
+        "ee",
+        "fi",
+        "fr",
+        "de",
+        "gr",
+        "hu",
+        "ie",
+        "it",
+        "lv",
+        "lt",
+        "lu",
+        "mt",
+        "nl",
+        "pl",
+        "pt",
+        "ro",
+        "sk",
+        "si",
+        "es",
+        "se",
+        "gb",
+        "no",
+        "ch",
+        "is",
+        "ua",
+        "ru",
+        "tr",
+      ];
+      const asianCountries = [
+        "cn",
+        "jp",
+        "kr",
+        "in",
+        "id",
+        "th",
+        "vn",
+        "ph",
+        "my",
+        "sg",
+        "kz",
+        "uz",
+        "pk",
+        "bd",
+        "ae",
+        "sa",
+        "il",
+        "iq",
+        "ir",
+      ];
+      const northAmericanCountries = ["us", "ca", "mx"];
+      const southAmericanCountries = [
+        "br",
+        "ar",
+        "cl",
+        "co",
+        "pe",
+        "ve",
+        "ec",
+        "uy",
+      ];
+      const africanCountries = [
+        "za",
+        "eg",
+        "ng",
+        "ke",
+        "ma",
+        "tz",
+        "gh",
+        "dz",
+        "ug",
+        "ao",
+      ];
+      const oceaniaCountries = ["au", "nz", "fj", "pg"];
+
+      // Helper: find best agent for continent
+      const findContinentAgent = (continentCountries) => {
+        for (const country of continentCountries) {
+          if (geoDnsMap[country]) {
+            return geoDnsMap[country];
+          }
+        }
+        return null;
+      };
+
+      // Build fallback entries for countries without direct agents
+      for (const country of europeanCountries) {
+        if (!geoDnsMap[country]) {
+          const fallbackIp = findContinentAgent(europeanCountries);
+          if (fallbackIp) {
+            geoDnsFallbackMap[country] = fallbackIp;
+          }
+        }
+      }
+      for (const country of asianCountries) {
+        if (!geoDnsMap[country]) {
+          const fallbackIp = findContinentAgent(asianCountries);
+          if (fallbackIp) {
+            geoDnsFallbackMap[country] = fallbackIp;
+          }
+        }
+      }
+      for (const country of northAmericanCountries) {
+        if (!geoDnsMap[country]) {
+          const fallbackIp = findContinentAgent(northAmericanCountries);
+          if (fallbackIp) {
+            geoDnsFallbackMap[country] = fallbackIp;
+          }
+        }
+      }
+      for (const country of southAmericanCountries) {
+        if (!geoDnsMap[country]) {
+          const fallbackIp = findContinentAgent(southAmericanCountries);
+          if (fallbackIp) {
+            geoDnsFallbackMap[country] = fallbackIp;
+          }
+        }
+      }
+      for (const country of africanCountries) {
+        if (!geoDnsMap[country]) {
+          const fallbackIp = findContinentAgent(africanCountries);
+          if (fallbackIp) {
+            geoDnsFallbackMap[country] = fallbackIp;
+          }
+        }
+      }
+      for (const country of oceaniaCountries) {
+        if (!geoDnsMap[country]) {
+          const fallbackIp = findContinentAgent(oceaniaCountries);
+          if (fallbackIp) {
+            geoDnsFallbackMap[country] = fallbackIp;
+          }
+        }
+      }
+
       // Extract regular DNS records (filter out GeoDNS location records)
       const regularDnsRecords = (d.dnsRecords || []).filter(
         (record) => !record.isGeoDnsLocation,
@@ -226,6 +371,9 @@ export async function POST(request) {
 
         // GeoDNS Map: Simple map for backward compatibility (location -> best agent IP)
         geoDnsMap: geoDnsMap,
+
+        // GeoDNS Fallback Map: Country fallbacks to nearest agent (cz -> de agent, etc.)
+        geoDnsFallbackMap: geoDnsFallbackMap,
 
         // GeoDNS Agent Pools: Full data for load balancing (location -> array of agents with weights)
         geoDnsAgentPools: geoDnsAgentPools,
