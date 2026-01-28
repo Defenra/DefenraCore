@@ -39,6 +39,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAgents, useCreateAgent, useDeleteAgent } from "@/hooks/useAgents";
+import { AgentLoadGraph } from "@/components/agent-load-graph";
 
 export default function AgentsPage() {
   const { data: agents = [], isLoading, refetch, isFetching } = useAgents();
@@ -444,6 +445,11 @@ export default function AgentsPage() {
                           <CardTitle className="text-lg font-semibold">
                             {agent.name}
                           </CardTitle>
+                          <div className="flex items-center gap-1 mt-0.5">
+                            <code className="text-[10px] bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-muted-foreground font-mono select-all" title="Agent ID">
+                              {agent.agentId}
+                            </code>
+                          </div>
                           <div className="flex items-center gap-2 mt-1">
                             <span
                               className={`text-sm font-medium ${getStatusColor(agent)}`}
@@ -657,6 +663,8 @@ export default function AgentsPage() {
                     {/* Expanded Details */}
                     {isExpanded && (
                       <div className="mt-4 pt-4 border-t space-y-4">
+                        <AgentLoadGraph agentId={agent.id} />
+
                         {/* Detailed System Metrics */}
                         {agent.systemMetrics && (
                           <div>

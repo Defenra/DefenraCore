@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 // Fetch agents list
-export function useAgents() {
+export function useAgents(options = {}) {
   return useQuery({
     queryKey: ["agents"],
     queryFn: async () => {
@@ -10,6 +10,7 @@ export function useAgents() {
       const data = await res.json();
       return data.agents;
     },
+    ...options,
   });
 }
 
