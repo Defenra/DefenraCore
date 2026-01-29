@@ -327,7 +327,14 @@ export default function BansPage() {
                       className="border-zinc-800 hover:bg-zinc-800/50"
                     >
                       <TableCell className="font-mono text-sm">
-                        {ban.ip}
+                        <a
+                          href={`https://ipinfo.io/${ban.ip}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-400 hover:text-blue-300 hover:underline transition-colors"
+                        >
+                          {ban.ip}
+                        </a>
                         {ban.isCIDR && (
                           <Badge
                             variant="outline"
