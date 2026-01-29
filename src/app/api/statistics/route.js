@@ -155,6 +155,47 @@ export async function GET(request) {
       { $sort: { _id: 1 } },
     ]);
 
+    // Get active bans count over time for the graph
+    const GlobalBan = (await import("@/models/GlobalBan")).default;
+    const bansTimeSeriesData = await GlobalBan.aggregate([
+      {
+        $match: {
+          bannedAt: { $gte: startDate },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: {
+              format:
+                timeRange === "1h" || timeRange === "24h"
+                  ? "%Y-%m-%d %H:00"
+                  : "%Y-%m-%d",
+              date: "$bannedAt",
+            },
+          },
+          bansAdded: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    // Create a map of bans by time
+    const bansMap = {};
+    for (const item of bansTimeSeriesData) {
+      bansMap[item._id] = item.bansAdded;
+    }
+
+    // Calculate cumulative active bans for each time point
+    let cumulativeBans = 0;
+    const bansTimeSeries = timeSeriesData.map((item) => {
+      cumulativeBans += bansMap[item._id] || 0;
+      return {
+        time: item._id,
+        activeBans: cumulativeBans,
+      };
+    });
+
     const totalTraffic = stats.reduce((sum, s) => sum + s.totalBytes, 0);
     const inboundTraffic = stats.reduce((sum, s) => sum + s.inboundBytes, 0);
     const outboundTraffic = stats.reduce((sum, s) => sum + s.outboundBytes, 0);
@@ -281,12 +322,13 @@ export async function GET(request) {
         },
       },
       topAgents: topAgentsList,
-      timeSeries: timeSeriesData.map((item) => ({
+      timeSeries: timeSeriesData.map((item, index) => ({
         time: item._id,
         inbound: item.inbound,
         outbound: item.outbound,
         total: item.total,
         requests: item.requests,
+        activeBans: bansTimeSeries[index]?.activeBans || 0,
       })),
       timeRange,
     });

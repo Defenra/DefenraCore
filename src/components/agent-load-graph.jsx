@@ -9,6 +9,8 @@ import {
   YAxis,
   Tooltip,
   CartesianGrid,
+  Line,
+  ComposedChart,
 } from "recharts";
 import { IconLoader } from "@tabler/icons-react";
 
@@ -46,14 +48,17 @@ export function AgentLoadGraph({ agentId }) {
     time: item.time,
     requests: item.requests,
     traffic: (item.total / 1024 / 1024).toFixed(2), // MB
+    activeBans: item.activeBans || 0,
   }));
 
   return (
     <div className="space-y-2">
-      <h4 className="text-sm font-semibold mb-2">Нагрузка (Запросы/час)</h4>
+      <h4 className="text-sm font-semibold mb-2">
+        Нагрузка (Запросы/час) и Активные баны
+      </h4>
       <div className="h-[200px] w-full bg-slate-50 dark:bg-slate-900/50 rounded-lg p-2 border">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={chartData}>
+          <ComposedChart data={chartData}>
             <defs>
               <linearGradient id="colorRequests" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
@@ -80,7 +85,22 @@ export function AgentLoadGraph({ agentId }) {
               axisLine={false}
               minTickGap={30}
             />
-            <YAxis fontSize={10} tickLine={false} axisLine={false} width={30} />
+            <YAxis
+              yAxisId="left"
+              fontSize={10}
+              tickLine={false}
+              axisLine={false}
+              width={30}
+            />
+            <YAxis
+              yAxisId="right"
+              orientation="right"
+              fontSize={10}
+              tickLine={false}
+              axisLine={false}
+              width={30}
+              stroke="#ef4444"
+            />
             <Tooltip
               contentStyle={{
                 backgroundColor: "hsl(var(--popover))",
@@ -103,15 +123,36 @@ export function AgentLoadGraph({ agentId }) {
               }}
             />
             <Area
+              yAxisId="left"
               type="monotone"
               dataKey="requests"
               stroke="#3b82f6"
               fillOpacity={1}
               fill="url(#colorRequests)"
               strokeWidth={2}
+              name="Запросы"
             />
-          </AreaChart>
+            <Line
+              yAxisId="right"
+              type="monotone"
+              dataKey="activeBans"
+              stroke="#ef4444"
+              strokeWidth={2}
+              dot={false}
+              name="Активные баны"
+            />
+          </ComposedChart>
         </ResponsiveContainer>
+      </div>
+      <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+        <div className="flex items-center gap-1">
+          <div className="w-3 h-3 bg-blue-500 rounded-sm" />
+          <span>Запросы</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <div className="w-3 h-0.5 bg-red-500" />
+          <span>Активные баны</span>
+        </div>
       </div>
     </div>
   );
