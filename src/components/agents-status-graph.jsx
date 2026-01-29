@@ -171,7 +171,6 @@ export function AgentsStatusGraph({ agents }) {
   }
 
   const latestData = metricsHistory[metricsHistory.length - 1];
-  const activeAgents = agents.filter((a) => a.isActive);
 
   // Get all unique agent IDs from history
   const allAgentIds = new Set();
@@ -367,85 +366,6 @@ export function AgentsStatusGraph({ agents }) {
               })}
             </LineChart>
           </ResponsiveContainer>
-        </div>
-
-        {/* Current Stats - Show per-agent load */}
-        <div className="mt-6 space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold">Текущая нагрузка агентов</h3>
-            <div className="text-xs text-muted-foreground">
-              {latestData.active} активных • {latestData.inactive} неактивных •{" "}
-              {latestData.pending} ожидают
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {activeAgents.map((agent) => {
-              const agentData = latestData.agents?.[agent.id];
-              if (!agentData) return null;
-
-              const color = agentColorMap[agent.id];
-              const isOverloaded = agentData.load > 80;
-              const isWarning = agentData.load > 60 && agentData.load <= 80;
-
-              return (
-                <div
-                  key={agent.id}
-                  className={`p-3 rounded-lg border transition-all ${
-                    isOverloaded
-                      ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800"
-                      : isWarning
-                        ? "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800"
-                        : "bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700"
-                  }`}
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex items-center gap-2 min-w-0 flex-1">
-                      <div
-                        className="w-3 h-3 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: color }}
-                      />
-                      <div className="min-w-0 flex-1">
-                        <div className="text-sm font-semibold truncate">
-                          {agent.name}
-                        </div>
-                        <div className="text-xs text-muted-foreground truncate">
-                          {agentData.location}, {agentData.country}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right flex-shrink-0 ml-2">
-                      <div className="text-lg font-bold" style={{ color }}>
-                        {agentData.load}%
-                      </div>
-                      <div className="text-[10px] text-muted-foreground">
-                        нагрузка
-                      </div>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2 text-xs">
-                    <div>
-                      <div className="text-muted-foreground">CPU</div>
-                      <div className="font-semibold text-blue-600">
-                        {agentData.cpu}%
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground">RAM</div>
-                      <div className="font-semibold text-purple-600">
-                        {agentData.memory}%
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground">Score</div>
-                      <div className="font-semibold text-orange-600">
-                        {agentData.loadScore}%
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
         </div>
       </CardContent>
     </Card>
