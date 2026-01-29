@@ -83,6 +83,34 @@ export async function GET(request) {
       (a, b) => a.timestamp - b.timestamp,
     );
 
+    // Calculate country statistics
+    const countryStats = {};
+    metrics.forEach((metric) => {
+      const country = metric.country || "Unknown";
+      if (!countryStats[country]) {
+        countryStats[country] = {
+          country,
+          agentCount: new Set(),
+          totalLoad: 0,
+          dataPoints: 0,
+        };
+      }
+      countryStats[country].agentCount.add(metric.agentId.toString());
+      countryStats[country].totalLoad += metric.load || 0;
+      countryStats[country].dataPoints += 1;
+    });
+
+    // Convert to array and calculate averages
+    const countryData = Object.values(countryStats)
+      .map((stat) => ({
+        country: stat.country,
+        agentCount: stat.agentCount.size,
+        avgLoad: stat.dataPoints > 0 ? stat.totalLoad / stat.dataPoints : 0,
+        activity: stat.dataPoints, // Total data points = activity indicator
+      }))
+      .sort((a, b) => b.activity - a.activity)
+      .slice(0, 6); // Top 6 countries
+
     return NextResponse.json({
       success: true,
       period,
@@ -90,6 +118,7 @@ export async function GET(request) {
       endTime: now,
       dataPoints: result.length,
       metrics: result,
+      countryStats: countryData,
     });
   } catch (error) {
     console.error("Error fetching agent metrics:", error);
