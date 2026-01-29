@@ -19,8 +19,8 @@ export async function POST(request) {
 
     await connectDB();
 
-    // Find agent by key
-    const agent = await Agent.findOne({ key: agentKey });
+    // Find agent by agentKey (not "key")
+    const agent = await Agent.findOne({ agentKey: agentKey });
     if (!agent) {
       return NextResponse.json({ error: "Invalid agent key" }, { status: 401 });
     }
