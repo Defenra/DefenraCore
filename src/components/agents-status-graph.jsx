@@ -246,8 +246,9 @@ export function AgentsStatusGraph({ agents }) {
   };
 
   return (
-    <>
-      <Card>
+    <div className="grid gap-6 lg:grid-cols-3">
+      {/* Main Load Graph - 2/3 width */}
+      <Card className="lg:col-span-2">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg flex items-center gap-2">
@@ -407,32 +408,32 @@ export function AgentsStatusGraph({ agents }) {
         </CardContent>
       </Card>
 
-      {/* Country Radar Chart */}
+      {/* Country Radar Chart - 1/3 width */}
       {countryStats && countryStats.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <IconWorld className="h-5 w-5" />
-              Активность по странам
+            <CardTitle className="text-base flex items-center gap-2">
+              <IconWorld className="h-4 w-4" />
+              География
             </CardTitle>
             <p className="text-xs text-muted-foreground">
-              Топ-6 стран по активности агентов за выбранный период
+              Топ-6 стран по активности
             </p>
           </CardHeader>
           <CardContent>
-            <div className="w-full h-[300px]">
+            <div className="w-full h-[350px]">
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart data={countryStats}>
                   <PolarGrid className="stroke-slate-200 dark:stroke-slate-700" />
                   <PolarAngleAxis
                     dataKey="country"
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: 11 }}
                     className="text-slate-600 dark:text-slate-400"
                   />
                   <PolarRadiusAxis
                     angle={90}
                     domain={[0, "auto"]}
-                    tick={{ fontSize: 10 }}
+                    tick={{ fontSize: 9 }}
                   />
                   <Radar
                     name="Агенты"
@@ -442,7 +443,7 @@ export function AgentsStatusGraph({ agents }) {
                     fillOpacity={0.6}
                   />
                   <Radar
-                    name="Средняя нагрузка"
+                    name="Нагрузка"
                     dataKey="avgLoad"
                     stroke="rgb(249, 115, 22)"
                     fill="rgb(249, 115, 22)"
@@ -453,12 +454,12 @@ export function AgentsStatusGraph({ agents }) {
                       if (active && payload && payload.length > 0) {
                         const data = payload[0].payload;
                         return (
-                          <div className="bg-white dark:bg-slate-800 p-3 border rounded-lg shadow-lg">
-                            <p className="text-sm font-semibold mb-2">
+                          <div className="bg-white dark:bg-slate-800 p-2 border rounded-lg shadow-lg">
+                            <p className="text-xs font-semibold mb-1">
                               {data.country}
                             </p>
-                            <div className="space-y-1 text-xs">
-                              <div className="flex justify-between gap-4">
+                            <div className="space-y-0.5 text-xs">
+                              <div className="flex justify-between gap-3">
                                 <span className="text-muted-foreground">
                                   Агентов:
                                 </span>
@@ -466,20 +467,12 @@ export function AgentsStatusGraph({ agents }) {
                                   {data.agentCount}
                                 </span>
                               </div>
-                              <div className="flex justify-between gap-4">
+                              <div className="flex justify-between gap-3">
                                 <span className="text-muted-foreground">
-                                  Средняя нагрузка:
+                                  Нагрузка:
                                 </span>
                                 <span className="font-medium text-orange-600">
                                   {data.avgLoad.toFixed(1)}%
-                                </span>
-                              </div>
-                              <div className="flex justify-between gap-4">
-                                <span className="text-muted-foreground">
-                                  Активность:
-                                </span>
-                                <span className="font-medium">
-                                  {data.activity} точек
                                 </span>
                               </div>
                             </div>
@@ -489,15 +482,13 @@ export function AgentsStatusGraph({ agents }) {
                       return null;
                     }}
                   />
-                  <Legend wrapperStyle={{ fontSize: "11px" }} />
+                  <Legend wrapperStyle={{ fontSize: "10px" }} />
                 </RadarChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
       )}
-    </>
+    </div>
   );
 }
-
-// Removed duplicate CountryRadarChart component - now integrated above
