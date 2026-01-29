@@ -40,9 +40,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAgents, useCreateAgent, useDeleteAgent } from "@/hooks/useAgents";
 import { AgentLoadGraph } from "@/components/agent-load-graph";
+import { AgentsStatusGraph } from "@/components/agents-status-graph";
 
 export default function AgentsPage() {
-  const { data: agents = [], isLoading, refetch, isFetching } = useAgents();
+  const {
+    data: agents = [],
+    isLoading,
+    refetch,
+    isFetching,
+  } = useAgents({
+    refetchInterval: 60000, // Auto-refresh every 60 seconds (1 minute)
+  });
   const createAgent = useCreateAgent();
   const deleteAgent = useDeleteAgent();
 
@@ -328,6 +336,9 @@ export default function AgentsPage() {
         </div>
       </div>
 
+      {/* Status Graph */}
+      <AgentsStatusGraph agents={agents} />
+
       {/* Stats Overview */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card className="border-l-4 border-l-green-500">
@@ -446,7 +457,10 @@ export default function AgentsPage() {
                             {agent.name}
                           </CardTitle>
                           <div className="flex items-center gap-1 mt-0.5">
-                            <code className="text-[10px] bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-muted-foreground font-mono select-all" title="Agent ID">
+                            <code
+                              className="text-[10px] bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-muted-foreground font-mono select-all"
+                              title="Agent ID"
+                            >
                               {agent.agentId}
                             </code>
                           </div>

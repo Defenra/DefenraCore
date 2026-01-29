@@ -508,8 +508,9 @@ export function buildAnycastRecords(domain, allAgents) {
 
   // Only log summary occasionally to reduce spam
   const autoDiscoveredCount = records.filter((r) => r.isAutoDiscovered).length;
-  const generatedCount = records.filter((r) => r.agents && r.agents.length > 0)
-    .length;
+  const generatedCount = records.filter(
+    (r) => r.agents && r.agents.length > 0,
+  ).length;
   const totalAgents = records.reduce(
     (sum, r) => sum + (r.agents ? r.agents.length : 0),
     0,

@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { checkAgentHealth } from "@/lib/agentHealthCheck";
-import { buildAnycastRecords, calculateHaversineDistance, LOCATION_COORDINATES } from "@/lib/geoFallback";
+import {
+  buildAnycastRecords,
+  calculateHaversineDistance,
+  LOCATION_COORDINATES,
+} from "@/lib/geoFallback";
 import { extractIpFromRequest, getIpInfo } from "@/lib/ipInfo";
 import connectDB from "@/lib/mongodb";
 import Agent from "@/models/Agent";
@@ -66,7 +70,8 @@ export async function POST(request) {
               isp: agent.ipInfo?.isp,
             },
           });
-          if (agent.ipHistory.length > 10) agent.ipHistory = agent.ipHistory.slice(-10);
+          if (agent.ipHistory.length > 10)
+            agent.ipHistory = agent.ipHistory.slice(-10);
         }
       }
 
@@ -74,7 +79,9 @@ export async function POST(request) {
       agent.ipInfo = ipInfo;
 
       if (ipInfo.country !== "Unknown") {
-        console.log(`[Poll] Updated geolocation for ${agent.name}: ${ipInfo.country}`);
+        console.log(
+          `[Poll] Updated geolocation for ${agent.name}: ${ipInfo.country}`,
+        );
       }
     }
 
@@ -93,15 +100,20 @@ export async function POST(request) {
     }).select("-userId -__v");
 
     const Domain = (await import("@/models/Domain")).default;
-    const allDomains = await Domain.find({ isActive: true })
-      .select("domain dnsRecords geoDnsConfig httpProxy description pageRules");
+    const allDomains = await Domain.find({ isActive: true }).select(
+      "domain dnsRecords geoDnsConfig httpProxy description pageRules",
+    );
 
     const allAgents = await Agent.find({
       isActive: true,
       ipAddress: { $exists: true, $ne: null },
-    }).select("agentId ipAddress name isActive ipInfo manualLocation loadScore");
+    }).select(
+      "agentId ipAddress name isActive ipInfo manualLocation loadScore",
+    );
 
-    console.log(`[GeoDNS] Building full configuration (${allDomains.length} domains)`);
+    console.log(
+      `[GeoDNS] Building full configuration (${allDomains.length} domains)`,
+    );
 
     const domainsConfig = allDomains.map((d) => {
       const agentsWithLoad = allAgents.map((a) => ({
@@ -128,9 +140,9 @@ export async function POST(request) {
 
         // Сортировка: LoadScore (ASC) -> Random
         const sortedAgents = [...record.agents].sort((a, b) => {
-           const loadDiff = (a.loadScore || 0) - (b.loadScore || 0);
-           if (Math.abs(loadDiff) > 5) return loadDiff; 
-           return 0.5 - Math.random();
+          const loadDiff = (a.loadScore || 0) - (b.loadScore || 0);
+          if (Math.abs(loadDiff) > 5) return loadDiff;
+          return 0.5 - Math.random();
         });
 
         geoDnsAgentPools[locationCode] = sortedAgents.map((a) => ({
@@ -146,7 +158,7 @@ export async function POST(request) {
 
       // 3. Политики и Fallback
       const allCountryCodes = Object.keys(LOCATION_COORDINATES);
-      const politicalRestrictions = { ua: ['ru', 'by'] }; // UA protected from RU/BY
+      const politicalRestrictions = { ua: ["ru", "by"] }; // UA protected from RU/BY
 
       const calculateCountryDistance = (fromCountry, toCountry) => {
         const from = LOCATION_COORDINATES[fromCountry.toLowerCase()];
@@ -157,32 +169,302 @@ export async function POST(request) {
 
       const isRoutingRestricted = (fromCountry, toCountry) => {
         const restrictions = politicalRestrictions[fromCountry.toLowerCase()];
-        return restrictions ? restrictions.includes(toCountry.toLowerCase()) : false;
+        return restrictions
+          ? restrictions.includes(toCountry.toLowerCase())
+          : false;
       };
 
       const getContinentForCountry = (countryCode) => {
         const code = countryCode.toUpperCase();
-        if (['AL','AD','AT','BY','BE','BA','BG','HR','CY','CZ','DK','EE','FO','FI','FR','DE','GI','GR','GG','HU','IS','IE','IM','IT','JE','XK','LV','LI','LT','LU','MK','MT','MD','MC','ME','NL','NO','PL','PT','RO','RU','SM','RS','SK','SI','ES','SJ','SE','CH','UA','GB','VA','TR'].includes(code)) return 'europe';
-        if (['AF','AM','AZ','BH','BD','BT','BN','KH','CN','CX','CC','IO','GE','HK','IN','ID','IR','IQ','IL','JP','JO','KZ','KP','KR','KW','KG','LA','LB','MO','MY','MV','MN','MM','NP','OM','PK','PS','PH','QA','SA','SG','LK','SY','TW','TJ','TH','TL','TM','AE','UZ','VN','YE'].includes(code)) return 'asia';
-        if (['AI','AG','AW','BS','BB','BZ','BM','BQ','CA','KY','CR','CU','CW','DM','DO','SV','GL','GD','GP','GT','HT','HN','JM','MQ','MX','MS','NI','PA','PM','PR','BL','KN','LC','MF','VC','SX','TT','TC','US','VG','VI'].includes(code)) return 'north-america';
-        if (['AR','BO','BR','CL','CO','EC','FK','GF','GY','PY','PE','SR','UY','VE'].includes(code)) return 'south-america';
-        if (['DZ','AO','BJ','BW','BF','BI','CM','CV','CF','TD','KM','CG','CD','CI','DJ','EG','GQ','ER','ET','GA','GM','GH','GN','GW','KE','LS','LR','LY','MG','MW','ML','MR','MU','YT','MA','MZ','NA','NE','NG','RE','RW','ST','SN','SC','SL','SO','ZA','SS','SD','SZ','TZ','TG','TN','UG','EH','ZM','ZW'].includes(code)) return 'africa';
-        if (['AS','AU','CK','FJ','PF','GU','KI','MH','FM','NR','NC','NZ','NU','NF','MP','PW','PG','PN','WS','SB','TK','TO','TV','VU','WF'].includes(code)) return 'oceania';
-        return 'unknown';
+        if (
+          [
+            "AL",
+            "AD",
+            "AT",
+            "BY",
+            "BE",
+            "BA",
+            "BG",
+            "HR",
+            "CY",
+            "CZ",
+            "DK",
+            "EE",
+            "FO",
+            "FI",
+            "FR",
+            "DE",
+            "GI",
+            "GR",
+            "GG",
+            "HU",
+            "IS",
+            "IE",
+            "IM",
+            "IT",
+            "JE",
+            "XK",
+            "LV",
+            "LI",
+            "LT",
+            "LU",
+            "MK",
+            "MT",
+            "MD",
+            "MC",
+            "ME",
+            "NL",
+            "NO",
+            "PL",
+            "PT",
+            "RO",
+            "RU",
+            "SM",
+            "RS",
+            "SK",
+            "SI",
+            "ES",
+            "SJ",
+            "SE",
+            "CH",
+            "UA",
+            "GB",
+            "VA",
+            "TR",
+          ].includes(code)
+        )
+          return "europe";
+        if (
+          [
+            "AF",
+            "AM",
+            "AZ",
+            "BH",
+            "BD",
+            "BT",
+            "BN",
+            "KH",
+            "CN",
+            "CX",
+            "CC",
+            "IO",
+            "GE",
+            "HK",
+            "IN",
+            "ID",
+            "IR",
+            "IQ",
+            "IL",
+            "JP",
+            "JO",
+            "KZ",
+            "KP",
+            "KR",
+            "KW",
+            "KG",
+            "LA",
+            "LB",
+            "MO",
+            "MY",
+            "MV",
+            "MN",
+            "MM",
+            "NP",
+            "OM",
+            "PK",
+            "PS",
+            "PH",
+            "QA",
+            "SA",
+            "SG",
+            "LK",
+            "SY",
+            "TW",
+            "TJ",
+            "TH",
+            "TL",
+            "TM",
+            "AE",
+            "UZ",
+            "VN",
+            "YE",
+          ].includes(code)
+        )
+          return "asia";
+        if (
+          [
+            "AI",
+            "AG",
+            "AW",
+            "BS",
+            "BB",
+            "BZ",
+            "BM",
+            "BQ",
+            "CA",
+            "KY",
+            "CR",
+            "CU",
+            "CW",
+            "DM",
+            "DO",
+            "SV",
+            "GL",
+            "GD",
+            "GP",
+            "GT",
+            "HT",
+            "HN",
+            "JM",
+            "MQ",
+            "MX",
+            "MS",
+            "NI",
+            "PA",
+            "PM",
+            "PR",
+            "BL",
+            "KN",
+            "LC",
+            "MF",
+            "VC",
+            "SX",
+            "TT",
+            "TC",
+            "US",
+            "VG",
+            "VI",
+          ].includes(code)
+        )
+          return "north-america";
+        if (
+          [
+            "AR",
+            "BO",
+            "BR",
+            "CL",
+            "CO",
+            "EC",
+            "FK",
+            "GF",
+            "GY",
+            "PY",
+            "PE",
+            "SR",
+            "UY",
+            "VE",
+          ].includes(code)
+        )
+          return "south-america";
+        if (
+          [
+            "DZ",
+            "AO",
+            "BJ",
+            "BW",
+            "BF",
+            "BI",
+            "CM",
+            "CV",
+            "CF",
+            "TD",
+            "KM",
+            "CG",
+            "CD",
+            "CI",
+            "DJ",
+            "EG",
+            "GQ",
+            "ER",
+            "ET",
+            "GA",
+            "GM",
+            "GH",
+            "GN",
+            "GW",
+            "KE",
+            "LS",
+            "LR",
+            "LY",
+            "MG",
+            "MW",
+            "ML",
+            "MR",
+            "MU",
+            "YT",
+            "MA",
+            "MZ",
+            "NA",
+            "NE",
+            "NG",
+            "RE",
+            "RW",
+            "ST",
+            "SN",
+            "SC",
+            "SL",
+            "SO",
+            "ZA",
+            "SS",
+            "SD",
+            "SZ",
+            "TZ",
+            "TG",
+            "TN",
+            "UG",
+            "EH",
+            "ZM",
+            "ZW",
+          ].includes(code)
+        )
+          return "africa";
+        if (
+          [
+            "AS",
+            "AU",
+            "CK",
+            "FJ",
+            "PF",
+            "GU",
+            "KI",
+            "MH",
+            "FM",
+            "NR",
+            "NC",
+            "NZ",
+            "NU",
+            "NF",
+            "MP",
+            "PW",
+            "PG",
+            "PN",
+            "WS",
+            "SB",
+            "TK",
+            "TO",
+            "TV",
+            "VU",
+            "WF",
+          ].includes(code)
+        )
+          return "oceania";
+        return "unknown";
       };
 
       const findContinentAgent = (continent, fromCountry) => {
         // 1. Same continent, check politics
         for (const [agentCountry, agentIp] of Object.entries(geoDnsMap)) {
-          if (agentCountry === 'default') continue;
-          if (agentCountry.toLowerCase() === fromCountry.toLowerCase()) continue;
+          if (agentCountry === "default") continue;
+          if (agentCountry.toLowerCase() === fromCountry.toLowerCase())
+            continue;
           if (isRoutingRestricted(fromCountry, agentCountry)) continue;
 
-          if (getContinentForCountry(agentCountry) === continent) return agentIp;
+          if (getContinentForCountry(agentCountry) === continent)
+            return agentIp;
         }
         // 2. Any valid agent
         for (const [agentCountry, agentIp] of Object.entries(geoDnsMap)) {
-          if (agentCountry === 'default') continue;
+          if (agentCountry === "default") continue;
           if (isRoutingRestricted(fromCountry, agentCountry)) continue;
           return agentIp;
         }
@@ -196,7 +478,7 @@ export async function POST(request) {
         let nearestDistance = 999999;
 
         for (const [agentCountry, agentIp] of Object.entries(geoDnsMap)) {
-          if (agentCountry === 'default') continue;
+          if (agentCountry === "default") continue;
           if (agentCountry.toLowerCase() === countryLower) continue;
           if (isRoutingRestricted(countryLower, agentCountry)) continue;
 
@@ -210,20 +492,274 @@ export async function POST(request) {
       }
 
       // Fallback: Continents
-      const allIsoCodes = ['af','ax','al','dz','as','ad','ao','ai','aq','ag','ar','am','aw','au','at','az','bs','bh','bd','bb','by','be','bz','bj','bm','bt','bo','bq','ba','bw','bv','br','io','bn','bg','bf','bi','cv','kh','cm','ca','ky','cf','td','cl','cn','cx','cc','co','km','cd','cg','ck','cr','ci','hr','cu','cw','cy','cz','dk','dj','dm','do','ec','eg','sv','gq','er','ee','sz','et','fk','fo','fj','fi','fr','gf','pf','tf','ga','gm','ge','de','gh','gi','gr','gl','gd','gp','gu','gt','gg','gn','gw','gy','ht','hm','va','hn','hk','hu','is','in','id','ir','iq','ie','im','il','it','jm','jp','je','jo','kz','ke','ki','kp','kr','kw','kg','la','lv','lb','ls','lr','ly','li','lt','lu','mo','mg','mw','my','mv','ml','mt','mh','mq','mr','mu','yt','mx','fm','md','mc','mn','me','ms','ma','mz','mm','na','nr','np','nl','nc','nz','ni','ne','ng','nu','nf','mk','mp','no','om','pk','pw','ps','pa','pg','py','pe','ph','pn','pl','pt','pr','qa','re','ro','ru','rw','bl','sh','kn','lc','mf','pm','vc','ws','sm','st','sa','sn','rs','sc','sl','sg','sx','sk','si','sb','so','za','gs','ss','es','lk','sd','sr','sj','se','ch','sy','tw','tj','tz','th','tl','tg','tk','to','tt','tn','tr','tm','tc','tv','ug','ua','ae','gb','um','us','uy','uz','vu','ve','vn','vg','vi','wf','eh','ye','zm','zw'];
-      
+      const allIsoCodes = [
+        "af",
+        "ax",
+        "al",
+        "dz",
+        "as",
+        "ad",
+        "ao",
+        "ai",
+        "aq",
+        "ag",
+        "ar",
+        "am",
+        "aw",
+        "au",
+        "at",
+        "az",
+        "bs",
+        "bh",
+        "bd",
+        "bb",
+        "by",
+        "be",
+        "bz",
+        "bj",
+        "bm",
+        "bt",
+        "bo",
+        "bq",
+        "ba",
+        "bw",
+        "bv",
+        "br",
+        "io",
+        "bn",
+        "bg",
+        "bf",
+        "bi",
+        "cv",
+        "kh",
+        "cm",
+        "ca",
+        "ky",
+        "cf",
+        "td",
+        "cl",
+        "cn",
+        "cx",
+        "cc",
+        "co",
+        "km",
+        "cd",
+        "cg",
+        "ck",
+        "cr",
+        "ci",
+        "hr",
+        "cu",
+        "cw",
+        "cy",
+        "cz",
+        "dk",
+        "dj",
+        "dm",
+        "do",
+        "ec",
+        "eg",
+        "sv",
+        "gq",
+        "er",
+        "ee",
+        "sz",
+        "et",
+        "fk",
+        "fo",
+        "fj",
+        "fi",
+        "fr",
+        "gf",
+        "pf",
+        "tf",
+        "ga",
+        "gm",
+        "ge",
+        "de",
+        "gh",
+        "gi",
+        "gr",
+        "gl",
+        "gd",
+        "gp",
+        "gu",
+        "gt",
+        "gg",
+        "gn",
+        "gw",
+        "gy",
+        "ht",
+        "hm",
+        "va",
+        "hn",
+        "hk",
+        "hu",
+        "is",
+        "in",
+        "id",
+        "ir",
+        "iq",
+        "ie",
+        "im",
+        "il",
+        "it",
+        "jm",
+        "jp",
+        "je",
+        "jo",
+        "kz",
+        "ke",
+        "ki",
+        "kp",
+        "kr",
+        "kw",
+        "kg",
+        "la",
+        "lv",
+        "lb",
+        "ls",
+        "lr",
+        "ly",
+        "li",
+        "lt",
+        "lu",
+        "mo",
+        "mg",
+        "mw",
+        "my",
+        "mv",
+        "ml",
+        "mt",
+        "mh",
+        "mq",
+        "mr",
+        "mu",
+        "yt",
+        "mx",
+        "fm",
+        "md",
+        "mc",
+        "mn",
+        "me",
+        "ms",
+        "ma",
+        "mz",
+        "mm",
+        "na",
+        "nr",
+        "np",
+        "nl",
+        "nc",
+        "nz",
+        "ni",
+        "ne",
+        "ng",
+        "nu",
+        "nf",
+        "mk",
+        "mp",
+        "no",
+        "om",
+        "pk",
+        "pw",
+        "ps",
+        "pa",
+        "pg",
+        "py",
+        "pe",
+        "ph",
+        "pn",
+        "pl",
+        "pt",
+        "pr",
+        "qa",
+        "re",
+        "ro",
+        "ru",
+        "rw",
+        "bl",
+        "sh",
+        "kn",
+        "lc",
+        "mf",
+        "pm",
+        "vc",
+        "ws",
+        "sm",
+        "st",
+        "sa",
+        "sn",
+        "rs",
+        "sc",
+        "sl",
+        "sg",
+        "sx",
+        "sk",
+        "si",
+        "sb",
+        "so",
+        "za",
+        "gs",
+        "ss",
+        "es",
+        "lk",
+        "sd",
+        "sr",
+        "sj",
+        "se",
+        "ch",
+        "sy",
+        "tw",
+        "tj",
+        "tz",
+        "th",
+        "tl",
+        "tg",
+        "tk",
+        "to",
+        "tt",
+        "tn",
+        "tr",
+        "tm",
+        "tc",
+        "tv",
+        "ug",
+        "ua",
+        "ae",
+        "gb",
+        "um",
+        "us",
+        "uy",
+        "uz",
+        "vu",
+        "ve",
+        "vn",
+        "vg",
+        "vi",
+        "wf",
+        "eh",
+        "ye",
+        "zm",
+        "zw",
+      ];
+
       for (const countryCode of allIsoCodes) {
         const countryLower = countryCode.toLowerCase();
-        if (geoDnsFallbackMap[countryLower] || geoDnsMap[countryLower]) continue;
-        
-        const fallbackAgent = findContinentAgent(getContinentForCountry(countryCode), countryLower);
+        if (geoDnsFallbackMap[countryLower] || geoDnsMap[countryLower])
+          continue;
+
+        const fallbackAgent = findContinentAgent(
+          getContinentForCountry(countryCode),
+          countryLower,
+        );
         if (fallbackAgent) geoDnsFallbackMap[countryLower] = fallbackAgent;
       }
 
       // =========================================================
       // SECURITY FILTER: Prevent Origin IP Leak
       // =========================================================
-      
+
       // Сначала берем все записи, кроме технических GeoDNS
       let regularDnsRecords = (d.dnsRecords || []).filter(
         (record) => !record.isGeoDnsLocation,
@@ -231,24 +767,27 @@ export async function POST(request) {
 
       // ЕСЛИ ПРОКСИ ВКЛЮЧЕН: Фильтруем A-записи, ведущие на Origin
       if (d.httpProxy && d.httpProxy.enabled) {
-         regularDnsRecords = regularDnsRecords.filter(record => {
-            // Проверяем, является ли запись корневой (@, пусто или имя домена)
-            const isRootDomain = record.name === '@' || record.name === '' || record.name === d.domain;
-            // Проверяем тип записи
-            const isTypeIP = record.type === 'A' || record.type === 'AAAA';
-            
-            // Если это корневая запись типа IP -> УДАЛЯЕМ. 
-            // Агент должен отвечать своим IP (через GeoDNS логику), а не IP ориджина.
-            if (isRootDomain && isTypeIP) {
-                return false; 
-            }
-            return true;
-         });
-         
-         // Log для дебага (можно убрать в проде)
-         // console.log(`[Security] Stripped origin IP records for ${d.domain}`);
+        regularDnsRecords = regularDnsRecords.filter((record) => {
+          // Проверяем, является ли запись корневой (@, пусто или имя домена)
+          const isRootDomain =
+            record.name === "@" ||
+            record.name === "" ||
+            record.name === d.domain;
+          // Проверяем тип записи
+          const isTypeIP = record.type === "A" || record.type === "AAAA";
+
+          // Если это корневая запись типа IP -> УДАЛЯЕМ.
+          // Агент должен отвечать своим IP (через GeoDNS логику), а не IP ориджина.
+          if (isRootDomain && isTypeIP) {
+            return false;
+          }
+          return true;
+        });
+
+        // Log для дебага (можно убрать в проде)
+        // console.log(`[Security] Stripped origin IP records for ${d.domain}`);
       }
-      
+
       // =========================================================
 
       return {
@@ -281,10 +820,10 @@ export async function POST(request) {
         },
         luaCode: d.httpProxy?.luaCode || null,
         pageRules: (d.pageRules || []).map((rule) => ({
-           enabled: rule.enabled !== undefined ? rule.enabled : true,
-           priority: rule.priority || 1,
-           urlPattern: rule.urlPattern,
-           actions: rule.actions || {},
+          enabled: rule.enabled !== undefined ? rule.enabled : true,
+          priority: rule.priority || 1,
+          urlPattern: rule.urlPattern,
+          actions: rule.actions || {},
         })),
       };
     });
@@ -293,7 +832,10 @@ export async function POST(request) {
       success: true,
       message: "Configuration retrieved successfully",
       timestamp: new Date().toISOString(),
-      geoCode: agent.manualLocation?.country?.toUpperCase() || agent.ipInfo?.countryCode?.toUpperCase() || "XX",
+      geoCode:
+        agent.manualLocation?.country?.toUpperCase() ||
+        agent.ipInfo?.countryCode?.toUpperCase() ||
+        "XX",
       agent: {
         id: agentId,
         name: agent.name,
@@ -314,8 +856,14 @@ export async function POST(request) {
       stats: {
         totalDomains: domainsConfig.length,
         totalProxies: proxies.length,
-        totalDnsRecords: domainsConfig.reduce((sum, d) => sum + d.dnsRecords.length, 0),
-        totalGeoDnsLocations: domainsConfig.reduce((sum, d) => sum + d.geoDnsLocations.length, 0),
+        totalDnsRecords: domainsConfig.reduce(
+          (sum, d) => sum + d.dnsRecords.length,
+          0,
+        ),
+        totalGeoDnsLocations: domainsConfig.reduce(
+          (sum, d) => sum + d.geoDnsLocations.length,
+          0,
+        ),
       },
       nextPollInterval: agent.pollingInterval,
       forceSystemMetrics: true,

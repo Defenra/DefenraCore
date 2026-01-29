@@ -827,16 +827,19 @@ export function AntiDDoSTab({ domain, onUpdate }) {
                         Автоматическая блокировка на kernel level
                       </p>
                       <p>
-                        Боты, которые повторно не проходят challenge, автоматически отправляются в iptables.
-                        Это разгружает CPU и очищает логи от спама.
+                        Боты, которые повторно не проходят challenge,
+                        автоматически отправляются в iptables. Это разгружает
+                        CPU и очищает логи от спама.
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="flex items-center justify-between p-3 border rounded-lg">
                       <div>
-                        <p className="text-sm font-medium">Включить Auto-Offloading</p>
+                        <p className="text-sm font-medium">
+                          Включить Auto-Offloading
+                        </p>
                         <p className="text-xs text-muted-foreground">
                           L7 → L3 автоматическая блокировка
                         </p>
@@ -844,7 +847,8 @@ export function AntiDDoSTab({ domain, onUpdate }) {
                       <input
                         type="checkbox"
                         checked={
-                          antiDDoS.challengeSettings.autoOffloading?.enabled ?? true
+                          antiDDoS.challengeSettings.autoOffloading?.enabled ??
+                          true
                         }
                         onChange={handleToggle([
                           "challengeSettings",
@@ -854,14 +858,17 @@ export function AntiDDoSTab({ domain, onUpdate }) {
                         className="h-4 w-4"
                       />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <label className="text-xs font-medium text-muted-foreground">
                         Порог неудач
                       </label>
                       <Input
                         type="number"
-                        value={antiDDoS.challengeSettings.autoOffloading?.failureThreshold ?? 5}
+                        value={
+                          antiDDoS.challengeSettings.autoOffloading
+                            ?.failureThreshold ?? 5
+                        }
                         onChange={handleNumberChange([
                           "challengeSettings",
                           "autoOffloading",
@@ -874,14 +881,17 @@ export function AntiDDoSTab({ domain, onUpdate }) {
                         Количество неудачных попыток (default: 5)
                       </p>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <label className="text-xs font-medium text-muted-foreground">
                         Временное окно (сек)
                       </label>
                       <Input
                         type="number"
-                        value={antiDDoS.challengeSettings.autoOffloading?.timeWindowSeconds ?? 10}
+                        value={
+                          antiDDoS.challengeSettings.autoOffloading
+                            ?.timeWindowSeconds ?? 10
+                        }
                         onChange={handleNumberChange([
                           "challengeSettings",
                           "autoOffloading",
@@ -894,14 +904,17 @@ export function AntiDDoSTab({ domain, onUpdate }) {
                         За сколько секунд считать неудачи (default: 10)
                       </p>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <label className="text-xs font-medium text-muted-foreground">
                         Длительность бана (мин)
                       </label>
                       <Input
                         type="number"
-                        value={antiDDoS.challengeSettings.autoOffloading?.banDurationMinutes ?? 60}
+                        value={
+                          antiDDoS.challengeSettings.autoOffloading
+                            ?.banDurationMinutes ?? 60
+                        }
                         onChange={handleNumberChange([
                           "challengeSettings",
                           "autoOffloading",
@@ -915,11 +928,12 @@ export function AntiDDoSTab({ domain, onUpdate }) {
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="mt-4 p-3 bg-muted/50 rounded-lg">
                     <p className="text-xs text-muted-foreground">
-                      <strong>Пример:</strong> 5 неудачных попыток за 10 секунд → бан на 60 минут в iptables.
-                      Следующие пакеты от этого IP блокируются ядром, не доходя до Go.
+                      <strong>Пример:</strong> 5 неудачных попыток за 10 секунд
+                      → бан на 60 минут в iptables. Следующие пакеты от этого IP
+                      блокируются ядром, не доходя до Go.
                     </p>
                   </div>
                 </div>
