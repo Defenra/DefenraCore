@@ -69,7 +69,6 @@ export async function POST(request) {
     // Only send bans that are:
     // 1. Still active (expiresAt > now)
     // 2. Created after agent's last sync time (incremental sync)
-    const now = new Date();
     const syncTime = lastSyncTime ? new Date(lastSyncTime) : new Date(0);
 
     const globalBans = await GlobalBan.find({
