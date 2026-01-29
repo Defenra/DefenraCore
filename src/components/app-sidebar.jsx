@@ -64,6 +64,12 @@ const allNavItems = [
     permission: null,
   },
   {
+    title: "Баны",
+    url: "/dashboard/bans",
+    icon: IconShieldLock,
+    permission: "bans.read",
+  },
+  {
     title: "Статистика",
     url: "/dashboard/statistics",
     icon: IconChartBar,
