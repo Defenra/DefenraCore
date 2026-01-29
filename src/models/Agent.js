@@ -183,6 +183,11 @@ const AgentSchema = new mongoose.Schema(
       min: 0,
       max: 100,
     },
+    // Ban synchronization tracking
+    lastBanSyncTime: {
+      type: Date,
+      default: Date.now,
+    },
   },
   {
     timestamps: true,
