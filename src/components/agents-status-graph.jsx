@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
   IconActivity,
   IconCircleFilled,
   IconServer,
+  IconRefresh,
 } from "@tabler/icons-react";
 import {
   LineChart,
@@ -17,8 +19,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-
-const MAX_DATA_POINTS = 60; // 60 minutes of history
+import { useQuery } from "@tanstack/react-query";
 
 // Generate consistent colors for agents
 const AGENT_COLORS = [
@@ -37,42 +38,28 @@ const AGENT_COLORS = [
 ];
 
 export function AgentsStatusGraph({ agents }) {
-  const [metricsHistory, setMetricsHistory] = useState([]);
+  const [period, setPeriod] = useState("hour"); // hour, day, week
   const [agentColorMap, setAgentColorMap] = useState({});
-  const isInitialMount = useRef(true);
 
-  // Clear localStorage on page load (component mount)
-  useEffect(() => {
-    if (isInitialMount.current) {
-      localStorage.removeItem("agents-metrics-history");
-      localStorage.removeItem("agents-color-map");
-      isInitialMount.current = false;
-    }
-  }, []);
+  // Fetch metrics from API
+  const {
+    data: metricsData,
+    isLoading,
+    refetch,
+    isFetching,
+  } = useQuery({
+    queryKey: ["agent-metrics", period],
+    queryFn: async () => {
+      const res = await fetch(`/api/agent/metrics?period=${period}`);
+      if (!res.ok) throw new Error("Failed to fetch metrics");
+      return res.json();
+    },
+    refetchInterval: 60000, // Refetch every minute
+  });
 
-  // Load history from localStorage on mount (after clearing)
-  useEffect(() => {
-    const stored = localStorage.getItem("agents-metrics-history");
-    const colorMap = localStorage.getItem("agents-color-map");
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        setMetricsHistory(parsed);
-      } catch (e) {
-        console.error("Failed to parse metrics history:", e);
-      }
-    }
-    if (colorMap) {
-      try {
-        const parsed = JSON.parse(colorMap);
-        setAgentColorMap(parsed);
-      } catch (e) {
-        console.error("Failed to parse color map:", e);
-      }
-    }
-  }, []);
+  const metricsHistory = metricsData?.metrics || [];
 
-  // Assign colors to new agents
+  // Assign colors to agents
   useEffect(() => {
     if (!agents || agents.length === 0) return;
 
@@ -89,70 +76,10 @@ export function AgentsStatusGraph({ agents }) {
 
     if (JSON.stringify(newColorMap) !== JSON.stringify(agentColorMap)) {
       setAgentColorMap(newColorMap);
-      localStorage.setItem("agents-color-map", JSON.stringify(newColorMap));
     }
   }, [agents, agentColorMap]);
 
-  // Record current metrics
-  useEffect(() => {
-    if (!agents || agents.length === 0) return;
-
-    const now = Date.now();
-    const activeCount = agents.filter((a) => a.isActive).length;
-    const inactiveCount = agents.filter(
-      (a) => !a.isActive && a.isConnected,
-    ).length;
-    const pendingCount = agents.filter((a) => !a.isConnected).length;
-
-    // Create data point with per-agent metrics
-    const newDataPoint = {
-      timestamp: now,
-      time: new Date(now).toLocaleTimeString("ru-RU", {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      active: activeCount,
-      inactive: inactiveCount,
-      pending: pendingCount,
-      total: agents.length,
-      agents: {}, // Store agent info for tooltip
-    };
-
-    // Calculate load for each active agent
-    agents.forEach((agent) => {
-      if (agent.isActive && agent.systemMetrics) {
-        const cpu = agent.systemMetrics.cpuUsagePercent || 0;
-        const memory = agent.systemMetrics.memoryUsagePercent || 0;
-        const load = Math.round(((cpu + memory) / 2) * 10) / 10;
-
-        // Store agent load as dynamic key
-        newDataPoint[`agent_${agent.id}`] = load;
-
-        // Store full agent info for tooltip
-        newDataPoint.agents[agent.id] = {
-          id: agent.id,
-          name: agent.name,
-          load: load,
-          cpu: Math.round(cpu * 10) / 10,
-          memory: Math.round(memory * 10) / 10,
-          loadScore: agent.loadScore || 0,
-          location:
-            agent.manualLocation?.city || agent.ipInfo?.city || "Unknown",
-          country:
-            agent.manualLocation?.country || agent.ipInfo?.country || "Unknown",
-          ipAddress: agent.ipAddress,
-        };
-      }
-    });
-
-    setMetricsHistory((prev) => {
-      const updated = [...prev, newDataPoint].slice(-MAX_DATA_POINTS);
-      localStorage.setItem("agents-metrics-history", JSON.stringify(updated));
-      return updated;
-    });
-  }, [agents]);
-
-  if (metricsHistory.length === 0) {
+  if (isLoading || metricsHistory.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -163,7 +90,9 @@ export function AgentsStatusGraph({ agents }) {
         </CardHeader>
         <CardContent>
           <div className="text-sm text-muted-foreground text-center py-8">
-            Сбор данных... График появится через минуту
+            {isLoading
+              ? "Загрузка данных..."
+              : "Сбор данных... График появится через минуту"}
           </div>
         </CardContent>
       </Card>
@@ -273,12 +202,6 @@ export function AgentsStatusGraph({ agents }) {
                 </span>
               </div>
             ))}
-            <div className="border-t pt-1 mt-1 text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <IconCircleFilled className="h-2 w-2 text-green-500" />
-                <span>Активные: {data.active}</span>
-              </div>
-            </div>
           </div>
         </div>
       );
@@ -289,28 +212,71 @@ export function AgentsStatusGraph({ agents }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg flex items-center gap-2">
-          <IconActivity className="h-5 w-5" />
-          Мониторинг нагрузки агентов
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <IconActivity className="h-5 w-5" />
+            Мониторинг нагрузки агентов
+          </CardTitle>
+          <div className="flex items-center gap-2">
+            {/* Period selector */}
+            <div className="flex items-center gap-1 border rounded-lg p-1">
+              <Button
+                variant={period === "hour" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setPeriod("hour")}
+                className="h-7 text-xs"
+              >
+                Час
+              </Button>
+              <Button
+                variant={period === "day" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setPeriod("day")}
+                className="h-7 text-xs"
+              >
+                День
+              </Button>
+              <Button
+                variant={period === "week" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setPeriod("week")}
+                className="h-7 text-xs"
+              >
+                Неделя
+              </Button>
+            </div>
+            {/* Refresh button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => refetch()}
+              disabled={isFetching}
+              className="h-7"
+            >
+              <IconRefresh
+                className={`h-3 w-3 ${isFetching ? "animate-spin" : ""}`}
+              />
+            </Button>
+          </div>
+        </div>
         <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
           <span>
-            {metricsHistory[0].time} — {latestData.time}
+            {metricsHistory[0]?.time} — {latestData?.time}
           </span>
           <span>•</span>
           <span>{metricsHistory.length} точек данных</span>
           <span>•</span>
           <div className="flex items-center gap-2">
             <IconCircleFilled className="h-2 w-2 text-green-500" />
-            <span>Активные: {latestData.active}</span>
+            <span>Активные: {latestData?.active || 0}</span>
           </div>
           <div className="flex items-center gap-2">
             <IconCircleFilled className="h-2 w-2 text-yellow-500" />
-            <span>Неактивные: {latestData.inactive}</span>
+            <span>Неактивные: {latestData?.inactive || 0}</span>
           </div>
           <div className="flex items-center gap-2">
             <IconCircleFilled className="h-2 w-2 text-slate-400" />
-            <span>Ожидают: {latestData.pending}</span>
+            <span>Ожидают: {latestData?.pending || 0}</span>
           </div>
         </div>
       </CardHeader>
