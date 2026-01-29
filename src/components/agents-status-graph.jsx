@@ -39,6 +39,8 @@ const AGENT_COLORS = [
 
 export function AgentsStatusGraph({ agents }) {
   const [period, setPeriod] = useState("hour"); // hour, day, week
+  const [chartType, setChartType] = useState("linear"); // linear, monotone, step
+  const [hiddenAgents, setHiddenAgents] = useState(new Set()); // Hidden agent IDs
   const [agentColorMap, setAgentColorMap] = useState({});
 
   // Fetch metrics from API
@@ -54,7 +56,7 @@ export function AgentsStatusGraph({ agents }) {
       if (!res.ok) throw new Error("Failed to fetch metrics");
       return res.json();
     },
-    refetchInterval: 60000, // Refetch every minute
+    refetchInterval: 30000, // Refetch every 30 seconds
   });
 
   const metricsHistory = metricsData?.metrics || [];
@@ -111,15 +113,29 @@ export function AgentsStatusGraph({ agents }) {
     });
   });
 
+  const toggleAgentVisibility = (agentId) => {
+    setHiddenAgents((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(agentId)) {
+        newSet.delete(agentId);
+      } else {
+        newSet.add(agentId);
+      }
+      return newSet;
+    });
+  };
+
   const CustomTooltip = ({ active, payload }) => {
-    if (active && payload && payload.length) {
+    if (active && payload && payload.length > 0) {
       const data = payload[0].payload;
 
-      // Find which agent line was hovered
-      const hoveredAgent = payload.find((p) => p.dataKey.startsWith("agent_"));
+      // payload contains only the hovered line's data
+      // Find the agent from the payload (the line that was hovered)
+      const hoveredLine = payload[0]; // First item in payload is the hovered line
+      const dataKey = hoveredLine.dataKey;
 
-      if (hoveredAgent && data.agents) {
-        const agentId = hoveredAgent.dataKey.replace("agent_", "");
+      if (dataKey && dataKey.startsWith("agent_") && data.agents) {
+        const agentId = dataKey.replace("agent_", "");
         const agentInfo = data.agents[agentId];
 
         if (agentInfo) {
@@ -185,28 +201,36 @@ export function AgentsStatusGraph({ agents }) {
           );
         }
       }
-
-      // Fallback: show all agents at this time point
-      return (
-        <div className="bg-white dark:bg-slate-800 p-3 border rounded-lg shadow-lg">
-          <p className="text-sm font-semibold mb-2">{data.time}</p>
-          <div className="space-y-1 text-xs">
-            {Object.entries(data.agents || {}).map(([agentId, agentInfo]) => (
-              <div key={agentId} className="flex items-center gap-2">
-                <div
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: agentColorMap[agentId] }}
-                />
-                <span>
-                  {agentInfo.name}: {agentInfo.load}%
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      );
     }
     return null;
+  };
+
+  const CustomLegend = ({ payload }) => {
+    return (
+      <div className="flex flex-wrap gap-3 justify-center mt-4">
+        {payload.map((entry) => {
+          const agentId = entry.dataKey.replace("agent_", "");
+          const isHidden = hiddenAgents.has(agentId);
+
+          return (
+            <button
+              key={entry.dataKey}
+              onClick={() => toggleAgentVisibility(agentId)}
+              className={`flex items-center gap-2 px-2 py-1 rounded transition-all hover:bg-slate-100 dark:hover:bg-slate-800 ${
+                isHidden ? "opacity-40 line-through" : ""
+              }`}
+              title={isHidden ? "Показать агента" : "Скрыть агента"}
+            >
+              <div
+                className="w-3 h-0.5"
+                style={{ backgroundColor: entry.color }}
+              />
+              <span className="text-xs">{entry.value}</span>
+            </button>
+          );
+        })}
+      </div>
+    );
   };
 
   return (
@@ -243,6 +267,36 @@ export function AgentsStatusGraph({ agents }) {
                 className="h-7 text-xs"
               >
                 Неделя
+              </Button>
+            </div>
+            {/* Chart type selector */}
+            <div className="flex items-center gap-1 border rounded-lg p-1">
+              <Button
+                variant={chartType === "linear" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setChartType("linear")}
+                className="h-7 text-xs px-2"
+                title="Линейный (четкий)"
+              >
+                ━
+              </Button>
+              <Button
+                variant={chartType === "monotone" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setChartType("monotone")}
+                className="h-7 text-xs px-2"
+                title="Плавный"
+              >
+                ∿
+              </Button>
+              <Button
+                variant={chartType === "step" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setChartType("step")}
+                className="h-7 text-xs px-2"
+                title="Ступенчатый"
+              >
+                ⌐
               </Button>
             </div>
             {/* Refresh button */}
@@ -309,27 +363,30 @@ export function AgentsStatusGraph({ agents }) {
                 }}
               />
               <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ fontSize: "11px" }} iconType="line" />
-              {/* Render a line for each agent */}
-              {Array.from(allAgentIds).map((agentId) => {
-                const agent = agents.find((a) => a.id === agentId);
-                const agentName = agent?.name || `Agent ${agentId.slice(0, 8)}`;
-                const color = agentColorMap[agentId] || "rgb(148, 163, 184)";
+              <Legend content={<CustomLegend />} />
+              {/* Render a line for each agent (excluding hidden ones) */}
+              {Array.from(allAgentIds)
+                .filter((agentId) => !hiddenAgents.has(agentId))
+                .map((agentId) => {
+                  const agent = agents.find((a) => a.id === agentId);
+                  const agentName =
+                    agent?.name || `Agent ${agentId.slice(0, 8)}`;
+                  const color = agentColorMap[agentId] || "rgb(148, 163, 184)";
 
-                return (
-                  <Line
-                    key={agentId}
-                    type="monotone"
-                    dataKey={`agent_${agentId}`}
-                    stroke={color}
-                    strokeWidth={2}
-                    dot={{ r: 3 }}
-                    name={agentName}
-                    activeDot={{ r: 6 }}
-                    connectNulls
-                  />
-                );
-              })}
+                  return (
+                    <Line
+                      key={agentId}
+                      type={chartType}
+                      dataKey={`agent_${agentId}`}
+                      stroke={color}
+                      strokeWidth={2}
+                      dot={false}
+                      name={agentName}
+                      activeDot={{ r: 5 }}
+                      connectNulls
+                    />
+                  );
+                })}
             </LineChart>
           </ResponsiveContainer>
         </div>
