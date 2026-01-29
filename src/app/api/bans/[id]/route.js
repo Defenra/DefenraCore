@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import connectDB from "@/lib/mongodb";
 import GlobalBan from "@/models/GlobalBan";
-import { requirePermission } from "@/lib/permissions";
+import { requirePermission } from "@/lib/rbac";
 
 /**
  * DELETE /api/bans/[id]
@@ -10,12 +9,14 @@ import { requirePermission } from "@/lib/permissions";
  */
 export async function DELETE(_request, { params }) {
   try {
-    const session = await auth();
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authCheck = await requirePermission("bans.write");
+    if (!authCheck.authorized) {
+      return NextResponse.json(
+        { error: authCheck.message },
+        { status: authCheck.status },
+      );
     }
 
-    await requirePermission(session, "bans.write");
     await connectDB();
 
     const { id } = await params;
@@ -26,7 +27,7 @@ export async function DELETE(_request, { params }) {
       return NextResponse.json({ error: "Ban not found" }, { status: 404 });
     }
 
-    console.log(`[Bans API] Ban removed: ${ban.ip} by ${session.user.email}`);
+    console.log(`[Bans API] Ban removed: ${ban.ip} by ${authCheck.user.email}`);
 
     return NextResponse.json({
       success: true,

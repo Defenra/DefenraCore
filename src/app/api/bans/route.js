@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import connectDB from "@/lib/mongodb";
 import GlobalBan from "@/models/GlobalBan";
 import Agent from "@/models/Agent";
-import { requirePermission } from "@/lib/permissions";
+import { requirePermission } from "@/lib/rbac";
 
 /**
  * GET /api/bans
@@ -11,12 +10,14 @@ import { requirePermission } from "@/lib/permissions";
  */
 export async function GET(request) {
   try {
-    const session = await auth();
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authCheck = await requirePermission("bans.read");
+    if (!authCheck.authorized) {
+      return NextResponse.json(
+        { error: authCheck.message },
+        { status: authCheck.status },
+      );
     }
 
-    await requirePermission(session, "bans.read");
     await connectDB();
 
     const { searchParams } = new URL(request.url);
@@ -110,12 +111,14 @@ export async function GET(request) {
  */
 export async function POST(request) {
   try {
-    const session = await auth();
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authCheck = await requirePermission("bans.write");
+    if (!authCheck.authorized) {
+      return NextResponse.json(
+        { error: authCheck.message },
+        { status: authCheck.status },
+      );
     }
 
-    await requirePermission(session, "bans.write");
     await connectDB();
 
     const body = await request.json();
@@ -156,7 +159,7 @@ export async function POST(request) {
     });
 
     console.log(
-      `[Bans API] Manual ban created: ${ip} by ${session.user.email}`,
+      `[Bans API] Manual ban created: ${ip} by ${authCheck.user.email}`,
     );
 
     return NextResponse.json({
@@ -181,12 +184,14 @@ export async function POST(request) {
  */
 export async function DELETE(_request) {
   try {
-    const session = await auth();
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authCheck = await requirePermission("bans.write");
+    if (!authCheck.authorized) {
+      return NextResponse.json(
+        { error: authCheck.message },
+        { status: authCheck.status },
+      );
     }
 
-    await requirePermission(session, "bans.write");
     await connectDB();
 
     const now = new Date();
@@ -195,7 +200,7 @@ export async function DELETE(_request) {
     });
 
     console.log(
-      `[Bans API] Cleanup: deleted ${result.deletedCount} expired bans by ${session.user.email}`,
+      `[Bans API] Cleanup: deleted ${result.deletedCount} expired bans by ${authCheck.user.email}`,
     );
 
     return NextResponse.json({
