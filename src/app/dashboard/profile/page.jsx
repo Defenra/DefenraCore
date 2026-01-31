@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { ProfileSkeleton } from "@/components/profile-skeleton";
+import { useTranslation } from "@/hooks/useTranslation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,8 +15,78 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
+
+// Bento Card Component
+function BentoCard({ children, className }) {
+  return (
+    <Card
+      className={cn(
+        "border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300",
+        "hover:border-border hover:shadow-lg hover:shadow-primary/5",
+        className
+      )}
+    >
+      {children}
+    </Card>
+  );
+}
+
+// Profile Skeleton
+function ProfileSkeleton() {
+  return (
+    <div className="flex flex-col gap-4 md:gap-6 py-4 md:py-6 px-4 lg:px-8">
+      <div className="space-y-2">
+        <Skeleton className="h-8 w-32" />
+        <Skeleton className="h-4 w-64" />
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <BentoCard>
+          <CardHeader>
+            <Skeleton className="h-6 w-48 mb-2" />
+            <Skeleton className="h-4 w-56" />
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center gap-4">
+              <Skeleton className="h-20 w-20 rounded-full" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+            </div>
+          </CardContent>
+        </BentoCard>
+
+        <BentoCard>
+          <CardHeader>
+            <Skeleton className="h-6 w-40 mb-2" />
+            <Skeleton className="h-4 w-64" />
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <div className="border-t pt-4 space-y-2">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <Skeleton className="h-10 w-full" />
+          </CardContent>
+        </BentoCard>
+      </div>
+    </div>
+  );
+}
 
 export default function ProfilePage() {
+  const { t } = useTranslation();
   const { data: session, status, update } = useSession();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -63,12 +133,12 @@ export default function ProfilePage() {
       formData.newPassword &&
       formData.newPassword !== formData.confirmPassword
     ) {
-      setError("Новые пароли не совпадают");
+      setError(t("profile.errors.passwordMismatch"));
       return;
     }
 
     if (formData.newPassword && formData.newPassword.length < 6) {
-      setError("Новый пароль должен содержать минимум 6 символов");
+      setError(t("profile.errors.passwordLength"));
       return;
     }
 
@@ -91,10 +161,10 @@ export default function ProfilePage() {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || "Ошибка при обновлении профиля");
+        throw new Error(data.error || t("profile.errors.updateFailed"));
       }
 
-      setSuccess("Профиль успешно обновлен");
+      setSuccess(t("profile.success"));
       setFormData({
         ...formData,
         currentPassword: "",
@@ -121,19 +191,21 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
-      <div>
-        <h1 className="text-2xl font-bold">Профиль</h1>
-        <p className="text-sm text-muted-foreground">
-          Управление вашими личными данными и настройками
+    <div className="flex flex-col gap-4 md:gap-6 py-4 md:py-6 px-4 lg:px-8">
+      {/* Header */}
+      <div className="space-y-1">
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{t("profile.title")}</h1>
+        <p className="text-sm text-muted-foreground md:text-base">
+          {t("profile.description")}
         </p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <Card>
+        {/* User Info Card */}
+        <BentoCard>
           <CardHeader>
-            <CardTitle>Информация о пользователе</CardTitle>
-            <CardDescription>Просмотр основной информации</CardDescription>
+            <CardTitle>{t("profile.infoCard.title")}</CardTitle>
+            <CardDescription>{t("profile.infoCard.description")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-4">
@@ -147,24 +219,25 @@ export default function ProfilePage() {
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="text-sm font-medium">Роль</p>
+                <p className="text-sm font-medium">{t("profile.role")}</p>
                 <p className="text-sm text-muted-foreground capitalize">
                   {session.user?.role || "user"}
                 </p>
               </div>
             </div>
           </CardContent>
-        </Card>
+        </BentoCard>
 
-        <Card>
+        {/* Edit Profile Card */}
+        <BentoCard>
           <CardHeader>
-            <CardTitle>Редактировать профиль</CardTitle>
-            <CardDescription>Обновите ваши персональные данные</CardDescription>
+            <CardTitle>{t("profile.editCard.title")}</CardTitle>
+            <CardDescription>{t("profile.editCard.description")}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Имя</Label>
+                <Label htmlFor="name">{t("profile.form.name")}</Label>
                 <Input
                   id="name"
                   type="text"
@@ -177,7 +250,7 @@ export default function ProfilePage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t("profile.form.email")}</Label>
                 <Input
                   id="email"
                   type="email"
@@ -190,10 +263,10 @@ export default function ProfilePage() {
                 />
               </div>
               <div className="border-t pt-4">
-                <h3 className="text-sm font-medium mb-4">Изменить пароль</h3>
+                <h3 className="text-sm font-medium mb-4">{t("profile.form.changePassword")}</h3>
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="currentPassword">Текущий пароль</Label>
+                    <Label htmlFor="currentPassword">{t("profile.form.currentPassword")}</Label>
                     <Input
                       id="currentPassword"
                       type="password"
@@ -208,7 +281,7 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="newPassword">Новый пароль</Label>
+                    <Label htmlFor="newPassword">{t("profile.form.newPassword")}</Label>
                     <Input
                       id="newPassword"
                       type="password"
@@ -224,7 +297,7 @@ export default function ProfilePage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="confirmPassword">
-                      Подтвердите новый пароль
+                      {t("profile.form.confirmPassword")}
                     </Label>
                     <Input
                       id="confirmPassword"
@@ -252,11 +325,11 @@ export default function ProfilePage() {
                 </div>
               )}
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Сохранение..." : "Сохранить изменения"}
+                {loading ? t("profile.saving") : t("profile.save")}
               </Button>
             </form>
           </CardContent>
-        </Card>
+        </BentoCard>
       </div>
     </div>
   );

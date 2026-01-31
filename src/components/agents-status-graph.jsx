@@ -115,7 +115,10 @@ export function AgentsStatusGraph({ agents }) {
   metricsHistory.forEach((point) => {
     Object.keys(point).forEach((key) => {
       if (key.startsWith("agent_")) {
-        allAgentIds.add(key.replace("agent_", ""));
+        const agentId = key.replace("agent_", "");
+        if (agentId && agentId !== "undefined") {
+          allAgentIds.add(agentId);
+        }
       }
     });
   });

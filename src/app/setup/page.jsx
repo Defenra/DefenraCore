@@ -12,8 +12,10 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export default function SetupPage() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -29,12 +31,12 @@ export default function SetupPage() {
     setError("");
 
     if (formData.password !== formData.confirmPassword) {
-      setError("Пароли не совпадают");
+      setError(t("setup.errors.passwordMismatch"));
       return;
     }
 
     if (formData.password.length < 6) {
-      setError("Пароль должен содержать минимум 6 символов");
+      setError(t("setup.errors.passwordLength"));
       return;
     }
 
@@ -56,7 +58,7 @@ export default function SetupPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || "Ошибка при создании пользователя");
+        throw new Error(data.error || t("setup.errors.createFailed"));
       }
 
       router.push("/login?setup=success");
@@ -68,34 +70,53 @@ export default function SetupPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center p-4 bg-gradient-to-br from-background to-muted/50">
+      <Card className="w-full max-w-md border-border/50 bg-card/50 backdrop-blur-sm">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">
-            Первоначальная установка
+          <div className="flex items-center justify-center mb-4">
+            <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-6 w-6 text-primary"
+              >
+                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                <path d="M2 17l10 5 10-5" />
+                <path d="M2 12l10 5 10-5" />
+              </svg>
+            </div>
+          </div>
+          <CardTitle className="text-2xl font-bold text-center">
+            {t("setup.title")}
           </CardTitle>
-          <CardDescription>
-            Создайте учетную запись администратора для начала работы с системой
+          <CardDescription className="text-center">
+            {t("setup.description")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Имя</Label>
+              <Label htmlFor="name">{t("setup.form.name")}</Label>
               <Input
                 id="name"
                 type="text"
-                placeholder="Введите ваше имя"
+                placeholder={t("setup.form.namePlaceholder")}
                 value={formData.name}
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
                 }
                 required
                 disabled={loading}
+                className="h-11"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("setup.form.email")}</Label>
               <Input
                 id="email"
                 type="email"
@@ -106,43 +127,46 @@ export default function SetupPage() {
                 }
                 required
                 disabled={loading}
+                className="h-11"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Пароль</Label>
+              <Label htmlFor="password">{t("setup.form.password")}</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="Минимум 6 символов"
+                placeholder={t("setup.form.passwordPlaceholder")}
                 value={formData.password}
                 onChange={(e) =>
                   setFormData({ ...formData, password: e.target.value })
                 }
                 required
                 disabled={loading}
+                className="h-11"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Подтвердите пароль</Label>
+              <Label htmlFor="confirmPassword">{t("setup.form.confirmPassword")}</Label>
               <Input
                 id="confirmPassword"
                 type="password"
-                placeholder="Повторите пароль"
+                placeholder={t("setup.form.confirmPasswordPlaceholder")}
                 value={formData.confirmPassword}
                 onChange={(e) =>
                   setFormData({ ...formData, confirmPassword: e.target.value })
                 }
                 required
                 disabled={loading}
+                className="h-11"
               />
             </div>
             {error && (
-              <div className="text-sm text-red-500 bg-red-50 dark:bg-red-950/20 p-3 rounded-md">
+              <div className="text-sm text-red-500 bg-red-500/10 p-3 rounded-md border border-red-500/20">
                 {error}
               </div>
             )}
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Создание..." : "Создать администратора"}
+            <Button type="submit" className="w-full h-11" disabled={loading}>
+              {loading ? t("setup.creating") : t("setup.createAdmin")}
             </Button>
           </form>
         </CardContent>

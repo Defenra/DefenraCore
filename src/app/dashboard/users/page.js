@@ -4,9 +4,80 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useTranslation } from "@/hooks/useTranslation";
 import { getAllRoles } from "@/lib/permissions";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { cn } from "@/lib/utils";
+
+// Bento Card Component
+function BentoCard({ children, className }) {
+  return (
+    <Card
+      className={cn(
+        "border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300",
+        "hover:border-border hover:shadow-lg hover:shadow-primary/5",
+        className
+      )}
+    >
+      {children}
+    </Card>
+  );
+}
+
+// Table Skeleton
+function TableSkeleton() {
+  return (
+    <div className="space-y-3">
+      <div className="flex gap-4">
+        <Skeleton className="h-10 flex-1" />
+        <Skeleton className="h-10 flex-1" />
+        <Skeleton className="h-10 flex-1" />
+        <Skeleton className="h-10 flex-1" />
+        <Skeleton className="h-10 w-24" />
+      </div>
+      {[...Array(5)].map((_, i) => (
+        <div key={i} className="flex gap-4">
+          <Skeleton className="h-12 flex-1" />
+          <Skeleton className="h-12 flex-1" />
+          <Skeleton className="h-12 flex-1" />
+          <Skeleton className="h-12 flex-1" />
+          <Skeleton className="h-12 w-24" />
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function UsersPage() {
+  const { t } = useTranslation();
   const { data: session, status } = useSession();
   const router = useRouter();
   const { hasPermission, isLoading: permLoading } = usePermissions();
@@ -33,7 +104,7 @@ export default function UsersPage() {
       setLoading(true);
       const response = await fetch("/api/users");
       if (!response.ok) {
-        throw new Error("Failed to fetch users");
+        throw new Error(t("users.errors.fetchFailed"));
       }
       const data = await response.json();
       setUsers(data);
@@ -42,27 +113,23 @@ export default function UsersPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
-    // Wait for session and permissions to load
     if (status === "loading" || permLoading) {
       return;
     }
 
-    // Redirect if not authenticated
     if (status === "unauthenticated") {
       router.push("/login");
       return;
     }
 
-    // Redirect if no permission to read users
     if (!hasPermission("users.read")) {
       router.push("/dashboard");
       return;
     }
 
-    // Fetch users only once
     if (!hasFetchedRef.current) {
       hasFetchedRef.current = true;
       fetchUsers();
@@ -89,7 +156,7 @@ export default function UsersPage() {
   };
 
   const handleDeleteUser = async (userId) => {
-    if (!confirm("Are you sure you want to delete this user?")) {
+    if (!confirm(t("users.confirmDelete"))) {
       return;
     }
 
@@ -100,10 +167,10 @@ export default function UsersPage() {
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || "Failed to delete user");
+        throw new Error(data.error || t("users.errors.deleteFailed"));
       }
 
-      hasFetchedRef.current = false; // Reset flag to allow refetch
+      hasFetchedRef.current = false;
       fetchUsers();
     } catch (err) {
       alert(err.message);
@@ -132,11 +199,11 @@ export default function UsersPage() {
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || "Failed to save user");
+        throw new Error(data.error || t("users.errors.saveFailed"));
       }
 
       setShowModal(false);
-      hasFetchedRef.current = false; // Reset flag to allow refetch
+      hasFetchedRef.current = false;
       fetchUsers();
     } catch (err) {
       setFormError(err.message);
@@ -147,13 +214,13 @@ export default function UsersPage() {
 
   const getRoleBadgeColor = (role) => {
     const colors = {
-      admin: "bg-red-100 text-red-800",
-      "proxy-manager": "bg-blue-100 text-blue-800",
-      "domain-manager": "bg-green-100 text-green-800",
-      operator: "bg-purple-100 text-purple-800",
-      viewer: "bg-gray-100 text-gray-800",
+      admin: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
+      "proxy-manager": "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+      "domain-manager": "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+      operator: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
+      viewer: "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-400",
     };
-    return colors[role] || "bg-gray-100 text-gray-800";
+    return colors[role] || "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-400";
   };
 
   const getRoleName = (role) => {
@@ -163,8 +230,8 @@ export default function UsersPage() {
 
   if (status === "loading" || permLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-400">Loading...</div>
+      <div className="flex items-center justify-center min-h-screen p-4">
+        <Skeleton className="h-8 w-32" />
       </div>
     );
   }
@@ -175,23 +242,23 @@ export default function UsersPage() {
 
   return (
     <div className="p-4 md:p-6 lg:p-8">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-white">
-            User Management
+        <div className="space-y-1">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+            {t("users.title")}
           </h1>
-          <p className="text-sm text-gray-400 mt-1">
-            Manage users and their access permissions
+          <p className="text-sm text-muted-foreground">
+            {t("users.description")}
           </p>
         </div>
         {hasPermission("users.write") && (
-          <button
-            type="button"
+          <Button
             onClick={handleAddUser}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors w-full sm:w-auto"
+            className="w-full sm:w-auto"
           >
-            Add User
-          </button>
+            {t("users.addUser")}
+          </Button>
         )}
       </div>
 
@@ -201,210 +268,198 @@ export default function UsersPage() {
         </div>
       )}
 
-      {loading
-        ? <div className="text-center py-12 text-gray-400">
-            Loading users...
-          </div>
-        : <div className="bg-slate-800 rounded-lg overflow-hidden">
+      {/* Users Table */}
+      {loading ? (
+        <BentoCard>
+          <CardContent className="p-6">
+            <TableSkeleton />
+          </CardContent>
+        </BentoCard>
+      ) : (
+        <BentoCard>
+          <CardContent className="p-0">
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-slate-700">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                      Name
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                      Email
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                      Role
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                      Created
-                    </th>
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-border hover:bg-transparent">
+                    <TableHead className="text-left">{t("users.table.name")}</TableHead>
+                    <TableHead className="text-left">{t("users.table.email")}</TableHead>
+                    <TableHead className="text-left">{t("users.table.role")}</TableHead>
+                    <TableHead className="text-left">{t("users.table.created")}</TableHead>
                     {hasPermission("users.write") && (
-                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Actions
-                      </th>
+                      <TableHead className="text-right">{t("users.table.actions")}</TableHead>
                     )}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-700">
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {users.map((user) => (
-                    <tr key={user._id} className="hover:bg-slate-700/50">
-                      <td className="px-4 py-3 text-sm text-white">
+                    <TableRow
+                      key={user._id}
+                      className="border-border hover:bg-accent/50"
+                    >
+                      <TableCell className="font-medium">
                         {user.name}
                         {session?.user?.id === user._id && (
-                          <span className="ml-2 text-xs text-gray-400">
-                            (You)
+                          <span className="ml-2 text-xs text-muted-foreground">
+                            ({t("users.you")})
                           </span>
                         )}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-300 break-all">
+                      </TableCell>
+                      <TableCell className="text-muted-foreground break-all">
                         {user.email}
-                      </td>
-                      <td className="px-4 py-3 text-sm">
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleBadgeColor(user.role)}`}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="secondary"
+                          className={getRoleBadgeColor(user.role)}
                         >
                           {getRoleName(user.role)}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-400">
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
                         {new Date(user.createdAt).toLocaleDateString()}
-                      </td>
+                      </TableCell>
                       {hasPermission("users.write") && (
-                        <td className="px-4 py-3 text-sm text-right">
-                          <button
-                            type="button"
+                        <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => handleEditUser(user)}
-                            className="text-blue-400 hover:text-blue-300 mr-3"
                           >
-                            Edit
-                          </button>
-                          <button
-                            type="button"
+                            {t("common.edit")}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => handleDeleteUser(user._id)}
-                            className="text-red-400 hover:text-red-300"
                             disabled={session?.user?.id === user._id}
+                            className="text-red-500 hover:text-red-600"
                           >
-                            Delete
-                          </button>
-                        </td>
+                            {t("common.delete")}
+                          </Button>
+                        </TableCell>
                       )}
-                    </tr>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
 
             {users.length === 0 && (
-              <div className="text-center py-12 text-gray-400">
-                No users found
+              <div className="text-center py-12 text-muted-foreground">
+                {t("users.noUsers")}
               </div>
             )}
-          </div>}
-
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-slate-800 rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold text-white mb-4">
-              {editingUser ? "Edit User" : "Add User"}
-            </h2>
-
-            {formError && (
-              <div className="mb-4 p-3 bg-red-900/20 border border-red-800 rounded text-red-400 text-sm">
-                {formError}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit}>
-              <div className="mb-4">
-                <label
-                  htmlFor="user-name"
-                  className="block text-sm font-medium text-gray-300 mb-2"
-                >
-                  Name
-                </label>
-                <input
-                  id="user-name"
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                  required
-                />
-              </div>
-
-              <div className="mb-4">
-                <label
-                  htmlFor="user-email"
-                  className="block text-sm font-medium text-gray-300 mb-2"
-                >
-                  Email
-                </label>
-                <input
-                  id="user-email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                  required
-                />
-              </div>
-
-              <div className="mb-4">
-                <label
-                  htmlFor="user-password"
-                  className="block text-sm font-medium text-gray-300 mb-2"
-                >
-                  Password {editingUser && "(leave blank to keep current)"}
-                </label>
-                <input
-                  id="user-password"
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) =>
-                    setFormData({ ...formData, password: e.target.value })
-                  }
-                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                  required={!editingUser}
-                  minLength={8}
-                />
-                <p className="text-xs text-gray-400 mt-1">
-                  Minimum 8 characters
-                </p>
-              </div>
-
-              <div className="mb-6">
-                <label
-                  htmlFor="user-role"
-                  className="block text-sm font-medium text-gray-300 mb-2"
-                >
-                  Role
-                </label>
-                <select
-                  id="user-role"
-                  value={formData.role}
-                  onChange={(e) =>
-                    setFormData({ ...formData, role: e.target.value })
-                  }
-                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                  required
-                >
-                  {roles.map((role) => (
-                    <option key={role.key} value={role.key}>
-                      {role.name} - {role.description}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="flex-1 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
-                  disabled={submitting}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50"
-                  disabled={submitting}
-                >
-                  {submitting ? "Saving..." : editingUser ? "Update" : "Create"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+          </CardContent>
+        </BentoCard>
       )}
+
+      {/* Add/Edit User Dialog */}
+      <Dialog open={showModal} onOpenChange={setShowModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {editingUser ? t("users.editUser") : t("users.addUser")}
+            </DialogTitle>
+            <DialogDescription>
+              {editingUser ? t("users.editDescription") : t("users.addDescription")}
+            </DialogDescription>
+          </DialogHeader>
+
+          {formError && (
+            <div className="p-3 bg-red-900/20 border border-red-800 rounded text-red-400 text-sm">
+              {formError}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="user-name">{t("users.form.name")}</Label>
+              <Input
+                id="user-name"
+                type="text"
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="user-email">{t("users.form.email")}</Label>
+              <Input
+                id="user-email"
+                type="email"
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="user-password">
+                {t("users.form.password")}
+                {editingUser && ` ${t("users.form.passwordOptional")}`}
+              </Label>
+              <Input
+                id="user-password"
+                type="password"
+                value={formData.password}
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
+                required={!editingUser}
+                minLength={8}
+              />
+              <p className="text-xs text-muted-foreground">
+                {t("users.form.passwordHint")}
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="user-role">{t("users.form.role")}</Label>
+              <Select
+                value={formData.role}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, role: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {roles.map((role) => (
+                    <SelectItem key={role.key} value={role.key}>
+                      {role.name} - {role.description}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowModal(false)}
+                disabled={submitting}
+              >
+                {t("common.cancel")}
+              </Button>
+              <Button type="submit" disabled={submitting}>
+                {submitting
+                  ? t("common.saving")
+                  : editingUser
+                    ? t("common.update")
+                    : t("common.create")}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

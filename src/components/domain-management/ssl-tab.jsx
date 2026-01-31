@@ -1,24 +1,41 @@
 "use client";
 
-import {
-  IconCertificate,
-  IconInfoCircle,
-  IconRefresh,
-  IconShieldCheck,
-  IconUpload,
-} from "@tabler/icons-react";
 import { useState } from "react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  Shield,
+  Lock,
+  RefreshCw,
+  Upload,
+  CheckCircle,
+  AlertCircle,
+  Clock,
+  Info,
+  ChevronDown,
+  ExternalLink,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { toast } from "sonner";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { Progress } from "@/components/ui/progress";
+
+function ModernCard({ children, className }) {
+  return (
+    <div
+      className={`border border-border/40 bg-card/60 backdrop-blur-sm rounded-lg overflow-hidden ${className || ""}`}
+    >
+      {children}
+    </div>
+  );
+}
 
 export function SslTab({ domain, onUpdate }) {
   const [isIssuing, setIsIssuing] = useState(false);
@@ -88,7 +105,7 @@ export function SslTab({ domain, onUpdate }) {
     if (!date) return "N/A";
     return new Date(date).toLocaleDateString("en-US", {
       year: "numeric",
-      month: "long",
+      month: "short",
       day: "numeric",
     });
   };
@@ -105,155 +122,190 @@ export function SslTab({ domain, onUpdate }) {
   const hasCertificate = domain.httpProxy?.ssl?.certificate;
   const renewalStatus = domain.httpProxy?.ssl?.renewalStatus;
 
+  const getExpiryStatus = () => {
+    if (daysUntilExpiry === null) return { color: "gray", label: "Unknown" };
+    if (daysUntilExpiry <= 7) return { color: "red", label: "Critical" };
+    if (daysUntilExpiry <= 30) return { color: "yellow", label: "Expiring Soon" };
+    return { color: "green", label: "Valid" };
+  };
+
+  const expiryStatus = getExpiryStatus();
+
   return (
     <div className="space-y-6">
-      <Card className="border-border">
-        <CardHeader className="border-b border-border pb-6">
-          <CardTitle className="text-lg font-medium flex items-center gap-3">
-            <IconShieldCheck className="h-6 w-6 text-muted-foreground" />
-            SSL/TLS Настройки
-          </CardTitle>
-          <CardDescription className="mt-2">
-            Управление SSL сертификатами для HTTPS терминации на агентах
-          </CardDescription>
+      <ModernCard>
+        <CardHeader className="border-b border-border/40 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Shield className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <CardTitle className="text-lg font-semibold">
+                SSL/TLS Configuration
+              </CardTitle>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                Manage SSL certificates for HTTPS termination on agents
+              </p>
+            </div>
+          </div>
         </CardHeader>
 
         <CardContent className="p-6 space-y-6">
-          {/* Certificate Status */}
+          {/* Certificate Status Card */}
           {hasCertificate && (
             <div
-              className={`border rounded-lg p-4 ${daysUntilExpiry && daysUntilExpiry <= 30 ? "bg-yellow-500/5 border-yellow-500/20" : "bg-green-500/5 border-green-500/20"}`}
+              className={`p-5 rounded-lg border ${
+                expiryStatus.color === "red"
+                  ? "bg-red-500/5 border-red-500/20"
+                  : expiryStatus.color === "yellow"
+                    ? "bg-yellow-500/5 border-yellow-500/20"
+                    : "bg-green-500/5 border-green-500/20"
+              }`}
             >
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`p-2 rounded-lg ${
+                      expiryStatus.color === "red"
+                        ? "bg-red-500/10"
+                        : expiryStatus.color === "yellow"
+                          ? "bg-yellow-500/10"
+                          : "bg-green-500/10"
+                    }`}
+                  >
+                    <Lock
+                      className={`h-5 w-5 ${
+                        expiryStatus.color === "red"
+                          ? "text-red-500"
+                          : expiryStatus.color === "yellow"
+                            ? "text-yellow-500"
+                            : "text-green-500"
+                      }`}
+                    />
+                  </div>
                   <div>
-                    <p className="font-medium text-sm">Certificate Status</p>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="font-semibold">Certificate Active</p>
+                    <p className="text-sm text-muted-foreground">
                       Issuer: {domain.httpProxy?.ssl?.issuer || "Unknown"}
                     </p>
                   </div>
-                  {renewalStatus === "pending" && (
-                    <span className="text-xs px-2 py-1 rounded-full bg-blue-500/10 text-blue-500 font-medium">
-                      Renewing...
-                    </span>
-                  )}
-                  {renewalStatus === "failed" && (
-                    <span className="text-xs px-2 py-1 rounded-full bg-red-500/10 text-red-500 font-medium">
-                      Failed
-                    </span>
-                  )}
                 </div>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Expires</p>
-                    <p className="font-medium">
+                <Badge
+                  variant={
+                    expiryStatus.color === "green" ? "default" : "destructive"
+                  }
+                  className={
+                    expiryStatus.color === "yellow"
+                      ? "bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20"
+                      : ""
+                  }
+                >
+                  {renewalStatus === "pending"
+                    ? "Renewing..."
+                    : renewalStatus === "failed"
+                      ? "Failed"
+                      : expiryStatus.label}
+                </Badge>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <div className="flex items-center justify-between text-sm mb-2">
+                    <span className="text-muted-foreground">Expires</span>
+                    <span className="font-medium">
                       {formatDate(domain.httpProxy?.ssl?.expiresAt)}
-                    </p>
-                    {daysUntilExpiry !== null && (
-                      <p
-                        className={`text-xs mt-1 ${daysUntilExpiry <= 30 ? "text-yellow-500" : "text-green-500"}`}
-                      >
-                        {daysUntilExpiry} days remaining
-                      </p>
-                    )}
+                    </span>
                   </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">
-                      Last Renewal
-                    </p>
-                    <p className="font-medium">
-                      {formatDate(domain.httpProxy?.ssl?.lastRenewal)}
-                    </p>
+                  <Progress
+                    value={Math.max(
+                      0,
+                      Math.min(100, ((90 - (daysUntilExpiry || 0)) / 90) * 100),
+                    )}
+                    className={`h-2 ${
+                      expiryStatus.color === "red"
+                        ? "bg-red-500/20"
+                        : expiryStatus.color === "yellow"
+                          ? "bg-yellow-500/20"
+                          : "bg-green-500/20"
+                    }`}
+                  />
+                  <div className="flex items-center gap-2 mt-2">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <span
+                      className={`text-sm ${
+                        expiryStatus.color === "red"
+                          ? "text-red-500 font-medium"
+                          : expiryStatus.color === "yellow"
+                            ? "text-yellow-600"
+                            : "text-green-600"
+                      }`}
+                    >
+                      {daysUntilExpiry} days remaining
+                    </span>
                   </div>
                 </div>
+
                 {renewalStatus === "failed" &&
                   domain.httpProxy?.ssl?.renewalError && (
-                    <p className="text-xs text-red-500 mt-2">
-                      Error: {domain.httpProxy.ssl.renewalError}
-                    </p>
+                    <div className="flex items-start gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                      <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0 mt-0.5" />
+                      <p className="text-sm text-red-600">
+                        {domain.httpProxy.ssl.renewalError}
+                      </p>
+                    </div>
                   )}
               </div>
             </div>
           )}
 
-          {/* Info */}
-          <div className="border rounded-lg p-4 bg-blue-500/5 border-blue-500/20">
-            <div className="flex items-start gap-3">
-              <IconInfoCircle className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
-              <div className="space-y-2 text-sm">
-                <p className="font-medium text-foreground">
-                  How it works (HTTP-01 Challenge)
+          {/* Info Card */}
+          <Collapsible>
+            <CollapsibleTrigger className="w-full">
+              <div className="flex items-center gap-3 p-4 rounded-lg bg-blue-500/5 border border-blue-500/20 hover:bg-blue-500/10 transition-colors">
+                <Info className="h-5 w-5 text-blue-500 flex-shrink-0" />
+                <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                  How SSL certificate issuance works (HTTP-01 Challenge)
+                </span>
+                <ChevronDown className="h-4 w-4 ml-auto text-blue-500" />
+              </div>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="mt-3 p-4 rounded-lg bg-blue-500/5 border border-blue-500/20 text-sm space-y-2">
+                <p className="text-muted-foreground">
+                  1. Core creates HTTP challenge and saves to database
                 </p>
-                <ul className="text-muted-foreground space-y-1.5 text-xs">
-                  <li>• Core creates HTTP challenge and saves to database</li>
-                  <li>• Agents receive challenge via Poll API</li>
-                  <li>
-                    • Let's Encrypt requests: http://{domain.domain}
-                    /.well-known/acme-challenge/TOKEN
-                  </li>
-                  <li>• Agent responds with keyAuthorization via Lua WAF</li>
-                  <li>• Certificate is issued and distributed to agents</li>
-                  <li>• Auto-renewal happens 30 days before expiry</li>
-                </ul>
-
-                {/* Show subdomains that will be included */}
-                {domain.dnsRecords && domain.dnsRecords.length > 0 && (
-                  <div className="mt-4 pt-3 border-t border-blue-500/20">
-                    <p className="text-xs font-medium text-foreground mb-2">
-                      Certificate will include:
-                    </p>
-                    <div className="space-y-1">
-                      <div className="text-xs text-muted-foreground">
-                        • {domain.domain} (main domain)
-                      </div>
-                      {domain.dnsRecords
-                        .filter(
-                          (record) =>
-                            record.name &&
-                            record.name !== "@" &&
-                            record.name !== domain.domain,
-                        )
-                        .map((record, index) => (
-                          <div
-                            key={index}
-                            className="text-xs text-muted-foreground"
-                          >
-                            • {record.name}.{domain.domain} (from DNS record)
-                          </div>
-                        ))}
-                    </div>
-                    {domain.dnsRecords.filter(
-                      (record) =>
-                        record.name &&
-                        record.name !== "@" &&
-                        record.name !== domain.domain,
-                    ).length === 0 && (
-                      <div className="text-xs text-muted-foreground">
-                        • Only main domain (no subdomains found in DNS records)
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                <p className="text-xs text-muted-foreground mt-3 pt-3 border-t border-blue-500/20">
-                  <strong>Requirements:</strong> Port 80 must be accessible. Lua
-                  WAF on agents handles /.well-known/acme-challenge/*
-                  automatically.
+                <p className="text-muted-foreground">
+                  2. Agents receive challenge via Poll API
+                </p>
+                <p className="text-muted-foreground">
+                  3. Let&apos;s Encrypt requests: http://{domain.domain}
+                  /.well-known/acme-challenge/TOKEN
+                </p>
+                <p className="text-muted-foreground">
+                  4. Agent responds with keyAuthorization via Lua WAF
+                </p>
+                <p className="text-muted-foreground">
+                  5. Certificate is issued and distributed to agents
+                </p>
+                <p className="text-muted-foreground">
+                  6. Auto-renewal happens 30 days before expiry
                 </p>
               </div>
-            </div>
-          </div>
+            </CollapsibleContent>
+          </Collapsible>
 
           {/* Let's Encrypt Section */}
-          <div className="space-y-4 border rounded-lg p-4 bg-gradient-to-r from-green-500/5 to-emerald-500/5">
+          <div className="p-5 rounded-lg border bg-gradient-to-r from-green-500/5 to-emerald-500/5 space-y-4">
             <div className="flex items-center gap-2">
-              <IconCertificate className="h-5 w-5 text-green-500" />
-              <h3 className="font-medium text-sm">Let's Encrypt</h3>
+              <div className="p-1.5 bg-green-500/10 rounded">
+                <CheckCircle className="h-4 w-4 text-green-500" />
+              </div>
+              <h3 className="font-semibold text-sm">Let&apos;s Encrypt</h3>
             </div>
 
             <div className="space-y-3">
               <div>
-                <label className="text-xs font-medium text-muted-foreground">
+                <label className="text-sm font-medium text-muted-foreground">
                   Email for ACME notifications
                 </label>
                 <Input
@@ -272,7 +324,17 @@ export function SslTab({ domain, onUpdate }) {
                     disabled={isIssuing || !acmeEmail}
                     className="flex-1"
                   >
-                    {isIssuing ? "Issuing..." : "Issue Certificate"}
+                    {isIssuing ? (
+                      <>
+                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                        Issuing...
+                      </>
+                    ) : (
+                      <>
+                        <Lock className="h-4 w-4 mr-2" />
+                        Issue Certificate
+                      </>
+                    )}
                   </Button>
                 ) : (
                   <Button
@@ -281,8 +343,17 @@ export function SslTab({ domain, onUpdate }) {
                     variant="outline"
                     className="flex-1"
                   >
-                    <IconRefresh className="h-4 w-4 mr-2" />
-                    {isRenewing ? "Renewing..." : "Renew Now"}
+                    {isRenewing ? (
+                      <>
+                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                        Renewing...
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        Renew Now
+                      </>
+                    )}
                   </Button>
                 )}
               </div>
@@ -290,189 +361,127 @@ export function SslTab({ domain, onUpdate }) {
           </div>
 
           {/* SSL Enable Toggle */}
-          <div className="flex items-center justify-between p-4 border rounded-lg">
+          <div className="flex items-center justify-between p-4 rounded-lg border">
             <div>
-              <p className="font-medium text-sm">Enable SSL/TLS</p>
+              <p className="font-semibold text-sm">Enable SSL/TLS</p>
               <p className="text-xs text-muted-foreground">
                 HTTPS termination on agents
               </p>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={domain.httpProxy?.ssl?.enabled || false}
-                onChange={(e) =>
-                  onUpdate({
-                    ...domain,
-                    httpProxy: {
-                      ...domain.httpProxy,
-                      ssl: {
-                        ...domain.httpProxy?.ssl,
-                        enabled: e.target.checked,
-                      },
+            <Switch
+              checked={domain.httpProxy?.ssl?.enabled || false}
+              onCheckedChange={(checked) =>
+                onUpdate({
+                  ...domain,
+                  httpProxy: {
+                    ...domain.httpProxy,
+                    ssl: {
+                      ...domain.httpProxy?.ssl,
+                      enabled: checked,
                     },
-                  })
-                }
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 dark:peer-focus:ring-green-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-500"></div>
-            </label>
+                  },
+                })
+              }
+            />
           </div>
 
           {/* SSL Encryption Mode */}
           {domain.httpProxy?.ssl?.enabled && (
-            <div className="space-y-3 border rounded-lg p-4 bg-gradient-to-r from-blue-500/5 to-cyan-500/5">
+            <div className="p-5 rounded-lg border bg-gradient-to-r from-blue-500/5 to-cyan-500/5 space-y-4">
               <div className="flex items-center gap-2">
-                <IconShieldCheck className="h-5 w-5 text-blue-500" />
-                <h3 className="font-medium text-sm">SSL/TLS Encryption Mode</h3>
+                <div className="p-1.5 bg-blue-500/10 rounded">
+                  <Lock className="h-4 w-4 text-blue-500" />
+                </div>
+                <h3 className="font-semibold text-sm">Encryption Mode</h3>
               </div>
               <p className="text-xs text-muted-foreground">
-                Select the encryption mode that Defenra uses to connect to your
-                origin server
+                Select how Defenra connects to your origin server
               </p>
 
-              <div className="space-y-2">
-                {/* Full (Strict) */}
-                <label className="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-accent/50 transition-colors">
-                  <input
-                    type="radio"
-                    name="encryptionMode"
-                    value="full_strict"
-                    checked={
-                      (domain.httpProxy?.ssl?.encryptionMode ||
-                        "full_strict") === "full_strict"
-                    }
-                    onChange={(e) =>
-                      onUpdate({
-                        ...domain,
-                        httpProxy: {
-                          ...domain.httpProxy,
-                          ssl: {
-                            ...domain.httpProxy?.ssl,
-                            encryptionMode: e.target.value,
+              <div className="space-y-3">
+                {[
+                  {
+                    value: "full_strict",
+                    title: "Full (Strict)",
+                    desc: "End-to-end encryption with certificate validation. Use Defenra's Origin CA.",
+                    color: "green",
+                  },
+                  {
+                    value: "full",
+                    title: "Full",
+                    desc: "End-to-end encryption. Accepts self-signed certificates on origin.",
+                    color: "blue",
+                  },
+                  {
+                    value: "flexible",
+                    title: "Flexible",
+                    desc: "Encrypts visitor-to-agent only. Agent-to-origin uses HTTP.",
+                    color: "yellow",
+                  },
+                  {
+                    value: "off",
+                    title: "Off (Not Secure)",
+                    desc: "No encryption. Browsers will show security warnings.",
+                    color: "red",
+                  },
+                ].map((mode) => (
+                  <label
+                    key={mode.value}
+                    className={`flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-all ${
+                      (domain.httpProxy?.ssl?.encryptionMode || "full_strict") ===
+                      mode.value
+                        ? mode.color === "red"
+                          ? "border-red-500/30 bg-red-500/5"
+                          : "border-primary bg-primary/5"
+                        : "hover:bg-muted/50"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="encryptionMode"
+                      value={mode.value}
+                      checked={
+                        (domain.httpProxy?.ssl?.encryptionMode ||
+                          "full_strict") === mode.value
+                      }
+                      onChange={(e) =>
+                        onUpdate({
+                          ...domain,
+                          httpProxy: {
+                            ...domain.httpProxy,
+                            ssl: {
+                              ...domain.httpProxy?.ssl,
+                              encryptionMode: e.target.value,
+                            },
                           },
-                        },
-                      })
-                    }
-                    className="mt-1"
-                  />
-                  <div className="flex-1">
-                    <p className="font-medium text-sm">Full (Strict)</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Enable encryption end-to-end and enforce validation on
-                      origin certificates. Use Defenra's Origin CA to generate
-                      certificates for your origin.
-                    </p>
-                  </div>
-                </label>
-
-                {/* Full */}
-                <label className="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-accent/50 transition-colors">
-                  <input
-                    type="radio"
-                    name="encryptionMode"
-                    value="full"
-                    checked={domain.httpProxy?.ssl?.encryptionMode === "full"}
-                    onChange={(e) =>
-                      onUpdate({
-                        ...domain,
-                        httpProxy: {
-                          ...domain.httpProxy,
-                          ssl: {
-                            ...domain.httpProxy?.ssl,
-                            encryptionMode: e.target.value,
-                          },
-                        },
-                      })
-                    }
-                    className="mt-1"
-                  />
-                  <div className="flex-1">
-                    <p className="font-medium text-sm">Full</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Enable encryption end-to-end. Use this mode when your
-                      origin server supports SSL certification but does not use
-                      a valid, publicly trusted certificate.
-                    </p>
-                  </div>
-                </label>
-
-                {/* Flexible */}
-                <label className="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-accent/50 transition-colors">
-                  <input
-                    type="radio"
-                    name="encryptionMode"
-                    value="flexible"
-                    checked={
-                      domain.httpProxy?.ssl?.encryptionMode === "flexible"
-                    }
-                    onChange={(e) =>
-                      onUpdate({
-                        ...domain,
-                        httpProxy: {
-                          ...domain.httpProxy,
-                          ssl: {
-                            ...domain.httpProxy?.ssl,
-                            encryptionMode: e.target.value,
-                          },
-                        },
-                      })
-                    }
-                    className="mt-1"
-                  />
-                  <div className="flex-1">
-                    <p className="font-medium text-sm">Flexible</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Enable encryption only between your visitors and Defenra.
-                      This will avoid browser security warnings, but all
-                      connections between Defenra and your origin are made
-                      through HTTP.
-                    </p>
-                  </div>
-                </label>
-
-                {/* Off */}
-                <label className="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-accent/50 transition-colors border-red-500/20 bg-red-500/5">
-                  <input
-                    type="radio"
-                    name="encryptionMode"
-                    value="off"
-                    checked={domain.httpProxy?.ssl?.encryptionMode === "off"}
-                    onChange={(e) =>
-                      onUpdate({
-                        ...domain,
-                        httpProxy: {
-                          ...domain.httpProxy,
-                          ssl: {
-                            ...domain.httpProxy?.ssl,
-                            encryptionMode: e.target.value,
-                          },
-                        },
-                      })
-                    }
-                    className="mt-1"
-                  />
-                  <div className="flex-1">
-                    <p className="font-medium text-sm text-red-500">
-                      Off (not secure)
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      No encryption applied. Turning off SSL disables HTTPS and
-                      causes browsers to show a warning that your website is not
-                      secure.
-                    </p>
-                  </div>
-                </label>
+                        })
+                      }
+                      className="mt-1"
+                    />
+                    <div className="flex-1">
+                      <p
+                        className={`font-medium text-sm ${
+                          mode.color === "red" ? "text-red-500" : ""
+                        }`}
+                      >
+                        {mode.title}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {mode.desc}
+                      </p>
+                    </div>
+                  </label>
+                ))}
               </div>
             </div>
           )}
 
           {/* Certificate Upload */}
           {domain.httpProxy?.ssl?.enabled && (
-            <>
-              <div className="space-y-3">
-                <label className="text-sm font-medium flex items-center gap-2">
-                  <IconUpload className="h-4 w-4" />
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-semibold flex items-center gap-2">
+                  <Upload className="h-4 w-4" />
                   SSL Certificate (PEM)
                 </label>
                 <Textarea
@@ -489,17 +498,15 @@ export function SslTab({ domain, onUpdate }) {
                       },
                     })
                   }
-                  placeholder="-----BEGIN CERTIFICATE-----
-MIIDXTCCAkWgAwIBAgIJAKZ...
------END CERTIFICATE-----"
-                  rows={8}
+                  placeholder="-----BEGIN CERTIFICATE-----\nMIIDXTCCAkWgAwIBAgIJAKZ...\n-----END CERTIFICATE-----"
+                  rows={6}
                   className="font-mono text-xs"
                 />
               </div>
 
-              <div className="space-y-3">
-                <label className="text-sm font-medium flex items-center gap-2">
-                  <IconUpload className="h-4 w-4" />
+              <div className="space-y-2">
+                <label className="text-sm font-semibold flex items-center gap-2">
+                  <Upload className="h-4 w-4" />
                   Private Key (PEM)
                 </label>
                 <Textarea
@@ -516,48 +523,41 @@ MIIDXTCCAkWgAwIBAgIJAKZ...
                       },
                     })
                   }
-                  placeholder="-----BEGIN PRIVATE KEY-----
-MIIEvQIBADANBgkqhkiG9w0...
------END PRIVATE KEY-----"
-                  rows={8}
+                  placeholder="-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0...\n-----END PRIVATE KEY-----"
+                  rows={6}
                   className="font-mono text-xs"
                 />
               </div>
 
               {/* Auto-Renewal Toggle */}
-              <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
+              <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
                 <div>
-                  <p className="font-medium text-sm">Auto-Renewal</p>
+                  <p className="font-semibold text-sm">Auto-Renewal</p>
                   <p className="text-xs text-muted-foreground">
                     Automatically renew 30 days before expiry
                   </p>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={domain.httpProxy?.ssl?.autoRenew || false}
-                    onChange={(e) =>
-                      onUpdate({
-                        ...domain,
-                        httpProxy: {
-                          ...domain.httpProxy,
-                          ssl: {
-                            ...domain.httpProxy?.ssl,
-                            autoRenew: e.target.checked,
-                          },
+                <Switch
+                  checked={domain.httpProxy?.ssl?.autoRenew || false}
+                  onCheckedChange={(checked) =>
+                    onUpdate({
+                      ...domain,
+                      httpProxy: {
+                        ...domain.httpProxy,
+                        ssl: {
+                          ...domain.httpProxy?.ssl,
+                          autoRenew: checked,
                         },
-                      })
-                    }
-                    disabled={!hasCertificate}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 dark:peer-focus:ring-green-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-500 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
-                </label>
+                      },
+                    })
+                  }
+                  disabled={!hasCertificate}
+                />
               </div>
-            </>
+            </div>
           )}
         </CardContent>
-      </Card>
+      </ModernCard>
     </div>
   );
 }

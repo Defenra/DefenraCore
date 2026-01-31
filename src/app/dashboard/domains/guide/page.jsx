@@ -10,6 +10,7 @@ import {
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { useTranslation } from "@/hooks/useTranslation";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,28 +21,47 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+
+// Bento Card Component
+function BentoCard({ children, className }) {
+  return (
+    <Card
+      className={cn(
+        "border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300",
+        "hover:border-border hover:shadow-lg hover:shadow-primary/5",
+        className
+      )}
+    >
+      {children}
+    </Card>
+  );
+}
 
 export default function DomainGuide() {
+  const { t } = useTranslation();
+
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
-    toast.success("Скопировано в буфер обмена");
+    toast.success(t("guide.copied"));
   };
 
   return (
-    <div className="flex flex-col gap-6 py-6 px-4 lg:px-6 max-w-5xl mx-auto">
+    <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8 max-w-5xl mx-auto">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-1">
           <Link href="/dashboard/domains">
-            <Button variant="ghost" size="sm" className="mb-2">
+            <Button variant="ghost" size="sm" className="mb-2 px-0">
               <IconArrowLeft className="h-4 w-4 mr-2" />
-              Назад к доменам
+              {t("guide.backToDomains")}
             </Button>
           </Link>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Как добавить домен
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+            {t("guide.title")}
           </h1>
-          <p className="text-sm text-muted-foreground">
-            Пошаговая инструкция по настройке домена для работы с Defenra
+          <p className="text-sm text-muted-foreground md:text-base">
+            {t("guide.description")}
           </p>
         </div>
       </div>
@@ -49,61 +69,55 @@ export default function DomainGuide() {
       <Alert className="border-blue-500/50 bg-blue-500/10">
         <IconAlertCircle className="h-4 w-4 text-blue-500" />
         <AlertDescription className="text-sm">
-          Для работы домена необходимо настроить NS записи у вашего регистратора
-          на наши DNS агенты
+          {t("guide.nsRecordsAlert")}
         </AlertDescription>
       </Alert>
 
       <div className="space-y-6">
-        <Card className="border-green-500/20">
+        {/* Step 1 */}
+        <BentoCard className="border-green-500/20">
           <CardHeader>
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-green-500/20 text-green-500 font-bold">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-green-500/20 text-green-500 font-bold text-lg">
                 1
               </div>
               <div>
-                <CardTitle className="text-xl">
-                  Создайте домен в Defenra
-                </CardTitle>
-                <CardDescription>
-                  Добавьте домен через кнопку "Добавить домен"
-                </CardDescription>
+                <CardTitle className="text-xl">{t("guide.step1.title")}</CardTitle>
+                <CardDescription>{t("guide.step1.description")}</CardDescription>
               </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              На странице доменов нажмите кнопку{" "}
-              <strong>"Добавить домен"</strong> и введите ваш домен (например,{" "}
+              {t("guide.step1.content")}{" "}
               <code className="px-2 py-1 bg-muted rounded">example.com</code>).
             </p>
           </CardContent>
-        </Card>
+        </BentoCard>
 
-        <Card className="border-blue-500/20">
+        {/* Step 2 */}
+        <BentoCard className="border-blue-500/20">
           <CardHeader>
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-500/20 text-blue-500 font-bold">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-500/20 text-blue-500 font-bold text-lg">
                 2
               </div>
               <div>
-                <CardTitle className="text-xl">
-                  Создайте поддомены для агентов
-                </CardTitle>
-                <CardDescription>
-                  Настройте A-записи для DNS агентов
-                </CardDescription>
+                <CardTitle className="text-xl">{t("guide.step2.title")}</CardTitle>
+                <CardDescription>{t("guide.step2.description")}</CardDescription>
               </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Вам необходимо создать два поддомена для агентов. Например:
+              {t("guide.step2.content")}
             </p>
 
             <div className="space-y-3">
               <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/50 border">
-                <IconServer className="h-5 w-5 text-blue-500 mt-0.5" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10 flex-shrink-0">
+                  <IconServer className="h-5 w-5 text-blue-500" />
+                </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <code className="text-sm font-semibold">
@@ -119,14 +133,15 @@ export default function DomainGuide() {
                     </Button>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Первый DNS агент - создайте A-запись на IP адрес первого
-                    агента
+                    {t("guide.step2.agent1Description")}
                   </p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/50 border">
-                <IconServer className="h-5 w-5 text-purple-500 mt-0.5" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/10 flex-shrink-0">
+                  <IconServer className="h-5 w-5 text-purple-500" />
+                </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <code className="text-sm font-semibold">
@@ -142,8 +157,7 @@ export default function DomainGuide() {
                     </Button>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Второй DNS агент - создайте A-запись на IP адрес второго
-                    агента
+                    {t("guide.step2.agent2Description")}
                   </p>
                 </div>
               </div>
@@ -152,38 +166,34 @@ export default function DomainGuide() {
             <Alert className="border-amber-500/50 bg-amber-500/10">
               <IconAlertCircle className="h-4 w-4 text-amber-500" />
               <AlertDescription className="text-sm">
-                IP адреса агентов вы можете узнать в разделе{" "}
+                {t("guide.step2.agentIpAlert")}{" "}
                 <Link
                   href="/dashboard/agents"
                   className="underline font-medium"
                 >
-                  Агенты
+                  {t("guide.step2.agentsLink")}
                 </Link>
               </AlertDescription>
             </Alert>
           </CardContent>
-        </Card>
+        </BentoCard>
 
-        <Card className="border-purple-500/20">
+        {/* Step 3 */}
+        <BentoCard className="border-purple-500/20">
           <CardHeader>
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-purple-500/20 text-purple-500 font-bold">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-purple-500/20 text-purple-500 font-bold text-lg">
                 3
               </div>
               <div>
-                <CardTitle className="text-xl">
-                  Настройте NS записи у регистратора
-                </CardTitle>
-                <CardDescription>
-                  Делегируйте домен на наши DNS серверы
-                </CardDescription>
+                <CardTitle className="text-xl">{t("guide.step3.title")}</CardTitle>
+                <CardDescription>{t("guide.step3.description")}</CardDescription>
               </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Теперь в панели управления вашего регистратора доменов (там где вы
-              купили домен) найдите настройки NS серверов и укажите:
+              {t("guide.step3.content")}
             </p>
 
             <div className="space-y-2 p-4 rounded-lg bg-muted/50 border">
@@ -220,50 +230,48 @@ export default function DomainGuide() {
             <Alert className="border-amber-500/50 bg-amber-500/10">
               <IconAlertCircle className="h-4 w-4 text-amber-500" />
               <AlertDescription className="text-sm">
-                Изменения NS записей могут занять от нескольких минут до 48
-                часов из-за распространения DNS
+                {t("guide.step3.dnsPropagationWarning")}
               </AlertDescription>
             </Alert>
           </CardContent>
-        </Card>
+        </BentoCard>
 
-        <Card className="border-green-500/20">
+        {/* Step 4 - Done */}
+        <BentoCard className="border-green-500/20">
           <CardHeader>
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-green-500/20 text-green-500 font-bold">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-green-500/20 text-green-500">
                 <IconCheck className="h-5 w-5" />
               </div>
               <div>
-                <CardTitle className="text-xl">Готово!</CardTitle>
-                <CardDescription>
-                  Домен настроен и готов к использованию
-                </CardDescription>
+                <CardTitle className="text-xl">{t("guide.step4.title")}</CardTitle>
+                <CardDescription>{t("guide.step4.description")}</CardDescription>
               </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              После того как DNS записи распространятся, вы сможете управлять
-              DNS записями домена и настраивать HTTP прокси прямо из панели
-              Defenra.
+              {t("guide.step4.content")}
             </p>
 
             <div className="flex gap-2 pt-2">
-              <Link href="/dashboard/domains" className="flex-1">
-                <Button variant="default" className="w-full">
-                  <IconWorld className="h-4 w-4 mr-2" />К списку доменов
+              <Link href="/dashboard/domains" className="flex-1 sm:flex-none">
+                <Button className="w-full sm:w-auto">
+                  <IconWorld className="h-4 w-4 mr-2" />
+                  {t("guide.step4.button")}
                 </Button>
               </Link>
             </div>
           </CardContent>
-        </Card>
+        </BentoCard>
       </div>
 
-      <Card className="border-blue-500/20 bg-blue-500/5">
+      {/* Important Notes */}
+      <BentoCard className="border-blue-500/20 bg-blue-500/5">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <IconAlertCircle className="h-5 w-5 text-blue-500" />
-            Важные моменты
+            {t("guide.notes.title")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -271,20 +279,19 @@ export default function DomainGuide() {
             <div className="flex gap-2">
               <span className="text-blue-500 font-bold">•</span>
               <p className="text-muted-foreground">
-                Используйте разные IP адреса для agent1 и agent2 для обеспечения
-                отказоустойчивости
+                {t("guide.notes.note1")}
               </p>
             </div>
             <div className="flex gap-2">
               <span className="text-blue-500 font-bold">•</span>
               <p className="text-muted-foreground">
-                Убедитесь что порт 53 (DNS) открыт на ваших агентах
+                {t("guide.notes.note2")}
               </p>
             </div>
             <div className="flex gap-2">
               <span className="text-blue-500 font-bold">•</span>
               <p className="text-muted-foreground">
-                Проверить правильность настройки можно командой:{" "}
+                {t("guide.notes.note3")}{" "}
                 <code className="px-2 py-1 bg-muted rounded text-xs">
                   nslookup example.com agent1.example.com
                 </code>
@@ -292,7 +299,7 @@ export default function DomainGuide() {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </BentoCard>
     </div>
   );
 }

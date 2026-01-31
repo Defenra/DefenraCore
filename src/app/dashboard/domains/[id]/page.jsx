@@ -2,36 +2,93 @@
 
 import {
   IconArrowLeft,
-  IconCode,
+  IconCheck,
+  IconCopy,
   IconDeviceFloppy,
-  IconFileSettings,
+  IconExternalLink,
+  IconGlobe,
   IconInfoCircle,
   IconMapPin,
   IconNetwork,
-  IconRoute,
+  IconShield,
   IconShieldCheck,
-  IconShieldLock,
   IconWorld,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { use, useState } from "react";
 import { toast } from "sonner";
+import { DnsRecordsTable } from "@/components/domain-management/dns-records-table";
 import { AntiDDoSTab } from "@/components/domain-management/anti-ddos-tab";
 import { AnycastRoutingTab } from "@/components/domain-management/anycast-routing-tab";
-import { DnsRecordsTab } from "@/components/domain-management/dns-records-tab";
 import { GeoDnsTab } from "@/components/domain-management/geodns-tab";
 import { LuaWafTab } from "@/components/domain-management/lua-waf-tab";
 import { PageRulesTab } from "@/components/domain-management/page-rules-tab";
 import { SslTab } from "@/components/domain-management/ssl-tab";
-import { Loading } from "@/components/loading";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useAgents } from "@/hooks/useAgents";
 import { useDomain, useUpdateDomain } from "@/hooks/useDomains";
+import { cn } from "@/lib/utils";
+
+// Modern Card
+function ModernCard({ children, className }) {
+  return (
+    <Card
+      className={cn(
+        "border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden",
+        className
+      )}
+    >
+      {children}
+    </Card>
+  );
+}
+
+// Domain Status Badge
+function DomainStatusBadge({ isActive, proxied, sslEnabled }) {
+  if (!isActive) {
+    return (
+      <Badge variant="outline" className="text-muted-foreground">
+        Inactive
+      </Badge>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <Badge className="bg-emerald-500/10 text-emerald-600 border-0">
+        <IconCheck className="h-3 w-3 mr-1" />
+        Active
+      </Badge>
+      {proxied && (
+        <Badge className="bg-blue-500/10 text-blue-600 border-0">
+          <IconNetwork className="h-3 w-3 mr-1" />
+          Proxied
+        </Badge>
+      )}
+      {sslEnabled && (
+        <Badge className="bg-purple-500/10 text-purple-600 border-0">
+          <IconShieldCheck className="h-3 w-3 mr-1" />
+          SSL
+        </Badge>
+      )}
+    </div>
+  );
+}
 
 export default function DomainManagePage({ params }) {
-  const _router = useRouter();
+  const { t } = useTranslation();
+  const router = useRouter();
   const { id: domainId } = use(params);
 
   const { data: domainData, isLoading } = useDomain(domainId);
@@ -39,7 +96,7 @@ export default function DomainManagePage({ params }) {
   const updateDomain = useUpdateDomain(domainId);
 
   const [domain, setDomain] = useState(domainData);
-  const [expandedRecords, setExpandedRecords] = useState(new Set());
+  const [activeTab, setActiveTab] = useState("dns");
 
   // Update local state when data is loaded
   if (domainData && !domain) {
@@ -49,206 +106,217 @@ export default function DomainManagePage({ params }) {
   const handleSave = async () => {
     try {
       await updateDomain.mutateAsync(domain);
-      toast.success("Изменения сохранены");
+      toast.success(t("domains.saveSuccess"));
     } catch (error) {
-      toast.error(error.message || "Ошибка при сохранении");
+      toast.error(error.message || t("domains.saveError"));
     }
   };
 
-  const toggleRecordExpand = (index) => {
-    const newExpanded = new Set(expandedRecords);
-    if (newExpanded.has(index)) {
-      newExpanded.delete(index);
-    } else {
-      newExpanded.add(index);
-    }
-    setExpandedRecords(newExpanded);
+  const handleUpdateDomain = (updatedDomain) => {
+    setDomain(updatedDomain);
+  };
+
+  const copyDomain = () => {
+    navigator.clipboard.writeText(domain.domain);
+    toast.success("Domain copied to clipboard");
   };
 
   if (isLoading) {
-    return <Loading />;
-  }
-
-  if (!domain) {
     return (
-      <div className="flex flex-col gap-6 py-6 px-4 lg:px-6">
-        <div className="text-center py-8">Домен не найден</div>
+      <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8">
+        <div className="flex items-center gap-4">
+          <Skeleton className="h-10 w-10" />
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-8 w-64" />
+            <Skeleton className="h-4 w-48" />
+          </div>
+        </div>
+        <div className="space-y-4">
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-[400px] w-full" />
+        </div>
       </div>
     );
   }
 
-  return (
-    <div className="flex flex-col gap-8 p-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4 flex-1">
+  if (!domain) {
+    return (
+      <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8">
+        <div className="text-center py-12">
+          <IconInfoCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+          <p className="text-mutedforeground">{t("domains.notFound")}</p>
           <Link href="/dashboard/domains">
-            <Button variant="ghost" size="icon" className="h-10 w-10">
+            <Button variant="outline" className="mt-4">
+              <IconArrowLeft className="h-4 w-4 mr-2" />
+              {t("domains.backToList")}
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const proxiedCount = domain.dnsRecords?.filter((r) => r.httpProxyEnabled).length || 0;
+  const sslEnabled = domain.httpProxy?.ssl?.enabled;
+
+  return (
+    <div className="flex flex-col gap-6">
+      {/* Header */}
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div className="flex items-start gap-4">
+          <Link href="/dashboard/domains">
+            <Button variant="ghost" size="icon" className="h-10 w-10 shrink-0">
               <IconArrowLeft className="h-5 w-5" />
             </Button>
           </Link>
-          <div className="flex items-center gap-4">
-            <IconWorld className="h-8 w-8 text-muted-foreground" />
-            <div>
-              <h1 className="text-2xl font-semibold">{domain.domain}</h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                {domain.description || "Управление доменом"}
-              </p>
+          <div>
+            <div className="flex items-center gap-3 mb-1">
+              <h1 className="text-2xl font-bold tracking-tight">{domain.domain}</h1>
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={copyDomain}>
+                <IconCopy className="h-4 w-4" />
+              </Button>
             </div>
+            <DomainStatusBadge
+              isActive={domain.isActive}
+              proxied={proxiedCount > 0}
+              sslEnabled={sslEnabled}
+            />
           </div>
         </div>
-        <Button
-          onClick={handleSave}
-          disabled={updateDomain.isPending}
-          className="h-10"
-        >
-          <IconDeviceFloppy className="h-5 w-5 mr-2" />
-          {updateDomain.isPending ? "Сохранение..." : "Сохранить"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => window.open(`https://${domain.domain}`, "_blank")}>
+            <IconExternalLink className="h-4 w-4 mr-2" />
+            Visit
+          </Button>
+          <Button size="sm" onClick={handleSave}>
+            <IconDeviceFloppy className="h-4 w-4 mr-2" />
+            {t("common.save")}
+          </Button>
+        </div>
       </div>
 
-      {/* Tabs */}
-      <Tabs defaultValue="dns" className="w-full">
-        <div className="grid grid-cols-[200px_1fr] gap-6">
-          {/* Sidebar Navigation */}
-          <TabsList className="flex flex-col h-fit gap-2 bg-transparent p-0">
-            <TabsTrigger
-              value="dns"
-              className="w-full justify-start gap-3 px-4 py-3 data-[state=active]:bg-accent"
-            >
-              <IconWorld className="h-5 w-5" />
-              <span>DNS записи</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="geo"
-              className="w-full justify-start gap-3 px-4 py-3 data-[state=active]:bg-accent"
-            >
-              <IconMapPin className="h-5 w-5" />
-              <span>География</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="proxy"
-              className="w-full justify-start gap-3 px-4 py-3 data-[state=active]:bg-accent"
-            >
-              <IconNetwork className="h-5 w-5" />
-              <span>Прокси</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="ssl"
-              className="w-full justify-start gap-3 px-4 py-3 data-[state=active]:bg-accent"
-            >
-              <IconShieldCheck className="h-5 w-5" />
-              <span>SSL</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="lua"
-              className="w-full justify-start gap-3 px-4 py-3 data-[state=active]:bg-accent"
-            >
-              <IconCode className="h-5 w-5" />
-              <span>WAF</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="antiddos"
-              className="w-full justify-start gap-3 px-4 py-3 data-[state=active]:bg-accent"
-            >
-              <IconShieldLock className="h-5 w-5" />
-              <span>Anti-DDoS</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="anycast"
-              className="w-full justify-start gap-3 px-4 py-3 data-[state=active]:bg-accent"
-            >
-              <IconRoute className="h-5 w-5" />
-              <span>Anycast</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="pagerules"
-              className="w-full justify-start gap-3 px-4 py-3 data-[state=active]:bg-accent"
-            >
-              <IconFileSettings className="h-5 w-5" />
-              <span>Page Rules</span>
-            </TabsTrigger>
-          </TabsList>
+      {/* Quick Stats */}
+      <div className="grid gap-4 sm:grid-cols-4">
+        <ModernCard>
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+              <IconGlobe className="h-5 w-5 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold">{domain.dnsRecords?.length || 0}</p>
+              <p className="text-xs text-muted-foreground">DNS Records</p>
+            </div>
+          </CardContent>
+        </ModernCard>
+        <ModernCard>
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <IconNetwork className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold">{proxiedCount}</p>
+              <p className="text-xs text-muted-foreground">Proxied</p>
+            </div>
+          </CardContent>
+        </ModernCard>
+        <ModernCard>
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
+              <IconShieldCheck className="h-5 w-5 text-purple-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold">{sslEnabled ? "On" : "Off"}</p>
+              <p className="text-xs text-muted-foreground">SSL</p>
+            </div>
+          </CardContent>
+        </ModernCard>
+        <ModernCard>
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-green-500/10 flex items-center justify-center">
+              <IconMapPin className="h-5 w-5 text-green-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold">{domain.geoDnsConfig?.length || 0}</p>
+              <p className="text-xs text-muted-foreground">Geo Zones</p>
+            </div>
+          </CardContent>
+        </ModernCard>
+      </div>
 
-          {/* Content Area */}
-          <div className="min-w-0">
-            {/* DNS Records Tab */}
-            <TabsContent value="dns" className="mt-0">
-              <DnsRecordsTab
-                domain={domain}
-                onUpdate={setDomain}
-                expandedRecords={expandedRecords}
-                onToggleExpand={toggleRecordExpand}
-              />
-            </TabsContent>
+      {/* Tabs - 7 useful tabs, Proxy removed as it's configured per DNS record */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 h-auto">
+          <TabsTrigger value="dns" className="gap-2">
+            <IconGlobe className="h-4 w-4 hidden sm:inline" />
+            DNS
+          </TabsTrigger>
+          <TabsTrigger value="geo" className="gap-2">
+            <IconMapPin className="h-4 w-4 hidden sm:inline" />
+            GeoDNS
+          </TabsTrigger>
+          <TabsTrigger value="ssl" className="gap-2">
+            <IconShield className="h-4 w-4 hidden sm:inline" />
+            SSL
+          </TabsTrigger>
+          <TabsTrigger value="waf" className="gap-2">
+            <IconShieldCheck className="h-4 w-4 hidden sm:inline" />
+            WAF
+          </TabsTrigger>
+          <TabsTrigger value="antiddos" className="gap-2">
+            <IconShield className="h-4 w-4 hidden sm:inline" />
+            DDoS
+          </TabsTrigger>
+          <TabsTrigger value="anycast" className="gap-2">
+            <IconWorld className="h-4 w-4 hidden sm:inline" />
+            Anycast
+          </TabsTrigger>
+          <TabsTrigger value="pagerules" className="gap-2">
+            <IconInfoCircle className="h-4 w-4 hidden sm:inline" />
+            Rules
+          </TabsTrigger>
+        </TabsList>
 
-            {/* GeoDNS Tab */}
-            <TabsContent value="geo" className="mt-0">
-              <GeoDnsTab domain={domain} agents={agents} onUpdate={setDomain} />
-            </TabsContent>
+        <TabsContent value="dns" className="space-y-4">
+          <ModernCard>
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <IconGlobe className="h-5 w-5" />
+                DNS Records
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <DnsRecordsTable domain={domain} onUpdate={handleUpdateDomain} />
+            </CardContent>
+          </ModernCard>
+        </TabsContent>
 
-            {/* HTTP Proxy Tab */}
-            <TabsContent value="proxy" className="mt-0">
-              <div className="space-y-6">
-                <div className="border border-border rounded-lg p-6">
-                  <div className="flex items-start gap-4">
-                    <IconInfoCircle className="h-6 w-6 text-muted-foreground flex-shrink-0" />
-                    <div className="space-y-3">
-                      <p className="font-medium">Как работает проксирование</p>
-                      <ul className="text-muted-foreground space-y-2 text-sm">
-                        <li>• Клиент делает DNS запрос к вашему домену</li>
-                        <li>
-                          • Агенты (GeoDNS) определяют геолокацию клиента и
-                          отдают IP ближайшего агента
-                        </li>
-                        <li>
-                          • Трафик идёт на ближайший агент, который проксирует
-                          на реальный IP из DNS записи
-                        </li>
-                        <li>
-                          • Применяется SSL и Lua middleware (если настроены)
-                        </li>
-                      </ul>
-                      <p className="text-sm text-muted-foreground mt-4">
-                        💡 Целевой IP указывается в поле "Значение" DNS записи.
-                        Агенты автоматически проксируют на него.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
+        <TabsContent value="geo">
+          <GeoDnsTab
+            domain={domain}
+            agents={agents}
+            onUpdate={handleUpdateDomain}
+          />
+        </TabsContent>
 
-            {/* SSL Tab */}
-            <TabsContent value="ssl" className="mt-0">
-              <SslTab domain={domain} onUpdate={setDomain} />
-            </TabsContent>
+        <TabsContent value="ssl">
+          <SslTab domain={domain} onUpdate={handleUpdateDomain} />
+        </TabsContent>
 
-            {/* Lua WAF Tab */}
-            <TabsContent value="lua" className="mt-0">
-              <LuaWafTab domain={domain} onUpdate={setDomain} />
-            </TabsContent>
+        <TabsContent value="waf">
+          <LuaWafTab domain={domain} onUpdate={handleUpdateDomain} />
+        </TabsContent>
 
-            {/* Anti-DDoS Tab */}
-            <TabsContent value="antiddos" className="mt-0">
-              <AntiDDoSTab domain={domain} onUpdate={setDomain} />
-            </TabsContent>
+        <TabsContent value="antiddos">
+          <AntiDDoSTab domain={domain} onUpdate={handleUpdateDomain} />
+        </TabsContent>
 
-            {/* Anycast Routing Tab */}
-            <TabsContent value="anycast" className="mt-0">
-              <AnycastRoutingTab
-                domain={domain}
-                agents={agents}
-                onUpdate={setDomain}
-              />
-            </TabsContent>
+        <TabsContent value="anycast">
+          <AnycastRoutingTab domain={domain} onUpdate={handleUpdateDomain} />
+        </TabsContent>
 
-            {/* Page Rules Tab */}
-            <TabsContent value="pagerules" className="mt-0">
-              <PageRulesTab domain={domain} onUpdate={setDomain} />
-            </TabsContent>
-          </div>
-        </div>
+        <TabsContent value="pagerules">
+          <PageRulesTab domain={domain} onUpdate={handleUpdateDomain} />
+        </TabsContent>
       </Tabs>
     </div>
   );

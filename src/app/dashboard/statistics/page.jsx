@@ -24,7 +24,6 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { Loading } from "@/components/loading";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -33,6 +32,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -40,12 +40,93 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useTranslation } from "@/hooks/useTranslation";
+import { cn } from "@/lib/utils";
+
+// Bento Card Component
+function BentoCard({ children, className, colSpan = 1 }) {
+  return (
+    <Card
+      className={cn(
+        "border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300",
+        "hover:border-border hover:shadow-lg hover:shadow-primary/5",
+        colSpan === 2 && "md:col-span-2",
+        className
+      )}
+    >
+      {children}
+    </Card>
+  );
+}
+
+// Stat Card Skeleton
+function StatCardSkeleton() {
+  return (
+    <BentoCard>
+      <CardHeader className="pb-4">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-6 w-6 rounded-md" />
+          <Skeleton className="h-5 w-32" />
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <Skeleton className="h-12 w-32" />
+        <Skeleton className="h-4 w-24" />
+      </CardContent>
+    </BentoCard>
+  );
+}
+
+// Chart Skeleton
+function ChartSkeleton() {
+  return (
+    <BentoCard colSpan={2}>
+      <CardHeader className="pb-6">
+        <Skeleton className="h-6 w-40 mb-2" />
+        <Skeleton className="h-4 w-64" />
+      </CardHeader>
+      <CardContent>
+        <Skeleton className="h-80 w-full" />
+      </CardContent>
+    </BentoCard>
+  );
+}
+
+// Top Agents Skeleton
+function TopAgentsSkeleton() {
+  return (
+    <BentoCard colSpan={2}>
+      <CardHeader className="pb-6">
+        <Skeleton className="h-6 w-48 mb-2" />
+        <Skeleton className="h-4 w-72" />
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <Skeleton className="h-80 w-full" />
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="flex items-center justify-between p-4 border rounded-lg">
+            <div className="flex items-center gap-4">
+              <Skeleton className="h-8 w-8" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-3 w-20" />
+              </div>
+            </div>
+            <div className="text-right space-y-2">
+              <Skeleton className="h-5 w-20" />
+              <Skeleton className="h-3 w-16" />
+            </div>
+          </div>
+        ))}
+      </CardContent>
+    </BentoCard>
+  );
+}
 
 export default function StatisticsPage() {
+  const { t } = useTranslation();
   const [timeRange, setTimeRange] = useState("24h");
   const [resourceType, setResourceType] = useState("all");
 
-  // Загрузка данных из API
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["statistics", timeRange, resourceType],
     queryFn: async () => {
@@ -55,11 +136,11 @@ export default function StatisticsPage() {
       }
       const response = await fetch(`/api/statistics?${params.toString()}`);
       if (!response.ok) {
-        throw new Error("Ошибка загрузки статистики");
+        throw new Error(t("statistics.errors.loadFailed"));
       }
       return response.json();
     },
-    refetchInterval: 60000, // Обновлять каждую минуту
+    refetchInterval: 60000,
   });
 
   const stats = data?.stats || {
@@ -92,40 +173,105 @@ export default function StatisticsPage() {
   };
 
   const formatNumber = (num) => {
-    return new Intl.NumberFormat("ru-RU").format(num);
+    return new Intl.NumberFormat("en-US").format(num);
+  };
+
+  const getTimeRangeLabel = (range) => {
+    const labels = {
+      "1h": t("statistics.timeRanges.1h"),
+      "24h": t("statistics.timeRanges.24h"),
+      "7d": t("statistics.timeRanges.7d"),
+      "30d": t("statistics.timeRanges.30d"),
+      "90d": t("statistics.timeRanges.90d"),
+    };
+    return labels[range] || range;
   };
 
   if (isLoading) {
-    return <Loading />;
+    return (
+      <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8">
+        {/* Header Skeleton */}
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-40" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+          <div className="flex gap-3">
+            <Skeleton className="h-10 w-40" />
+            <Skeleton className="h-10 w-40" />
+            <Skeleton className="h-10 w-10" />
+          </div>
+        </div>
+
+        {/* Stats Grid Skeleton */}
+        <div className="grid gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+        </div>
+
+        {/* Resource Type Skeleton */}
+        <div className="grid gap-4 md:gap-6 md:grid-cols-2">
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+        </div>
+
+        {/* Metrics Skeleton */}
+        <div className="grid gap-4 md:gap-6 md:grid-cols-3">
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+        </div>
+
+        {/* Security Skeleton */}
+        <div className="grid gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+        </div>
+
+        {/* Charts Skeleton */}
+        <ChartSkeleton />
+        <TopAgentsSkeleton />
+      </div>
+    );
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-red-400">Ошибка: {error.message}</p>
+      <div className="flex items-center justify-center min-h-screen p-4">
+        <div className="text-center space-y-4">
+          <p className="text-red-400">{t("common.error")}: {error.message}</p>
+          <Button onClick={() => refetch()} variant="outline">
+            {t("common.retry")}
+          </Button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-8 p-8">
+    <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold mb-2">Статистика</h1>
-          <p className="text-sm text-muted-foreground">
-            Метрики трафика и производительности
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">
+            {t("statistics.title")}
+          </h1>
+          <p className="text-sm text-muted-foreground md:text-base">
+            {t("statistics.description")}
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <Select value={resourceType} onValueChange={setResourceType}>
             <SelectTrigger className="w-[180px] h-10">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Все ресурсы</SelectItem>
-              <SelectItem value="proxy">Только прокси</SelectItem>
-              <SelectItem value="domain">Только домены</SelectItem>
+              <SelectItem value="all">{t("statistics.filters.allResources")}</SelectItem>
+              <SelectItem value="proxy">{t("statistics.filters.onlyProxies")}</SelectItem>
+              <SelectItem value="domain">{t("statistics.filters.onlyDomains")}</SelectItem>
             </SelectContent>
           </Select>
           <Select value={timeRange} onValueChange={setTimeRange}>
@@ -133,11 +279,11 @@ export default function StatisticsPage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="1h">Последний час</SelectItem>
-              <SelectItem value="24h">Последние 24 часа</SelectItem>
-              <SelectItem value="7d">Последние 7 дней</SelectItem>
-              <SelectItem value="30d">Последние 30 дней</SelectItem>
-              <SelectItem value="90d">Последние 90 дней</SelectItem>
+              <SelectItem value="1h">{t("statistics.timeRanges.1h")}</SelectItem>
+              <SelectItem value="24h">{t("statistics.timeRanges.24h")}</SelectItem>
+              <SelectItem value="7d">{t("statistics.timeRanges.7d")}</SelectItem>
+              <SelectItem value="30d">{t("statistics.timeRanges.30d")}</SelectItem>
+              <SelectItem value="90d">{t("statistics.timeRanges.90d")}</SelectItem>
             </SelectContent>
           </Select>
           <Button
@@ -152,231 +298,259 @@ export default function StatisticsPage() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="border-border">
+      <div className="grid gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <BentoCard>
           <CardHeader className="pb-4">
             <div className="flex items-center gap-3">
-              <IconChartBar className="h-6 w-6 text-muted-foreground" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                <IconChartBar className="h-5 w-5 text-primary" />
+              </div>
               <CardTitle className="text-lg font-medium">
-                Всего трафика
+                {t("statistics.cards.totalTraffic")}
               </CardTitle>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-5xl font-bold mb-2">
-              {formatBytes(stats.totalTraffic)}
+          <CardContent className="space-y-4">
+            <div>
+              <div className="text-4xl md:text-5xl font-bold mb-2">
+                {formatBytes(stats.totalTraffic)}
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {t("statistics.period")}: {getTimeRangeLabel(timeRange)}
+              </p>
             </div>
-            <p className="text-sm text-muted-foreground">
-              За период: {timeRange === "24h" ? "24 часа" : timeRange}
-            </p>
           </CardContent>
-        </Card>
+        </BentoCard>
 
-        <Card className="border-border">
+        <BentoCard>
           <CardHeader className="pb-4">
             <div className="flex items-center gap-3">
-              <IconCloudDownload className="h-6 w-6 text-muted-foreground" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10">
+                <IconCloudDownload className="h-5 w-5 text-blue-500" />
+              </div>
               <CardTitle className="text-lg font-medium">
-                Входящий трафик
+                {t("statistics.cards.inboundTraffic")}
               </CardTitle>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-5xl font-bold mb-2">
-              {formatBytes(stats.inboundTraffic)}
-            </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <IconArrowDown className="h-4 w-4" />
-              <span>Загружено</span>
+          <CardContent className="space-y-4">
+            <div>
+              <div className="text-4xl md:text-5xl font-bold mb-2">
+                {formatBytes(stats.inboundTraffic)}
+              </div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <IconArrowDown className="h-4 w-4" />
+                <span>{t("statistics.downloaded")}</span>
+              </div>
             </div>
           </CardContent>
-        </Card>
+        </BentoCard>
 
-        <Card className="border-border">
+        <BentoCard>
           <CardHeader className="pb-4">
             <div className="flex items-center gap-3">
-              <IconCloudUpload className="h-6 w-6 text-muted-foreground" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-cyan-500/10">
+                <IconCloudUpload className="h-5 w-5 text-cyan-500" />
+              </div>
               <CardTitle className="text-lg font-medium">
-                Исходящий трафик
+                {t("statistics.cards.outboundTraffic")}
               </CardTitle>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-5xl font-bold mb-2">
-              {formatBytes(stats.outboundTraffic)}
-            </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <IconArrowUp className="h-4 w-4" />
-              <span>Отправлено</span>
+          <CardContent className="space-y-4">
+            <div>
+              <div className="text-4xl md:text-5xl font-bold mb-2">
+                {formatBytes(stats.outboundTraffic)}
+              </div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <IconArrowUp className="h-4 w-4" />
+                <span>{t("statistics.uploaded")}</span>
+              </div>
             </div>
           </CardContent>
-        </Card>
+        </BentoCard>
       </div>
 
       {/* By Resource Type */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card className="border-border">
+      <div className="grid gap-4 md:gap-6 md:grid-cols-2">
+        <BentoCard>
           <CardHeader className="pb-4">
             <div className="flex items-center gap-3">
-              <IconNetwork className="h-6 w-6 text-muted-foreground" />
-              <CardTitle className="text-lg font-medium">Прокси</CardTitle>
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-500/10">
+                <IconNetwork className="h-5 w-5 text-indigo-500" />
+              </div>
+              <CardTitle className="text-lg font-medium">{t("statistics.cards.proxies")}</CardTitle>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-5xl font-bold mb-2">
-              {formatBytes(byType.proxy.totalBytes)}
+          <CardContent className="space-y-4">
+            <div>
+              <div className="text-4xl md:text-5xl font-bold mb-2">
+                {formatBytes(byType.proxy.totalBytes)}
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {formatNumber(byType.proxy.requests)} {t("statistics.requests")}
+              </p>
             </div>
-            <p className="text-sm text-muted-foreground">
-              {formatNumber(byType.proxy.requests)} запросов
-            </p>
           </CardContent>
-        </Card>
+        </BentoCard>
 
-        <Card className="border-border">
+        <BentoCard>
           <CardHeader className="pb-4">
             <div className="flex items-center gap-3">
-              <IconWorld className="h-6 w-6 text-muted-foreground" />
-              <CardTitle className="text-lg font-medium">Домены</CardTitle>
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10">
+                <IconWorld className="h-5 w-5 text-emerald-500" />
+              </div>
+              <CardTitle className="text-lg font-medium">{t("statistics.cards.domains")}</CardTitle>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-5xl font-bold mb-2">
-              {formatBytes(byType.domain.totalBytes)}
+          <CardContent className="space-y-4">
+            <div>
+              <div className="text-4xl md:text-5xl font-bold mb-2">
+                {formatBytes(byType.domain.totalBytes)}
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {formatNumber(byType.domain.requests)} {t("statistics.requests")}
+              </p>
             </div>
-            <p className="text-sm text-muted-foreground">
-              {formatNumber(byType.domain.requests)} запросов
-            </p>
           </CardContent>
-        </Card>
+        </BentoCard>
       </div>
 
       {/* Additional Metrics */}
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card className="border-border">
+      <div className="grid gap-4 md:gap-6 md:grid-cols-3">
+        <BentoCard>
           <CardHeader className="pb-4">
             <CardTitle className="text-sm text-muted-foreground font-medium">
-              Запросов
+              {t("statistics.cards.totalRequests")}
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-5xl font-bold mb-2">
-              {formatNumber(stats.requests)}
+          <CardContent className="space-y-4">
+            <div>
+              <div className="text-4xl md:text-5xl font-bold mb-2">
+                {formatNumber(stats.requests)}
+              </div>
+              <p className="text-sm text-muted-foreground">{t("statistics.processed")}</p>
             </div>
-            <p className="text-sm text-muted-foreground">Всего обработано</p>
           </CardContent>
-        </Card>
+        </BentoCard>
 
-        <Card className="border-border">
+        <BentoCard>
           <CardHeader className="pb-4">
             <CardTitle className="text-sm text-muted-foreground font-medium">
-              Среднее время ответа
+              {t("statistics.cards.avgResponseTime")}
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-5xl font-bold mb-2">
-              {stats.avgResponseTime}
+          <CardContent className="space-y-4">
+            <div>
+              <div className="text-4xl md:text-5xl font-bold mb-2">
+                {stats.avgResponseTime}
+              </div>
+              <p className="text-sm text-muted-foreground">{t("statistics.milliseconds")}</p>
             </div>
-            <p className="text-sm text-muted-foreground">миллисекунд</p>
           </CardContent>
-        </Card>
+        </BentoCard>
 
-        <Card className="border-border">
+        <BentoCard>
           <CardHeader className="pb-4">
             <CardTitle className="text-sm text-muted-foreground font-medium">
-              Uptime
+              {t("statistics.cards.uptime")}
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-5xl font-bold mb-2">{stats.uptime}%</div>
-            <p className="text-sm text-muted-foreground">Время работы</p>
+          <CardContent className="space-y-4">
+            <div>
+              <div className="text-4xl md:text-5xl font-bold mb-2">{stats.uptime}%</div>
+              <p className="text-sm text-muted-foreground">{t("statistics.uptimeLabel")}</p>
+            </div>
           </CardContent>
-        </Card>
+        </BentoCard>
       </div>
 
       {/* Security Metrics */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-border">
+      <div className="grid gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <BentoCard>
           <CardHeader className="pb-4">
             <div className="flex items-center gap-3">
-              <IconShieldLock className="h-6 w-6 text-red-500" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-500/10">
+                <IconShieldLock className="h-5 w-5 text-red-500" />
+              </div>
               <CardTitle className="text-lg font-medium">
-                Заблокировано
+                {t("statistics.cards.blocked")}
               </CardTitle>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-5xl font-bold mb-2">
-              {formatNumber(stats.blockedRequests || 0)}
+          <CardContent className="space-y-4">
+            <div>
+              <div className="text-4xl md:text-5xl font-bold mb-2">
+                {formatNumber(stats.blockedRequests || 0)}
+              </div>
+              <p className="text-sm text-muted-foreground">{t("statistics.blockedRequests")}</p>
             </div>
-            <p className="text-sm text-muted-foreground">
-              Запросов заблокировано
-            </p>
           </CardContent>
-        </Card>
+        </BentoCard>
 
-        <Card className="border-border">
+        <BentoCard>
           <CardHeader className="pb-4">
             <CardTitle className="text-sm text-muted-foreground font-medium">
-              Rate Limit
+              {t("statistics.cards.rateLimit")}
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-5xl font-bold mb-2 text-orange-500">
-              {formatNumber(stats.rateLimitBlocks || 0)}
+          <CardContent className="space-y-4">
+            <div>
+              <div className="text-4xl md:text-5xl font-bold mb-2 text-orange-500">
+                {formatNumber(stats.rateLimitBlocks || 0)}
+              </div>
+              <p className="text-sm text-muted-foreground">{t("statistics.rateLimitBlocks")}</p>
             </div>
-            <p className="text-sm text-muted-foreground">
-              Блокировок по лимиту
-            </p>
           </CardContent>
-        </Card>
+        </BentoCard>
 
-        <Card className="border-border">
+        <BentoCard>
           <CardHeader className="pb-4">
             <CardTitle className="text-sm text-muted-foreground font-medium">
-              Firewall
+              {t("statistics.cards.firewall")}
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-5xl font-bold mb-2 text-red-500">
-              {formatNumber(stats.firewallBlocks || 0)}
+          <CardContent className="space-y-4">
+            <div>
+              <div className="text-4xl md:text-5xl font-bold mb-2 text-red-500">
+                {formatNumber(stats.firewallBlocks || 0)}
+              </div>
+              <p className="text-sm text-muted-foreground">{t("statistics.firewallBlocks")}</p>
             </div>
-            <p className="text-sm text-muted-foreground">Системных банов</p>
           </CardContent>
-        </Card>
+        </BentoCard>
 
-        <Card className="border-border">
+        <BentoCard>
           <CardHeader className="pb-4">
             <CardTitle className="text-sm text-muted-foreground font-medium">
-              L4 Blocks
+              {t("statistics.cards.l4Blocks")}
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-5xl font-bold mb-2 text-purple-500">
-              {formatNumber(stats.l4Blocks || 0)}
+          <CardContent className="space-y-4">
+            <div>
+              <div className="text-4xl md:text-5xl font-bold mb-2 text-purple-500">
+                {formatNumber(stats.l4Blocks || 0)}
+              </div>
+              <p className="text-sm text-muted-foreground">{t("statistics.l4Blocks")}</p>
             </div>
-            <p className="text-sm text-muted-foreground">Блокировок на L4</p>
           </CardContent>
-        </Card>
+        </BentoCard>
       </div>
 
       {/* Traffic Chart */}
-      <Card className="border-border">
+      <BentoCard colSpan={2}>
         <CardHeader className="pb-6">
-          <CardTitle className="text-lg font-medium">График трафика</CardTitle>
-          <CardDescription>
-            Визуализация передачи данных по времени
-          </CardDescription>
+          <CardTitle className="text-lg font-medium">{t("statistics.trafficChart.title")}</CardTitle>
+          <CardDescription>{t("statistics.trafficChart.description")}</CardDescription>
         </CardHeader>
         <CardContent>
           {timeSeries.length === 0 ? (
-            <div className="h-80 flex items-center justify-center border border-border rounded-lg">
+            <div className="h-80 flex items-center justify-center border border-border rounded-lg bg-muted/50">
               <div className="text-center">
                 <IconChartBar className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <p className="text-muted-foreground">
-                  Нет данных для отображения
-                </p>
+                <p className="text-muted-foreground">{t("statistics.noData")}</p>
                 <p className="text-sm text-muted-foreground mt-2">
-                  Данные появятся после начала передачи трафика
+                  {t("statistics.dataWillAppear")}
                 </p>
               </div>
             </div>
@@ -438,7 +612,7 @@ export default function StatisticsPage() {
                     stroke="#8b5cf6"
                     fillOpacity={1}
                     fill="url(#colorInbound)"
-                    name="Входящий"
+                    name={t("statistics.inbound")}
                   />
                   <Area
                     type="monotone"
@@ -446,29 +620,25 @@ export default function StatisticsPage() {
                     stroke="#06b6d4"
                     fillOpacity={1}
                     fill="url(#colorOutbound)"
-                    name="Исходящий"
+                    name={t("statistics.outbound")}
                   />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           )}
         </CardContent>
-      </Card>
+      </BentoCard>
 
       {/* Top Agents by Traffic */}
-      <Card className="border-border">
+      <BentoCard colSpan={2}>
         <CardHeader className="pb-6">
-          <CardTitle className="text-lg font-medium">
-            Топ агентов по трафику
-          </CardTitle>
-          <CardDescription>
-            Агенты с наибольшим объемом переданных данных
-          </CardDescription>
+          <CardTitle className="text-lg font-medium">{t("statistics.topAgents.title")}</CardTitle>
+          <CardDescription>{t("statistics.topAgents.description")}</CardDescription>
         </CardHeader>
         <CardContent>
           {topAgents.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
-              Данные будут доступны после сбора статистики
+              {t("statistics.topAgents.noData")}
             </div>
           ) : (
             <div className="space-y-8">
@@ -506,7 +676,7 @@ export default function StatisticsPage() {
                         borderRadius: "8px",
                       }}
                       labelStyle={{ color: "hsl(var(--foreground))" }}
-                      formatter={(value) => [formatBytes(value), "Трафик"]}
+                      formatter={(value) => [formatBytes(value), t("statistics.traffic")]}
                     />
                     <Bar
                       dataKey="totalBytes"
@@ -522,7 +692,7 @@ export default function StatisticsPage() {
                 {topAgents.map((agent, index) => (
                   <div
                     key={agent.agentId}
-                    className="flex items-center justify-between border border-border rounded-lg p-4"
+                    className="flex items-center justify-between border border-border rounded-lg p-4 bg-card/50"
                   >
                     <div className="flex items-center gap-4">
                       <div className="text-2xl font-bold text-muted-foreground w-8">
@@ -540,7 +710,7 @@ export default function StatisticsPage() {
                         {formatBytes(agent.totalBytes)}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {formatNumber(agent.requests)} запросов
+                        {formatNumber(agent.requests)} {t("statistics.requests")}
                       </p>
                     </div>
                   </div>
@@ -549,7 +719,7 @@ export default function StatisticsPage() {
             </div>
           )}
         </CardContent>
-      </Card>
+      </BentoCard>
     </div>
   );
 }

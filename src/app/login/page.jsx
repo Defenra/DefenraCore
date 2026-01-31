@@ -13,8 +13,11 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useTranslation } from "@/hooks/useTranslation";
+import { cn } from "@/lib/utils";
 
 function LoginForm() {
+  const { t } = useTranslation();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
@@ -39,36 +42,56 @@ function LoginForm() {
       });
 
       if (result?.error) {
-        setError("Неверный email или пароль");
+        setError(t("login.errors.invalidCredentials"));
       } else if (result?.ok) {
         router.push("/dashboard");
         router.refresh();
       }
     } catch (_error) {
-      setError("Произошла ошибка при входе");
+      setError(t("login.errors.generic"));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center p-4 bg-gradient-to-br from-background to-muted/50">
+      <Card className="w-full max-w-md border-border/50 bg-card/50 backdrop-blur-sm">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Вход в систему</CardTitle>
-          <CardDescription>
-            Введите ваши учетные данные для доступа к панели управления
+          <div className="flex items-center justify-center mb-4">
+            <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-6 w-6 text-primary"
+              >
+                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                <path d="M2 17l10 5 10-5" />
+                <path d="M2 12l10 5 10-5" />
+              </svg>
+            </div>
+          </div>
+          <CardTitle className="text-2xl font-bold text-center">
+            {t("login.title")}
+          </CardTitle>
+          <CardDescription className="text-center">
+            {t("login.description")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {setupSuccess && (
-            <div className="mb-4 text-sm text-green-600 bg-green-50 dark:bg-green-950/20 p-3 rounded-md">
-              Администратор успешно создан! Теперь вы можете войти в систему.
+            <div className="mb-4 text-sm text-green-600 bg-green-500/10 p-3 rounded-md border border-green-500/20">
+              {t("login.setupSuccess")}
             </div>
           )}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("login.form.email")}</Label>
               <Input
                 id="email"
                 type="email"
@@ -79,29 +102,31 @@ function LoginForm() {
                 }
                 required
                 disabled={loading}
+                className="h-11"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Пароль</Label>
+              <Label htmlFor="password">{t("login.form.password")}</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="Введите пароль"
+                placeholder={t("login.form.passwordPlaceholder")}
                 value={formData.password}
                 onChange={(e) =>
                   setFormData({ ...formData, password: e.target.value })
                 }
                 required
                 disabled={loading}
+                className="h-11"
               />
             </div>
             {error && (
-              <div className="text-sm text-red-500 bg-red-50 dark:bg-red-950/20 p-3 rounded-md">
+              <div className="text-sm text-red-500 bg-red-500/10 p-3 rounded-md border border-red-500/20">
                 {error}
               </div>
             )}
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Вход..." : "Войти"}
+            <Button type="submit" className="w-full h-11" disabled={loading}>
+              {loading ? t("login.signingIn") : t("login.signIn")}
             </Button>
           </form>
         </CardContent>
@@ -110,21 +135,30 @@ function LoginForm() {
   );
 }
 
+function LoginSkeleton() {
+  return (
+    <div className="flex min-h-screen items-center justify-center p-4">
+      <Card className="w-full max-w-md border-border/50 bg-card/50 backdrop-blur-sm">
+        <CardContent className="pt-6">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="h-12 w-12 rounded-xl bg-primary/10 animate-pulse" />
+            <div className="h-6 w-32 bg-muted rounded animate-pulse" />
+            <div className="h-4 w-48 bg-muted rounded animate-pulse" />
+            <div className="w-full space-y-3 pt-4">
+              <div className="h-11 w-full bg-muted rounded animate-pulse" />
+              <div className="h-11 w-full bg-muted rounded animate-pulse" />
+              <div className="h-11 w-full bg-muted rounded animate-pulse" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 export default function LoginPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-screen items-center justify-center p-4">
-          <Card className="w-full max-w-md">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-center">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-700 border-t-transparent" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      }
-    >
+    <Suspense fallback={<LoginSkeleton />}>
       <LoginForm />
     </Suspense>
   );

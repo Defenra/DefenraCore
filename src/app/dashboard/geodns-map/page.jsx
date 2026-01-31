@@ -21,17 +21,70 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslation } from "@/hooks/useTranslation";
+import { cn } from "@/lib/utils";
+
+// Bento Card Component
+function BentoCard({ children, className }) {
+  return (
+    <Card
+      className={cn(
+        "border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300",
+        "hover:border-border hover:shadow-lg hover:shadow-primary/5",
+        className
+      )}
+    >
+      {children}
+    </Card>
+  );
+}
+
+// Stat Card Skeleton
+function StatCardSkeleton() {
+  return (
+    <BentoCard>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-4 w-4" />
+      </CardHeader>
+      <CardContent>
+        <Skeleton className="h-8 w-16" />
+      </CardContent>
+    </BentoCard>
+  );
+}
+
+// Domain Card Skeleton
+function DomainCardSkeleton() {
+  return (
+    <BentoCard>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div className="flex-1 space-y-2">
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-5 w-5" />
+              <Skeleton className="h-6 w-48" />
+            </div>
+            <Skeleton className="h-4 w-64" />
+          </div>
+          <Skeleton className="h-8 w-8" />
+        </div>
+      </CardHeader>
+    </BentoCard>
+  );
+}
 
 async function fetchGeoDnsMap() {
   const response = await fetch("/api/geodns/map");
   if (!response.ok) {
-    throw new Error("Ошибка загрузки карты GeoDNS");
+    throw new Error("Failed to load GeoDNS map");
   }
   return response.json();
 }
 
 export default function GeoDnsMapPage() {
-  // Track expanded domains (empty = all collapsed by default)
+  const { t } = useTranslation();
   const [expandedDomains, setExpandedDomains] = useState(new Set());
 
   const { data, isLoading, refetch, isFetching } = useQuery({
@@ -72,15 +125,45 @@ export default function GeoDnsMapPage() {
     fallbackAssignments: 0,
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-4 sm:gap-6 p-4 sm:p-6 lg:p-8">
+        {/* Header Skeleton */}
+        <div className="flex items-center justify-between gap-4">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+          <Skeleton className="h-10 w-10" />
+        </div>
+
+        {/* Stats Skeleton */}
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+          {[...Array(6)].map((_, i) => (
+            <StatCardSkeleton key={i} />
+          ))}
+        </div>
+
+        {/* Domain Cards Skeleton */}
+        <div className="space-y-3 sm:space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <DomainCardSkeleton key={i} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col gap-4 sm:gap-6 py-4 px-4 sm:px-6">
+    <div className="flex flex-col gap-4 sm:gap-6 p-4 sm:p-6 lg:p-8">
+      {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-            Карта GeoDNS зон
+            {t("geodns.title")}
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground">
-            Просмотр anycast записей как они передаются агентам
+            {t("geodns.description")}
           </p>
         </div>
         <Button
@@ -88,6 +171,7 @@ export default function GeoDnsMapPage() {
           size="icon"
           onClick={() => refetch()}
           disabled={isFetching}
+          className="flex-shrink-0"
         >
           <IconRefresh
             className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`}
@@ -95,28 +179,29 @@ export default function GeoDnsMapPage() {
         </Button>
       </div>
 
+      {/* Stats Grid */}
       <div className="grid gap-3 sm:gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
-        <Card>
+        <BentoCard>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Доменов</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("geodns.stats.domains")}</CardTitle>
             <IconWorld className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalDomains}</div>
           </CardContent>
-        </Card>
-        <Card>
+        </BentoCard>
+        <BentoCard>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Всего зон</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("geodns.stats.zones")}</CardTitle>
             <IconMapPin className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalLocations}</div>
           </CardContent>
-        </Card>
-        <Card className="border-green-500/20">
+        </BentoCard>
+        <BentoCard className="border-green-500/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Прямые</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("geodns.stats.direct")}</CardTitle>
             <IconCircleFilled className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
@@ -124,10 +209,10 @@ export default function GeoDnsMapPage() {
               {stats.directAssignments}
             </div>
           </CardContent>
-        </Card>
-        <Card className="border-blue-500/20">
+        </BentoCard>
+        <BentoCard className="border-blue-500/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Fallback</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("geodns.stats.fallback")}</CardTitle>
             <IconAlertCircle className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
@@ -135,18 +220,19 @@ export default function GeoDnsMapPage() {
               {stats.fallbackAssignments}
             </div>
           </CardContent>
-        </Card>
-        <Card>
+        </BentoCard>
+        <BentoCard>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Всего агентов</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("geodns.stats.totalAgents")}</CardTitle>
+            <IconWorld className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalAgents}</div>
           </CardContent>
-        </Card>
-        <Card className="border-green-500/20">
+        </BentoCard>
+        <BentoCard className="border-green-500/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Активные</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("geodns.stats.active")}</CardTitle>
             <IconCircleFilled className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
@@ -154,49 +240,42 @@ export default function GeoDnsMapPage() {
               {stats.activeAgents}
             </div>
           </CardContent>
-        </Card>
+        </BentoCard>
       </div>
 
+      {/* Domains List */}
       <div className="space-y-3 sm:space-y-4">
-        {isLoading ? (
-          <Card>
+        {domains.length === 0 ? (
+          <BentoCard>
             <CardContent className="py-8">
               <div className="text-center text-muted-foreground">
-                Загрузка...
+                {t("geodns.noDomains")}
               </div>
             </CardContent>
-          </Card>
-        ) : domains.length === 0 ? (
-          <Card>
-            <CardContent className="py-8">
-              <div className="text-center text-muted-foreground">
-                Нет настроенных GeoDNS доменов
-              </div>
-            </CardContent>
-          </Card>
+          </BentoCard>
         ) : (
           domains.map((domain) => {
             const isExpanded = expandedDomains.has(domain.id);
 
             return (
-              <Card key={domain.id}>
+              <BentoCard key={domain.id}>
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       <CardTitle className="flex items-center gap-2">
-                        <IconWorld className="h-5 w-5" />
-                        {domain.domain}
+                        <IconWorld className="h-5 w-5 flex-shrink-0" />
+                        <span className="truncate">{domain.domain}</span>
                       </CardTitle>
                       <CardDescription className="text-sm">
-                        {domain.locationCount} зон • {domain.directCount} прямых
-                        • {domain.fallbackCount} fallback
+                        {domain.locationCount} {t("geodns.zones")} • {domain.directCount} {t("geodns.direct")}
+                        • {domain.fallbackCount} {t("geodns.fallback")}
                       </CardDescription>
                     </div>
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => toggleDomain(domain.id)}
-                      className="ml-2"
+                      className="ml-2 flex-shrink-0"
                     >
                       {isExpanded ? (
                         <IconChevronUp className="h-4 w-4" />
@@ -210,7 +289,7 @@ export default function GeoDnsMapPage() {
                   <CardContent>
                     {domain.locations.length === 0 ? (
                       <div className="text-center py-4 text-muted-foreground text-sm">
-                        Нет назначенных зон
+                        {t("geodns.noZones")}
                       </div>
                     ) : (
                       <div className="space-y-3">
@@ -301,10 +380,10 @@ export default function GeoDnsMapPage() {
                                   className="text-sm flex-shrink-0"
                                 >
                                   {location.agent.isActive
-                                    ? "Активен"
+                                    ? t("agents.status.active")
                                     : location.agent.isConnected
-                                      ? "Подключён"
-                                      : "Не подключён"}
+                                      ? t("agents.status.connected")
+                                      : t("agents.status.disconnected")}
                                 </Badge>
                               )}
                             </div>
@@ -314,7 +393,7 @@ export default function GeoDnsMapPage() {
                     )}
                   </CardContent>
                 )}
-              </Card>
+              </BentoCard>
             );
           })
         )}

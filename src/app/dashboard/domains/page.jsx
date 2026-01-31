@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  IconExternalLink,
+  IconGlobe,
   IconNetwork,
   IconPlus,
   IconQuestionMark,
@@ -8,13 +10,18 @@ import {
   IconSettings,
   IconShieldCheck,
   IconTrash,
-  IconWorld,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -27,19 +34,93 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   useCreateDomain,
   useDeleteDomain,
   useDomains,
 } from "@/hooks/useDomains";
+import { useTranslation } from "@/hooks/useTranslation";
+import { cn } from "@/lib/utils";
+
+// Modern Card Component
+function ModernCard({ children, className, hover = true }) {
+  return (
+    <Card
+      className={cn(
+        "border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden",
+        hover && "hover:border-border/80 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300",
+        className
+      )}
+    >
+      {children}
+    </Card>
+  );
+}
+
+// Stat Card
+function StatCard({ title, value, subtext, icon: Icon, color = "primary" }) {
+  const colorClasses = {
+    primary: "text-primary",
+    success: "text-emerald-500",
+    warning: "text-amber-500",
+    danger: "text-red-500",
+    muted: "text-muted-foreground",
+  };
+
+  return (
+    <ModernCard className="relative">
+      <CardContent className="p-6">
+        <div className="flex items-start justify-between">
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-muted-foreground">{title}</p>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-bold tracking-tight">{value}</span>
+            </div>
+            {subtext && <p className="text-xs text-muted-foreground">{subtext}</p>}
+          </div>
+          <div className={cn("p-3 rounded-xl bg-primary/5", colorClasses[color])}>
+            <Icon className="h-5 w-5" />
+          </div>
+        </div>
+      </CardContent>
+    </ModernCard>
+  );
+}
+
+// Skeletons
+function StatCardSkeleton() {
+  return (
+    <ModernCard>
+      <CardContent className="p-6">
+        <div className="flex items-start justify-between">
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-9 w-16" />
+          </div>
+          <Skeleton className="h-12 w-12 rounded-xl" />
+        </div>
+      </CardContent>
+    </ModernCard>
+  );
+}
+
+function DomainRowSkeleton() {
+  return (
+    <div className="flex items-center gap-4 p-4 border-b border-border/40">
+      <Skeleton className="h-10 w-10 rounded-lg" />
+      <div className="flex-1 space-y-2">
+        <Skeleton className="h-5 w-40" />
+        <Skeleton className="h-4 w-32" />
+      </div>
+      <Skeleton className="h-8 w-28" />
+    </div>
+  );
+}
 
 export default function DomainsPage() {
-  const {
-    data: domains = [],
-    isLoading: loading,
-    refetch,
-    isFetching,
-  } = useDomains();
+  const { t } = useTranslation();
+  const { data: domains = [], isLoading, refetch, isFetching } = useDomains();
   const createDomain = useCreateDomain();
   const deleteDomain = useDeleteDomain();
 
@@ -48,117 +129,90 @@ export default function DomainsPage() {
 
   const handleCreateDomain = async () => {
     if (!newDomain.domain) {
-      toast.error("Введите домен");
+      toast.error(t("domains.errors.domainRequired"));
       return;
     }
 
     try {
       await createDomain.mutateAsync(newDomain);
-      toast.success("Домен успешно создан");
+      toast.success(t("domains.created"));
       setCreateDialogOpen(false);
       setNewDomain({ domain: "", description: "" });
     } catch (error) {
-      toast.error(error.message || "Ошибка при создании домена");
+      toast.error(error.message || t("domains.errors.createFailed"));
     }
   };
 
   const handleDeleteDomain = async (id) => {
-    if (!confirm("Вы уверены что хотите удалить этот домен?")) return;
-
+    if (!confirm(t("domains.confirmDelete"))) return;
     try {
       await deleteDomain.mutateAsync(id);
-      toast.success("Домен удалён");
+      toast.success(t("domains.deleted"));
     } catch (error) {
-      toast.error(error.message || "Ошибка при удалении домена");
+      toast.error(error.message || t("domains.errors.deleteFailed"));
     }
   };
 
   const activeCount = domains.filter((d) => d.isActive).length;
   const proxyEnabledCount = domains.filter((d) =>
-    d.dnsRecords?.some((r) => r.httpProxyEnabled),
+    d.dnsRecords?.some((r) => r.httpProxyEnabled)
   ).length;
-  const sslEnabledCount = domains.filter(
-    (d) => d.httpProxy?.ssl?.enabled,
-  ).length;
+  const sslEnabledCount = domains.filter((d) => d.httpProxy?.ssl?.enabled).length;
 
   return (
-    <div className="flex flex-col gap-4 p-4 md:gap-6 md:p-6 lg:gap-8 lg:p-8">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-6">
+      {/* Header */}
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-          <h1 className="text-xl md:text-2xl font-semibold mb-1 md:mb-2">
-            Домены
-          </h1>
-          <p className="text-xs md:text-sm text-muted-foreground">
-            {domains.length} доменов
-          </p>
+          <h1 className="text-3xl font-bold tracking-tight">{t("domains.title")}</h1>
+          <p className="text-muted-foreground mt-1">{t("domains.description")}</p>
         </div>
-        <div className="flex flex-wrap gap-2 md:gap-3">
+        <div className="flex items-center gap-2">
           <Link href="/dashboard/domains/guide">
-            <Button variant="outline" className="h-9 md:h-10">
-              <IconQuestionMark className="h-4 w-4 md:h-5 md:w-5 mr-1 md:mr-2" />
-              <span className="text-sm md:text-base">Как добавить?</span>
+            <Button variant="outline" size="sm" className="h-9">
+              <IconQuestionMark className="h-4 w-4 mr-2" />
+              {t("domains.howToAdd")}
             </Button>
           </Link>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => refetch()}
-            disabled={isFetching}
-            className="h-9 w-9 md:h-10 md:w-10"
-          >
-            <IconRefresh
-              className={`h-4 w-4 md:h-5 md:w-5 ${isFetching ? "animate-spin" : ""}`}
-            />
+          <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching} className="h-9">
+            <IconRefresh className={cn("h-4 w-4 mr-2", isFetching && "animate-spin")} />
+            {t("common.refresh")}
           </Button>
           <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="h-9 md:h-10">
-                <IconPlus className="h-4 w-4 md:h-5 md:w-5 mr-1 md:mr-2" />
-                <span className="text-sm md:text-base">Добавить домен</span>
+              <Button size="sm" className="h-9">
+                <IconPlus className="h-4 w-4 mr-2" />
+                {t("domains.addDomain")}
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="sm:max-w-lg">
               <DialogHeader>
-                <DialogTitle>Добавить домен</DialogTitle>
-                <DialogDescription>
-                  Создайте новый домен для управления DNS и HTTP прокси
-                </DialogDescription>
+                <DialogTitle>{t("domains.addDomain")}</DialogTitle>
+                <DialogDescription>{t("domains.addDescription")}</DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
-                  <Label htmlFor="domain">Домен</Label>
+                  <Label>{t("domains.form.domain")}</Label>
                   <Input
-                    id="domain"
                     placeholder="example.com"
                     value={newDomain.domain}
-                    onChange={(e) =>
-                      setNewDomain({ ...newDomain, domain: e.target.value })
-                    }
+                    onChange={(e) => setNewDomain({ ...newDomain, domain: e.target.value })}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="description">Описание</Label>
+                  <Label>{t("domains.form.description")}</Label>
                   <Textarea
-                    id="description"
-                    placeholder="Описание домена"
+                    placeholder={t("domains.form.descriptionPlaceholder")}
                     value={newDomain.description}
-                    onChange={(e) =>
-                      setNewDomain({
-                        ...newDomain,
-                        description: e.target.value,
-                      })
-                    }
+                    onChange={(e) => setNewDomain({ ...newDomain, description: e.target.value })}
                   />
                 </div>
               </div>
               <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={() => setCreateDialogOpen(false)}
-                >
-                  Отмена
+                <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
+                  {t("common.cancel")}
                 </Button>
-                <Button onClick={handleCreateDomain}>Создать</Button>
+                <Button onClick={handleCreateDomain}>{t("common.create")}</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -166,161 +220,147 @@ export default function DomainsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 sm:grid-cols-3 md:gap-6">
-        <Card className="border-border">
-          <CardHeader className="pb-3 md:pb-4">
-            <CardTitle className="text-xs md:text-sm text-muted-foreground font-medium">
-              Активные домены
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl md:text-4xl lg:text-5xl font-bold mb-1 md:mb-2">
-              {activeCount}
-            </div>
-            <p className="text-xs md:text-sm text-muted-foreground">
-              Настроено и работает
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="border-border">
-          <CardHeader className="pb-3 md:pb-4">
-            <CardTitle className="text-xs md:text-sm text-muted-foreground font-medium">
-              HTTP прокси
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl md:text-4xl lg:text-5xl font-bold mb-1 md:mb-2">
-              {proxyEnabledCount}
-            </div>
-            <p className="text-xs md:text-sm text-muted-foreground">
-              С проксированием
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="border-border">
-          <CardHeader className="pb-3 md:pb-4">
-            <CardTitle className="text-xs md:text-sm text-muted-foreground font-medium">
-              SSL защита
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl md:text-4xl lg:text-5xl font-bold mb-1 md:mb-2">
-              {sslEnabledCount}
-            </div>
-            <p className="text-xs md:text-sm text-muted-foreground">
-              С сертификатами
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      {isLoading ? (
+        <div className="grid gap-4 sm:grid-cols-3">
+          {[...Array(3)].map((_, i) => (
+            <StatCardSkeleton key={i} />
+          ))}
+        </div>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-3">
+          <StatCard
+            title={t("domains.stats.active")}
+            value={activeCount}
+            subtext={t("domains.stats.activeDesc")}
+            icon={IconGlobe}
+            color="success"
+          />
+          <StatCard
+            title={t("domains.stats.proxy")}
+            value={proxyEnabledCount}
+            subtext={t("domains.stats.proxyDesc")}
+            icon={IconNetwork}
+            color="primary"
+          />
+          <StatCard
+            title={t("domains.stats.ssl")}
+            value={sslEnabledCount}
+            subtext={t("domains.stats.sslDesc")}
+            icon={IconShieldCheck}
+            color="warning"
+          />
+        </div>
+      )}
 
-      {/* Domains List */}
-      <Card className="border-border">
-        <CardHeader className="pb-6">
-          <CardTitle className="text-lg font-medium">Список доменов</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="text-center py-12 text-muted-foreground">
-              Загрузка...
-            </div>
-          ) : domains.length === 0 ? (
-            <div className="text-center py-12 space-y-4">
-              <div className="text-muted-foreground">Нет доменов</div>
-              <Link href="/dashboard/domains/guide">
-                <Button variant="outline">
-                  <IconQuestionMark className="h-5 w-5 mr-2" />
-                  Как добавить домен?
+      {/* Domain List */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">{t("domains.listTitle")}</h2>
+          <span className="text-sm text-muted-foreground">
+            {domains.length} {domains.length === 1 ? t("domains.single") : t("domains.multiple")}
+          </span>
+        </div>
+
+        {isLoading ? (
+          <ModernCard className="divide-y divide-border/40">
+            {[...Array(5)].map((_, i) => (
+              <DomainRowSkeleton key={i} />
+            ))}
+          </ModernCard>
+        ) : domains.length === 0 ? (
+          <ModernCard className="p-12">
+            <div className="flex flex-col items-center justify-center text-center">
+              <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <IconGlobe className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">{t("domains.noDomains")}</h3>
+              <p className="text-sm text-muted-foreground max-w-sm mb-6">
+                {t("domains.noDomainsDesc")}
+              </p>
+              <div className="flex gap-3">
+                <Link href="/dashboard/domains/guide">
+                  <Button variant="outline">
+                    <IconQuestionMark className="h-4 w-4 mr-2" />
+                    {t("domains.howToAdd")}
+                  </Button>
+                </Link>
+                <Button onClick={() => setCreateDialogOpen(true)}>
+                  <IconPlus className="h-4 w-4 mr-2" />
+                  {t("domains.addDomain")}
                 </Button>
-              </Link>
+              </div>
             </div>
-          ) : (
-            <div className="space-y-3 md:space-y-4">
-              {domains.map((domain) => {
-                const proxyCount =
-                  domain.dnsRecords?.filter((r) => r.httpProxyEnabled)
-                    ?.length || 0;
-                return (
-                  <div
-                    key={domain.id}
-                    className="border border-border rounded-lg hover:bg-accent/50 transition-colors"
-                  >
-                    <div className="p-4 md:p-6">
-                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                        <div className="flex items-start gap-3 md:gap-4 flex-1 min-w-0">
-                          <IconWorld className="h-5 w-5 md:h-6 md:w-6 text-muted-foreground mt-0.5 md:mt-1 shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-2 md:mb-3">
-                              <h3 className="font-medium text-base md:text-lg break-all">
-                                {domain.domain}
-                              </h3>
-                              <span className="text-xs text-muted-foreground">
-                                {domain.isActive ? "Активен" : "Неактивен"}
-                              </span>
-                            </div>
-                            {domain.description && (
-                              <p className="text-xs md:text-sm text-muted-foreground mb-2 md:mb-3">
-                                {domain.description}
-                              </p>
-                            )}
-                            <div className="flex flex-wrap items-center gap-2 md:gap-4 text-xs md:text-sm text-muted-foreground">
-                              <span>
-                                DNS: {domain.dnsRecords?.length || 0} записей
-                              </span>
-                              {proxyCount > 0 && (
-                                <>
-                                  <span className="hidden sm:inline">•</span>
-                                  <div className="flex items-center gap-1.5">
-                                    <IconNetwork className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                                    <span>{proxyCount} прокси</span>
-                                  </div>
-                                </>
-                              )}
-                              {domain.httpProxy?.ssl?.enabled && (
-                                <>
-                                  <span className="hidden sm:inline">•</span>
-                                  <div className="flex items-center gap-1.5">
-                                    <IconShieldCheck className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                                    <span>SSL</span>
-                                  </div>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex gap-2 sm:ml-4">
-                          <Link
-                            href={`/dashboard/domains/${domain.id}`}
-                            className="flex-1 sm:flex-none"
-                          >
-                            <Button
-                              variant="outline"
-                              className="h-9 md:h-10 w-full sm:w-auto"
-                            >
-                              <IconSettings className="h-4 w-4 md:h-5 md:w-5 mr-1 md:mr-2" />
-                              <span className="text-sm md:text-base">
-                                Управление
-                              </span>
-                            </Button>
-                          </Link>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDeleteDomain(domain.id)}
-                            className="h-9 w-9 md:h-10 md:w-10"
-                          >
-                            <IconTrash className="h-4 w-4 md:h-5 md:w-5" />
-                          </Button>
-                        </div>
+          </ModernCard>
+        ) : (
+          <div className="space-y-3">
+            {domains.map((domain) => {
+              const proxyCount = domain.dnsRecords?.filter((r) => r.httpProxyEnabled)?.length || 0;
+              return (
+                <ModernCard key={domain.id} className="group">
+                  <div className="flex items-center gap-4 p-4">
+                    {/* Icon */}
+                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <IconGlobe className="h-5 w-5 text-primary" />
+                    </div>
+
+                    {/* Domain Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3">
+                        <h3 className="font-semibold truncate text-lg">{domain.domain}</h3>
+                        {domain.isActive ? (
+                          <Badge className="bg-emerald-500/10 text-emerald-600 border-0 text-xs">
+                            Active
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-xs text-muted-foreground">
+                            Inactive
+                          </Badge>
+                        )}
+                      </div>
+                      {domain.description && (
+                        <p className="text-sm text-muted-foreground truncate">{domain.description}</p>
+                      )}
+                      <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
+                        <span>{domain.dnsRecords?.length || 0} DNS records</span>
+                        {proxyCount > 0 && (
+                          <span className="flex items-center gap-1">
+                            <IconNetwork className="h-3 w-3" />
+                            {proxyCount} proxy
+                          </span>
+                        )}
+                        {domain.httpProxy?.ssl?.enabled && (
+                          <span className="flex items-center gap-1">
+                            <IconShieldCheck className="h-3 w-3" />
+                            SSL
+                          </span>
+                        )}
                       </div>
                     </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-2">
+                      <Link href={`/dashboard/domains/${domain.id}`}>
+                        <Button variant="outline" size="sm" className="h-8">
+                          <IconSettings className="h-4 w-4 mr-2" />
+                          {t("common.manage")}
+                        </Button>
+                      </Link>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
+                        onClick={() => handleDeleteDomain(domain.id)}
+                      >
+                        <IconTrash className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                </ModernCard>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

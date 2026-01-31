@@ -1,25 +1,55 @@
 "use client";
 
-import {
-  IconInfoCircle,
-  IconMapPin,
-  IconPlus,
-  IconTrash,
-  IconX,
-} from "@tabler/icons-react";
 import { useState } from "react";
+import {
+  MapPin,
+  Plus,
+  Trash2,
+  X,
+  Globe,
+  Check,
+  Info,
+  ChevronDown,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+
+function ModernCard({ children, className }) {
+  return (
+    <div
+      className={`border border-border/40 bg-card/60 backdrop-blur-sm rounded-lg overflow-hidden ${className || ""}`}
+    >
+      {children}
+    </div>
+  );
+}
 
 export function GeoDnsTab({ domain, agents, onUpdate }) {
   const [showAddLocation, setShowAddLocation] = useState(false);
+  const [expandedLocations, setExpandedLocations] = useState({});
   const [newLocation, setNewLocation] = useState({
     code: "",
     name: "",
@@ -29,7 +59,6 @@ export function GeoDnsTab({ domain, agents, onUpdate }) {
 
   const handleAddLocation = () => {
     if (!newLocation.code || !newLocation.name) {
-      alert("Заполните код и название локации");
       return;
     }
     const updatedConfig = [...(domain.geoDnsConfig || []), { ...newLocation }];
@@ -43,243 +72,314 @@ export function GeoDnsTab({ domain, agents, onUpdate }) {
     onUpdate({ ...domain, geoDnsConfig: updatedConfig });
   };
 
-  const handleUpdateLocationAgents = (index, agentIds) => {
+  const handleToggleAgent = (locationIndex, agentId) => {
     const updatedConfig = [...domain.geoDnsConfig];
-    updatedConfig[index].agentIds = agentIds;
+    const location = updatedConfig[locationIndex];
+    const currentIds = location.agentIds || [];
+
+    if (currentIds.includes(agentId)) {
+      location.agentIds = currentIds.filter((id) => id !== agentId);
+    } else {
+      location.agentIds = [...currentIds, agentId];
+    }
+
     onUpdate({ ...domain, geoDnsConfig: updatedConfig });
+  };
+
+  const toggleLocationExpand = (index) => {
+    setExpandedLocations((prev) => ({
+      ...prev,
+      [index]: !prev[index],
+    }));
+  };
+
+  const getTypeIcon = (type) => {
+    switch (type) {
+      case "continent":
+        return <Globe className="h-3.5 w-3.5" />;
+      case "country":
+        return <MapPin className="h-3.5 w-3.5" />;
+      default:
+        return <MapPin className="h-3.5 w-3.5" />;
+    }
+  };
+
+  const getTypeLabel = (type) => {
+    switch (type) {
+      case "continent":
+        return "Continent";
+      case "country":
+        return "Country";
+      default:
+        return "Custom";
+    }
   };
 
   return (
     <div className="space-y-6">
-      <Card className="border-border">
-        <CardHeader className="border-b border-border pb-6">
+      <ModernCard>
+        <CardHeader className="border-b border-border/40 pb-4">
           <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-lg font-medium flex items-center gap-3">
-                <IconMapPin className="h-6 w-6 text-muted-foreground" />
-                GeoDNS Конфигурация
-              </CardTitle>
-              <CardDescription className="mt-2">
-                Управление геолокационной маршрутизацией DNS запросов
-              </CardDescription>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Globe className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <CardTitle className="text-lg font-semibold">
+                  GeoDNS Configuration
+                </CardTitle>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Manage geographic routing for DNS requests
+                </p>
+              </div>
             </div>
-            <Button onClick={() => setShowAddLocation(true)} className="h-10">
-              <IconPlus className="h-5 w-5 mr-2" />
-              Добавить локацию
+            <Button
+              onClick={() => setShowAddLocation(true)}
+              className="h-9"
+              disabled={showAddLocation}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Location
             </Button>
           </div>
         </CardHeader>
 
         <CardContent className="p-6 space-y-6">
-          {/* Info */}
-          <div className="border border-border rounded-lg p-6">
-            <div className="flex items-start gap-4">
-              <IconInfoCircle className="h-6 w-6 text-muted-foreground flex-shrink-0" />
-              <div className="space-y-2 text-sm">
-                <p className="font-medium text-foreground">
-                  Как работает GeoDNS
-                </p>
-                <ul className="text-muted-foreground space-y-1.5 text-xs">
-                  <li>
-                    • Панель управляет конфигурацией локаций (континенты,
-                    страны, custom)
-                  </li>
-                  <li>• Агенты получают конфигурацию через API поллинг</li>
-                  <li>• Для каждой локации вы назначаете список агентов</li>
-                  <li>
-                    • Клиент из локации получит IP всех назначенных агентов
-                    (множественные A записи)
-                  </li>
-                </ul>
+          {/* Info Card */}
+          <Collapsible>
+            <CollapsibleTrigger className="w-full">
+              <div className="flex items-center gap-3 p-4 rounded-lg bg-blue-500/5 border border-blue-500/20 hover:bg-blue-500/10 transition-colors">
+                <Info className="h-5 w-5 text-blue-500 flex-shrink-0" />
+                <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                  How GeoDNS works
+                </span>
+                <ChevronDown className="h-4 w-4 ml-auto text-blue-500" />
               </div>
-            </div>
-          </div>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="mt-3 p-4 rounded-lg bg-blue-500/5 border border-blue-500/20 text-sm space-y-2">
+                <p className="text-muted-foreground">
+                  • Configure locations (continents, countries, custom regions)
+                </p>
+                <p className="text-muted-foreground">
+                  • Agents receive configuration via API polling
+                </p>
+                <p className="text-muted-foreground">
+                  • Assign agents to each location
+                </p>
+                <p className="text-muted-foreground">
+                  • Clients from a location receive all assigned agent IPs
+                </p>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
 
           {/* Add Location Form */}
           {showAddLocation && (
-            <div className="border rounded-lg p-4 bg-muted/30 space-y-4">
+            <div className="p-5 rounded-lg bg-muted/50 border space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-medium">Новая локация</h3>
+                <h3 className="font-semibold text-sm">New Location</h3>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowAddLocation(false)}
                 >
-                  <IconX className="h-4 w-4" />
+                  <X className="h-4 w-4" />
                 </Button>
               </div>
-              <div className="grid gap-4 sm:grid-cols-2">
+
+              <div className="grid gap-4 sm:grid-cols-3">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Код</label>
-                  <input
-                    type="text"
+                  <label className="text-sm font-medium">Code</label>
+                  <Input
                     value={newLocation.code}
                     onChange={(e) =>
                       setNewLocation({ ...newLocation, code: e.target.value })
                     }
-                    placeholder="us, europe, custom-region"
-                    className="w-full px-3 py-2 rounded border bg-background"
+                    placeholder="us, europe, asia"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Название</label>
-                  <input
-                    type="text"
+                  <label className="text-sm font-medium">Name</label>
+                  <Input
                     value={newLocation.name}
                     onChange={(e) =>
                       setNewLocation({ ...newLocation, name: e.target.value })
                     }
-                    placeholder="США, Европа, Кастомный регион"
-                    className="w-full px-3 py-2 rounded border bg-background"
+                    placeholder="United States, Europe"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Тип</label>
-                  <select
+                  <label className="text-sm font-medium">Type</label>
+                  <Select
                     value={newLocation.type}
-                    onChange={(e) =>
-                      setNewLocation({ ...newLocation, type: e.target.value })
+                    onValueChange={(value) =>
+                      setNewLocation({ ...newLocation, type: value })
                     }
-                    className="w-full px-3 py-2 rounded border bg-background"
                   >
-                    <option value="continent">Континент</option>
-                    <option value="country">Страна</option>
-                    <option value="custom">Кастомная</option>
-                  </select>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="continent">Continent</SelectItem>
+                      <SelectItem value="country">Country</SelectItem>
+                      <SelectItem value="custom">Custom</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
+
               <div className="flex gap-2 justify-end">
                 <Button
                   variant="outline"
+                  size="sm"
                   onClick={() => setShowAddLocation(false)}
                 >
-                  Отмена
+                  Cancel
                 </Button>
-                <Button onClick={handleAddLocation}>Добавить</Button>
+                <Button size="sm" onClick={handleAddLocation}>
+                  Add Location
+                </Button>
               </div>
             </div>
           )}
 
           {/* Locations Table */}
-          <div className="border rounded-lg overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-muted/50">
-                <tr>
-                  <th className="text-left p-3 text-sm font-medium">Код</th>
-                  <th className="text-left p-3 text-sm font-medium">
-                    Название
-                  </th>
-                  <th className="text-left p-3 text-sm font-medium">Тип</th>
-                  <th className="text-left p-3 text-sm font-medium">Агенты</th>
-                  <th className="text-right p-3 text-sm font-medium w-24">
-                    Действия
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {!domain.geoDnsConfig || domain.geoDnsConfig.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={5}
-                      className="p-8 text-center text-muted-foreground"
-                    >
-                      Локаций пока нет. Нажмите "Добавить локацию" чтобы создать
-                      первую.
-                    </td>
-                  </tr>
-                ) : (
-                  domain.geoDnsConfig.map((location, idx) => (
-                    <tr key={idx} className="hover:bg-muted/30">
-                      <td className="p-3">
-                        <span className="font-mono text-sm font-medium">
+          {!domain.geoDnsConfig || domain.geoDnsConfig.length === 0 ? (
+            <div className="text-center py-12 rounded-lg border border-dashed">
+              <Globe className="h-10 w-10 mx-auto text-muted-foreground/50 mb-3" />
+              <p className="text-sm text-muted-foreground font-medium">
+                No locations configured
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Add your first location to start geographic routing
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-lg border overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/50 hover:bg-muted/50">
+                    <TableHead className="w-24">Code</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead className="w-28">Type</TableHead>
+                    <TableHead className="w-32">Agents</TableHead>
+                    <TableHead className="w-20 text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {domain.geoDnsConfig.map((location, idx) => (
+                    <TableRow key={idx}>
+                      <TableCell>
+                        <code className="px-2 py-1 bg-muted rounded text-sm font-medium">
                           {location.code}
-                        </span>
-                      </td>
-                      <td className="p-3">
-                        <span className="text-sm">{location.name}</span>
-                      </td>
-                      <td className="p-3">
-                        <Badge variant="outline" className="text-xs">
-                          {location.type === "continent"
-                            ? "Континент"
-                            : location.type === "country"
-                              ? "Страна"
-                              : "Кастомная"}
+                        </code>
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {location.name}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="secondary"
+                          className="flex items-center gap-1.5 w-fit"
+                        >
+                          {getTypeIcon(location.type)}
+                          {getTypeLabel(location.type)}
                         </Badge>
-                      </td>
-                      <td className="p-3">
-                        <div className="flex flex-wrap gap-1">
-                          {agents
-                            .filter((a) =>
-                              location.agentIds?.includes(a.agentId),
-                            )
-                            .map((agent, aidx) => (
-                              <Badge
-                                key={aidx}
-                                variant="secondary"
-                                className="text-xs flex items-center gap-1"
-                              >
-                                {agent.name}
-                                <button
-                                  onClick={() => {
-                                    const updatedIds = location.agentIds.filter(
-                                      (id) => id !== agent.agentId,
-                                    );
-                                    handleUpdateLocationAgents(idx, updatedIds);
-                                  }}
-                                  className="ml-1 hover:text-destructive"
-                                >
-                                  <IconX className="h-3 w-3" />
-                                </button>
-                              </Badge>
-                            ))}
-                          <select
-                            value=""
-                            onChange={(e) => {
-                              if (e.target.value) {
-                                const updatedIds = [
-                                  ...(location.agentIds || []),
-                                  e.target.value,
-                                ];
-                                handleUpdateLocationAgents(idx, updatedIds);
-                              }
-                            }}
-                            className="text-xs px-2 py-1 rounded border bg-background"
-                          >
-                            <option value="">+ Добавить</option>
-                            {agents
-                              .filter(
-                                (a) => !location.agentIds?.includes(a.agentId),
-                              )
-                              .map((agent) => (
-                                <option
-                                  key={agent.agentId}
-                                  value={agent.agentId}
-                                >
-                                  {agent.name}
-                                </option>
-                              ))}
-                          </select>
-                        </div>
-                      </td>
-                      <td className="p-3 text-right">
+                      </TableCell>
+                      <TableCell>
+                        <button
+                          onClick={() => toggleLocationExpand(idx)}
+                          className="text-sm text-primary hover:underline"
+                        >
+                          {location.agentIds?.length || 0} agents
+                        </button>
+                      </TableCell>
+                      <TableCell className="text-right">
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleRemoveLocation(idx)}
-                          className="h-8 w-8 p-0"
+                          className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
                         >
-                          <IconTrash className="h-4 w-4 text-destructive" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
-                      </td>
-                    </tr>
-                  ))
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+
+          {/* Agent Assignment Panels */}
+          {domain.geoDnsConfig?.map((location, idx) =>
+            expandedLocations[idx] ? (
+              <div
+                key={`agents-${idx}`}
+                className="p-5 rounded-lg border bg-muted/30 space-y-4"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-primary" />
+                    <span className="font-semibold">{location.name}</span>
+                    <Badge variant="outline" className="text-xs">
+                      {location.code}
+                    </Badge>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => toggleLocationExpand(idx)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {agents.map((agent) => {
+                    const isSelected = location.agentIds?.includes(agent.agentId);
+                    return (
+                      <label
+                        key={agent.agentId}
+                        className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                          isSelected
+                            ? "border-primary bg-primary/5"
+                            : "hover:bg-muted/50"
+                        }`}
+                      >
+                        <Checkbox
+                          checked={isSelected}
+                          onCheckedChange={() =>
+                            handleToggleAgent(idx, agent.agentId)
+                          }
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm truncate">
+                            {agent.name}
+                          </p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {agent.ipAddress}
+                          </p>
+                        </div>
+                        {isSelected && (
+                          <Check className="h-4 w-4 text-primary flex-shrink-0" />
+                        )}
+                      </label>
+                    );
+                  })}
+                </div>
+
+                {agents.length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    No agents available. Add agents first.
+                  </p>
                 )}
-              </tbody>
-            </table>
-          </div>
+              </div>
+            ) : null,
+          )}
         </CardContent>
-      </Card>
+      </ModernCard>
     </div>
   );
 }
