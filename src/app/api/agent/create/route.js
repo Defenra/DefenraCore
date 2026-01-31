@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { hasPermission } from "@/lib/permissions";
 import { generateAgentId, generateAgentKey, generateToken } from "@/lib/crypto";
 import connectDB from "@/lib/mongodb";
 import Agent from "@/models/Agent";
@@ -10,6 +11,14 @@ export async function POST(request) {
 
     if (!session || !session.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check permission
+    if (!hasPermission(session.user.role, "agents.write")) {
+      return NextResponse.json(
+        { error: "Forbidden: You don't have permission to create agents" },
+        { status: 403 }
+      );
     }
 
     await connectDB();

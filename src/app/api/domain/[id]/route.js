@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import connectDB from "@/lib/mongodb";
 import Domain from "@/models/Domain";
+import { hasPermission } from "@/lib/permissions";
 
 export async function GET(_request, { params }) {
   try {
@@ -54,6 +55,14 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Check permission
+    if (!hasPermission(session.user.role, "domains.write")) {
+      return NextResponse.json(
+        { error: "Forbidden: You don't have permission to update domains" },
+        { status: 403 }
+      );
+    }
+
     await connectDB();
 
     const { id } = await params;
@@ -104,6 +113,14 @@ export async function DELETE(_request, { params }) {
 
     if (!session || !session.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check permission
+    if (!hasPermission(session.user.role, "domains.write")) {
+      return NextResponse.json(
+        { error: "Forbidden: You don't have permission to delete domains" },
+        { status: 403 }
+      );
     }
 
     await connectDB();

@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import connectDB from "@/lib/mongodb";
 import Agent from "@/models/Agent";
 import Proxy from "@/models/Proxy";
+import { hasPermission } from "@/lib/permissions";
 
 export async function POST(request) {
   try {
@@ -10,6 +11,14 @@ export async function POST(request) {
 
     if (!session || !session.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check permission
+    if (!hasPermission(session.user.role, "proxies.write")) {
+      return NextResponse.json(
+        { error: "Forbidden: You don't have permission to create proxies" },
+        { status: 403 }
+      );
     }
 
     await connectDB();

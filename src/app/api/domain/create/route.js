@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import connectDB from "@/lib/mongodb";
 import Domain from "@/models/Domain";
+import { hasPermission } from "@/lib/permissions";
 
 export async function POST(request) {
   try {
@@ -9,6 +10,14 @@ export async function POST(request) {
 
     if (!session || !session.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check permission
+    if (!hasPermission(session.user.role, "domains.write")) {
+      return NextResponse.json(
+        { error: "Forbidden: You don't have permission to create domains" },
+        { status: 403 }
+      );
     }
 
     await connectDB();

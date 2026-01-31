@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { hasPermission } from "@/lib/permissions";
 import connectDB from "@/lib/mongodb";
 import Agent from "@/models/Agent";
 
@@ -40,6 +41,14 @@ export async function PATCH(_request, { params }) {
 
     if (!session || !session.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check permission
+    if (!hasPermission(session.user.role, "agents.write")) {
+      return NextResponse.json(
+        { error: "Forbidden: You don't have permission to update agents" },
+        { status: 403 }
+      );
     }
 
     await connectDB();
@@ -99,6 +108,14 @@ export async function DELETE(_request, { params }) {
 
     if (!session || !session.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check permission
+    if (!hasPermission(session.user.role, "agents.write")) {
+      return NextResponse.json(
+        { error: "Forbidden: You don't have permission to delete agents" },
+        { status: 403 }
+      );
     }
 
     await connectDB();
