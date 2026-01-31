@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { TimeSeriesChart, BarChartComponent, GaugeChart } from "@/components/monitoring/charts";
 import { useAgents } from "@/hooks/useAgents";
+import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 
 // Panel Component (Grafana-style)
@@ -41,7 +42,7 @@ function Panel({ title, children, className, actions, loading = false, empty = f
 }
 
 // Stat Card for Grafana-style grid
-function StatCard({ title, value, unit, icon: Icon, color = "primary", loading = false }) {
+function StatCard({ title, value, unit, subvalue, icon: Icon, color = "primary", loading = false }) {
   const colorClasses = {
     primary: "text-primary",
     success: "text-emerald-500",
@@ -65,6 +66,9 @@ function StatCard({ title, value, unit, icon: Icon, color = "primary", loading =
                 <span className="text-2xl font-bold">{value}</span>
                 {unit && <span className="text-sm text-muted-foreground">{unit}</span>}
               </div>
+              {subvalue && (
+                <p className="text-xs text-muted-foreground mt-1">{subvalue}</p>
+              )}
             </div>
             <div className={cn("p-2 rounded-lg bg-primary/10", colorClasses[color])}>
               <Icon className="h-4 w-4" />
@@ -77,6 +81,7 @@ function StatCard({ title, value, unit, icon: Icon, color = "primary", loading =
 }
 
 export default function MonitoringPage() {
+  const { t } = useTranslation();
   const [timeRange, setTimeRange] = useState("1h");
   const { data: agents = [], isLoading: agentsLoading } = useAgents();
 
@@ -257,8 +262,8 @@ export default function MonitoringPage() {
       {/* Header with Time Range Selector */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">System Monitoring</h1>
-          <p className="text-muted-foreground mt-1">Real-time metrics and performance analytics</p>
+          <h1 className="text-3xl font-bold tracking-tight">{t("monitoring.title")}</h1>
+          <p className="text-muted-foreground mt-1">{t("monitoring.description")}</p>
         </div>
         <Select value={timeRange} onValueChange={setTimeRange}>
           <SelectTrigger className="w-[140px]">
@@ -266,9 +271,9 @@ export default function MonitoringPage() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="1h">Last 1 hour</SelectItem>
-            <SelectItem value="24h">Last 24 hours</SelectItem>
-            <SelectItem value="7d">Last 7 days</SelectItem>
+            <SelectItem value="1h">{t("monitoring.timeRange.1h")}</SelectItem>
+            <SelectItem value="24h">{t("monitoring.timeRange.24h")}</SelectItem>
+            <SelectItem value="7d">{t("monitoring.timeRange.7d")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -278,7 +283,7 @@ export default function MonitoringPage() {
         <Alert variant="destructive">
           <IconAlertCircle className="h-4 w-4" />
           <AlertDescription>
-            Failed to load metrics: {metricsError.message}. Showing agent data only.
+            {t("monitoring.errors.loadFailed")}: {metricsError.message}. Showing agent data only.
           </AlertDescription>
         </Alert>
       )}
@@ -286,21 +291,15 @@ export default function MonitoringPage() {
       {/* Stats Row - Real Data Only */}
       <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
         <StatCard
-          title="Total Agents"
-          value={stats.totalAgents}
+          title={t("monitoring.stats.agents")}
+          value={`${stats.totalAgents} / ${stats.activeAgents}`}
+          subvalue={`${stats.totalAgents > 0 ? Math.round((stats.activeAgents / stats.totalAgents) * 100) : 0}% ${t("monitoring.stats.active")}`}
           icon={IconServer}
-          color="primary"
+          color={stats.activeAgents === stats.totalAgents ? "success" : stats.activeAgents > 0 ? "warning" : "danger"}
           loading={agentsLoading}
         />
         <StatCard
-          title="Active Agents"
-          value={stats.activeAgents}
-          icon={IconActivity}
-          color="success"
-          loading={agentsLoading}
-        />
-        <StatCard
-          title="Avg Load"
+          title={t("monitoring.stats.avgLoad")}
           value={stats.avgLoad}
           unit="%"
           icon={IconActivity}
@@ -308,28 +307,28 @@ export default function MonitoringPage() {
           loading={agentsLoading}
         />
         <StatCard
-          title="Requests/min"
+          title={t("monitoring.stats.requestsPerMinute")}
           value={stats.requestsPerMinute.toLocaleString()}
           icon={IconNetwork}
           color="primary"
           loading={isLoading}
         />
         <StatCard
-          title="Total Requests"
+          title={t("monitoring.stats.totalRequests")}
           value={stats.totalRequests.toLocaleString()}
           icon={IconTrendingUp}
           color="primary"
           loading={isLoading}
         />
         <StatCard
-          title="Blocked/min"
+          title={t("monitoring.stats.blockedPerMinute")}
           value={stats.blockedPerMinute.toLocaleString()}
           icon={IconShield}
           color={stats.blockedPerMinute > 100 ? "danger" : "warning"}
           loading={isLoading}
         />
         <StatCard
-          title="Legitimate Requests"
+          title={t("monitoring.stats.legitimateRequests")}
           value={stats.activeUsers.toLocaleString()}
           icon={IconUsers}
           color="success"
@@ -341,11 +340,11 @@ export default function MonitoringPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Agent Load Distribution - Real Data */}
         <Panel
-          title="Agent Load Distribution"
+          title={t("monitoring.panels.agentLoad")}
           className="lg:col-span-2"
           loading={isLoading}
           empty={!hasLoadData && !isLoading}
-          emptyMessage={hasAgents ? "Collecting data from agents... Metrics will appear shortly." : "No agents connected. Add agents to see load distribution."}
+          emptyMessage={hasAgents ? t("monitoring.empty.collecting") : t("monitoring.empty.noAgents")}
           actions={
             <span className="text-xs text-muted-foreground">
               {agents.length > 10 ? `Showing top 10 of ${agents.length} agents` : `${agents.length} agents`}
@@ -377,10 +376,10 @@ export default function MonitoringPage() {
 
         {/* Request Rate - Real Data */}
         <Panel 
-          title="Request Rate" 
+          title={t("monitoring.panels.requestRate")} 
           loading={metricsLoading}
           empty={!hasTrafficData && !metricsLoading}
-          emptyMessage={hasAgents ? "No traffic data yet. Requests will appear as traffic flows through agents." : "Connect agents to begin monitoring traffic."}
+          emptyMessage={hasAgents ? t("monitoring.empty.noTraffic") : t("monitoring.empty.noAgents")}
         >
           {hasTrafficData && (
             <TimeSeriesChart
@@ -396,7 +395,7 @@ export default function MonitoringPage() {
         </Panel>
 
         {/* Top Agents by Load - Real Data */}
-        <Panel title="Top Agents by Load" loading={agentsLoading} empty={agents.length === 0 && !agentsLoading}>
+        <Panel title={t("monitoring.panels.topAgents")} loading={agentsLoading} empty={agents.length === 0 && !agentsLoading}>
           <div className="space-y-3">
             {agents
               .sort((a, b) => (b.loadScore || 0) - (a.loadScore || 0))
@@ -433,7 +432,7 @@ export default function MonitoringPage() {
 
         {/* CPU Usage by Agent - Real Data */}
         <Panel 
-          title="CPU Usage by Agent" 
+          title={t("monitoring.panels.cpuUsage")} 
           loading={agentsLoading}
           empty={agents.length === 0 && !agentsLoading}
         >
@@ -452,7 +451,7 @@ export default function MonitoringPage() {
 
         {/* Memory Usage by Agent - Real Data */}
         <Panel 
-          title="Memory Usage by Agent" 
+          title={t("monitoring.panels.memoryUsage")} 
           loading={agentsLoading}
           empty={agents.length === 0 && !agentsLoading}
         >
@@ -470,13 +469,13 @@ export default function MonitoringPage() {
         </Panel>
 
         {/* Agent Health Overview - Real Data */}
-        <Panel title="Agent Health Overview" loading={agentsLoading} empty={agents.length === 0 && !agentsLoading}>
+        <Panel title={t("monitoring.panels.agentHealth")} loading={agentsLoading} empty={agents.length === 0 && !agentsLoading}>
           <div className="grid grid-cols-2 gap-4">
             <div className="text-center">
               <GaugeChart
                 value={stats.activeAgents}
                 max={stats.totalAgents || 1}
-                label="Active"
+                label={t("monitoring.stats.active")}
                 size={100}
               />
             </div>
@@ -484,7 +483,7 @@ export default function MonitoringPage() {
               <GaugeChart
                 value={agents.filter((a) => (a.loadScore || 0) < 80).length}
                 max={agents.length || 1}
-                label="Healthy"
+                label={t("monitoring.stats.healthy")}
                 color="#22c55e"
                 size={100}
               />
@@ -494,10 +493,10 @@ export default function MonitoringPage() {
 
         {/* Response Time Distribution - Will show when API provides data */}
         <Panel 
-          title="Response Time Distribution" 
+          title={t("monitoring.panels.responseTime")} 
           loading={metricsLoading}
           empty={!metricsData?.responseTimeDistribution && !metricsLoading}
-          emptyMessage="Response time data not available"
+          emptyMessage={t("monitoring.empty.noResponseTime")}
         >
           {metricsData?.responseTimeDistribution ? (
             <div className="space-y-4">

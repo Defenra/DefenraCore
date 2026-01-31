@@ -406,6 +406,40 @@ export const ru = {
     actions: "Действия",
     goto: "Перейти к",
   },
+  monitoring: {
+    title: "Системный мониторинг",
+    description: "Метрики в реальном времени и аналитика производительности",
+    timeRange: {
+      "1h": "Последний час",
+      "24h": "Последние 24 часа",
+      "7d": "Последние 7 дней",
+    },
+    stats: {
+      agents: "Агенты",
+      avgLoad: "Средняя нагрузка",
+      requestsPerMinute: "Запросов/мин",
+      totalRequests: "Всего запросов",
+      blockedPerMinute: "Блокировок/мин",
+      legitimateRequests: "Легитимные запросы",
+    },
+    panels: {
+      agentLoad: "Распределение нагрузки агентов",
+      requestRate: "Скорость запросов",
+      topAgents: "Топ агентов по нагрузке",
+      cpuUsage: "Использование CPU",
+      memoryUsage: "Использование памяти",
+      agentHealth: "Обзор здоровья агентов",
+      responseTime: "Распределение времени отклика",
+    },
+    empty: {
+      collecting: "Сбор данных от агентов...",
+      noAgents: "Нет подключенных агентов",
+      noTraffic: "Нет данных о трафике",
+    },
+    errors: {
+      loadFailed: "Не удалось загрузить метрики",
+    },
+  },
   floatingDock: {
     home: "Главная",
     dashboard: "Панель",

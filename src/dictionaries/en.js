@@ -670,6 +670,40 @@ export const en = {
     actions: "Actions",
     goto: "Go to",
   },
+  monitoring: {
+    title: "System Monitoring",
+    description: "Real-time metrics and performance analytics",
+    timeRange: {
+      "1h": "Last 1 hour",
+      "24h": "Last 24 hours",
+      "7d": "Last 7 days",
+    },
+    stats: {
+      agents: "Agents",
+      avgLoad: "Avg Load",
+      requestsPerMinute: "Requests/min",
+      totalRequests: "Total Requests",
+      blockedPerMinute: "Blocked/min",
+      legitimateRequests: "Legitimate Requests",
+    },
+    panels: {
+      agentLoad: "Agent Load Distribution",
+      requestRate: "Request Rate",
+      topAgents: "Top Agents by Load",
+      cpuUsage: "CPU Usage by Agent",
+      memoryUsage: "Memory Usage by Agent",
+      agentHealth: "Agent Health Overview",
+      responseTime: "Response Time Distribution",
+    },
+    empty: {
+      collecting: "Collecting data from agents...",
+      noAgents: "No agents connected",
+      noTraffic: "No traffic data yet",
+    },
+    errors: {
+      loadFailed: "Failed to load metrics",
+    },
+  },
   floatingDock: {
     home: "Home",
     dashboard: "Dashboard",
