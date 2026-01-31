@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import connectDB from "@/lib/mongodb";
 import Domain from "@/models/Domain";
+import User from "@/models/User";
 
 export async function GET() {
   try {
@@ -13,7 +14,12 @@ export async function GET() {
 
     await connectDB();
 
-    const domains = await Domain.find({ userId: session.user.id }).sort({
+    // Check if user can view all resources
+    const user = await User.findById(session.user.id);
+    const canViewAll = user?.canViewAllResources || false;
+
+    const query = canViewAll ? {} : { userId: session.user.id };
+    const domains = await Domain.find(query).sort({
       createdAt: -1,
     });
 

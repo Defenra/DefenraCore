@@ -3,6 +3,7 @@ import { checkAgentActivity } from "@/lib/agentStatus";
 import { auth } from "@/lib/auth";
 import connectDB from "@/lib/mongodb";
 import Agent from "@/models/Agent";
+import User from "@/models/User";
 
 export async function GET(request) {
   try {
@@ -23,15 +24,21 @@ export async function GET(request) {
     }
 
     // If no agent auth, try user session
+    let canViewAll = false;
     if (!userId) {
       const session = await auth();
       if (!session || !session.user) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
       userId = session.user.id;
+
+      // Check if user can view all resources
+      const user = await User.findById(userId);
+      canViewAll = user?.canViewAllResources || false;
     }
 
-    const agents = await Agent.find({ userId })
+    const query = canViewAll ? {} : { userId };
+    const agents = await Agent.find(query)
       .select("-agentKey -connectionToken")
       .sort({ createdAt: -1 });
 

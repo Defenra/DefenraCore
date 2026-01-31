@@ -24,6 +24,11 @@ const UserSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    canViewAllResources: {
+      type: Boolean,
+      default: false,
+      description: "When true, user can view all agents, proxies and domains regardless of ownership",
+    },
   },
   {
     timestamps: true,

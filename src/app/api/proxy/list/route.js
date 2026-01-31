@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import connectDB from "@/lib/mongodb";
 import Proxy from "@/models/Proxy";
+import User from "@/models/User";
 
 export async function GET() {
   try {
@@ -13,7 +14,12 @@ export async function GET() {
 
     await connectDB();
 
-    const proxies = await Proxy.find({ userId: session.user.id }).sort({
+    // Check if user can view all resources
+    const user = await User.findById(session.user.id);
+    const canViewAll = user?.canViewAllResources || false;
+
+    const query = canViewAll ? {} : { userId: session.user.id };
+    const proxies = await Proxy.find(query).sort({
       createdAt: -1,
     });
 
