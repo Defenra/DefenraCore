@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { IconActivity, IconServer, IconNetwork, IconShield, IconUsers, IconClock, IconAlertCircle } from "@tabler/icons-react";
+import { IconActivity, IconServer, IconNetwork, IconShield, IconUsers, IconClock, IconAlertCircle, IconTrendingUp } from "@tabler/icons-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -243,6 +243,7 @@ export default function MonitoringPage() {
       requestsPerMinute,
       blockedPerMinute,
       activeUsers: (metricsData?.stats?.requests || 0) - (metricsData?.stats?.blockedRequests || 0),
+      totalRequests: metricsData?.stats?.requests || 0,
     };
   }, [agents, metricsData, bansData, timeRange]);
 
@@ -310,6 +311,13 @@ export default function MonitoringPage() {
           title="Requests/min"
           value={stats.requestsPerMinute.toLocaleString()}
           icon={IconNetwork}
+          color="primary"
+          loading={isLoading}
+        />
+        <StatCard
+          title="Total Requests"
+          value={stats.totalRequests.toLocaleString()}
+          icon={IconTrendingUp}
           color="primary"
           loading={isLoading}
         />
