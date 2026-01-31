@@ -19,7 +19,13 @@ import {
   IconWorld,
 } from "@tabler/icons-react";
 import Link from "next/link";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDashboardStats, useRecentActivity } from "@/hooks/useDashboard";
@@ -35,7 +41,7 @@ function BentoCard({ children, className, colSpan = 1, rowSpan = 1 }) {
         "hover:border-border hover:shadow-lg hover:shadow-primary/5",
         colSpan === 2 && "md:col-span-2",
         rowSpan === 2 && "md:row-span-2",
-        className
+        className,
       )}
     >
       {children}
@@ -160,7 +166,13 @@ function HealthStatusWidget({ stats, t }) {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center gap-4">
-          <div className={cn("flex h-12 w-12 items-center justify-center rounded-full", bgColor, "bg-opacity-10")}>
+          <div
+            className={cn(
+              "flex h-12 w-12 items-center justify-center rounded-full",
+              bgColor,
+              "bg-opacity-10",
+            )}
+          >
             <Icon className={cn("h-6 w-6", color)} />
           </div>
           <div>
@@ -175,12 +187,16 @@ function HealthStatusWidget({ stats, t }) {
 
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">{t("dashboard.health.healthyAgents")}</span>
+            <span className="text-muted-foreground">
+              {t("dashboard.health.healthyAgents")}
+            </span>
             <span className="font-medium text-emerald-600">{healthy}</span>
           </div>
           <Progress value={healthPercentage} className="h-2" />
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">{t("dashboard.health.overloadedAgents")}</span>
+            <span className="text-muted-foreground">
+              {t("dashboard.health.overloadedAgents")}
+            </span>
             <span className="font-medium text-amber-600">{overloaded}</span>
           </div>
         </div>
@@ -226,11 +242,17 @@ function TrafficOverviewWidget({ stats, t }) {
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
             <div className="text-2xl font-bold">{formatBytes(totalBytes)}</div>
-            <p className="text-xs text-muted-foreground">{t("dashboard.traffic.total")}</p>
+            <p className="text-xs text-muted-foreground">
+              {t("dashboard.traffic.total")}
+            </p>
           </div>
           <div className="space-y-1">
-            <div className="text-2xl font-bold">{requests.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">{t("dashboard.traffic.requests")}</p>
+            <div className="text-2xl font-bold">
+              {requests.toLocaleString()}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {t("dashboard.traffic.requests")}
+            </p>
           </div>
         </div>
 
@@ -240,7 +262,9 @@ function TrafficOverviewWidget({ stats, t }) {
               <IconShield className="h-4 w-4" />
               {t("dashboard.traffic.blocked")}
             </span>
-            <span className="font-medium text-red-500">{blocked.toLocaleString()}</span>
+            <span className="font-medium text-red-500">
+              {blocked.toLocaleString()}
+            </span>
           </div>
           <div className="flex justify-between items-center text-sm">
             <span className="text-muted-foreground flex items-center gap-2">
@@ -285,7 +309,9 @@ function RecentBansWidget({ bans, t }) {
         {recentBans.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <IconShieldCheck className="h-8 w-8 text-emerald-500/50 mb-2" />
-            <p className="text-sm text-muted-foreground">{t("dashboard.bans.noActiveBans")}</p>
+            <p className="text-sm text-muted-foreground">
+              {t("dashboard.bans.noActiveBans")}
+            </p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -295,10 +321,12 @@ function RecentBansWidget({ bans, t }) {
                 className="flex items-center justify-between p-2 rounded-lg hover:bg-accent/50 transition-colors"
               >
                 <div className="flex items-center gap-2">
-                  <div className={cn(
-                    "h-2 w-2 rounded-full",
-                    ban.isPermanent ? "bg-red-500" : "bg-amber-500"
-                  )} />
+                  <div
+                    className={cn(
+                      "h-2 w-2 rounded-full",
+                      ban.isPermanent ? "bg-red-500" : "bg-amber-500",
+                    )}
+                  />
                   <code className="text-xs font-mono">{ban.ip}</code>
                 </div>
                 <span className="text-xs text-muted-foreground truncate max-w-[120px]">
@@ -309,7 +337,9 @@ function RecentBansWidget({ bans, t }) {
           </div>
         )}
         <div className="mt-4 pt-3 border-t border-border/50 flex justify-between text-sm">
-          <span className="text-muted-foreground">{t("dashboard.bans.totalActive")}</span>
+          <span className="text-muted-foreground">
+            {t("dashboard.bans.totalActive")}
+          </span>
           <span className="font-medium">{bans?.active || 0}</span>
         </div>
       </CardContent>
@@ -344,28 +374,36 @@ function DomainsOverviewWidget({ domains, t }) {
       <CardContent className="space-y-4">
         <div className="flex items-baseline gap-2">
           <span className="text-4xl font-bold">{total}</span>
-          <span className="text-sm text-muted-foreground">{t("dashboard.domainsBlock.total")}</span>
+          <span className="text-sm text-muted-foreground">
+            {t("dashboard.domainsBlock.total")}
+          </span>
         </div>
 
         <div className="grid grid-cols-2 gap-3 pt-3 border-t border-border/50">
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-sm">
               <IconCheck className="h-4 w-4 text-emerald-500" />
-              <span className="text-muted-foreground">{t("dashboard.domainsBlock.active")}</span>
+              <span className="text-muted-foreground">
+                {t("dashboard.domainsBlock.active")}
+              </span>
             </div>
             <span className="text-lg font-semibold">{active}</span>
           </div>
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-sm">
               <IconNetwork className="h-4 w-4 text-blue-500" />
-              <span className="text-muted-foreground">{t("dashboard.domainsBlock.withProxy")}</span>
+              <span className="text-muted-foreground">
+                {t("dashboard.domainsBlock.withProxy")}
+              </span>
             </div>
             <span className="text-lg font-semibold">{withProxy}</span>
           </div>
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-sm">
               <IconShieldCheck className="h-4 w-4 text-purple-500" />
-              <span className="text-muted-foreground">{t("dashboard.domainsBlock.withSSL")}</span>
+              <span className="text-muted-foreground">
+                {t("dashboard.domainsBlock.withSSL")}
+              </span>
             </div>
             <span className="text-lg font-semibold">{withSSL}</span>
           </div>
@@ -385,7 +423,9 @@ function SystemAlertsWidget({ stats, t }) {
     alerts.push({
       type: "warning",
       icon: IconAlertCircle,
-      message: t("dashboard.alerts.disconnectedAgents", { count: disconnected }),
+      message: t("dashboard.alerts.disconnectedAgents", {
+        count: disconnected,
+      }),
       link: "/dashboard/agents",
     });
   }
@@ -402,12 +442,15 @@ function SystemAlertsWidget({ stats, t }) {
   }
 
   // Check for inactive proxies
-  const inactiveProxies = (stats?.proxies?.total || 0) - (stats?.proxies?.active || 0);
+  const inactiveProxies =
+    (stats?.proxies?.total || 0) - (stats?.proxies?.active || 0);
   if (inactiveProxies > 0) {
     alerts.push({
       type: "info",
       icon: IconNetwork,
-      message: t("dashboard.alerts.inactiveProxies", { count: inactiveProxies }),
+      message: t("dashboard.alerts.inactiveProxies", {
+        count: inactiveProxies,
+      }),
       link: "/dashboard/proxies",
     });
   }
@@ -428,7 +471,9 @@ function SystemAlertsWidget({ stats, t }) {
         {alerts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <IconCheck className="h-8 w-8 text-emerald-500/50 mb-2" />
-            <p className="text-sm text-muted-foreground">{t("dashboard.alerts.allGood")}</p>
+            <p className="text-sm text-muted-foreground">
+              {t("dashboard.alerts.allGood")}
+            </p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -442,10 +487,12 @@ function SystemAlertsWidget({ stats, t }) {
 
               return (
                 <Link key={idx} href={alert.link}>
-                  <div className={cn(
-                    "flex items-start gap-3 p-3 rounded-lg border transition-colors hover:opacity-80",
-                    colors[alert.type]
-                  )}>
+                  <div
+                    className={cn(
+                      "flex items-start gap-3 p-3 rounded-lg border transition-colors hover:opacity-80",
+                      colors[alert.type],
+                    )}
+                  >
                     <Icon className="h-5 w-5 shrink-0 mt-0.5" />
                     <p className="text-sm">{alert.message}</p>
                   </div>
@@ -464,14 +511,20 @@ function formatTimeAgo(date, t) {
   if (!date) return "—";
   const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
   if (seconds < 60) return t("common.justNow");
-  if (seconds < 3600) return `${Math.floor(seconds / 60)} ${t("common.minutesAgo")}`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)} ${t("common.hoursAgo")}`;
+  if (seconds < 3600)
+    return `${Math.floor(seconds / 60)} ${t("common.minutesAgo")}`;
+  if (seconds < 86400)
+    return `${Math.floor(seconds / 3600)} ${t("common.hoursAgo")}`;
   return `${Math.floor(seconds / 86400)} ${t("common.daysAgo")}`;
 }
 
 export default function DashboardPage() {
   const { t } = useTranslation();
-  const { data: stats, isLoading: statsLoading, error: statsError } = useDashboardStats();
+  const {
+    data: stats,
+    isLoading: statsLoading,
+    error: statsError,
+  } = useDashboardStats();
   const { data: activity, isLoading: activityLoading } = useRecentActivity(8);
 
   return (
@@ -660,14 +713,16 @@ export default function DashboardPage() {
                             ? item.isConnected
                               ? "bg-emerald-500/10"
                               : "bg-amber-500/10"
-                            : "bg-primary/10"
+                            : "bg-primary/10",
                         )}
                       >
                         {item.type === "agent" ? (
                           <IconRobot
                             className={cn(
                               "h-3.5 w-3.5",
-                              item.isConnected ? "text-emerald-500" : "text-amber-500"
+                              item.isConnected
+                                ? "text-emerald-500"
+                                : "text-amber-500",
                             )}
                           />
                         ) : (
@@ -675,7 +730,9 @@ export default function DashboardPage() {
                         )}
                       </div>
                       <div className="flex-1 min-w-0 space-y-0.5">
-                        <p className="font-medium text-sm truncate">{item.title}</p>
+                        <p className="font-medium text-sm truncate">
+                          {item.title}
+                        </p>
                         <p className="text-xs text-muted-foreground truncate">
                           {item.route || (
                             <>

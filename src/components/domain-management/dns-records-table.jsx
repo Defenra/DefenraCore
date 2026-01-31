@@ -109,7 +109,9 @@ export function DnsRecordsTable({ domain, onUpdate }) {
       httpProxyEnabled: !updated[index].httpProxyEnabled,
     };
     onUpdate({ ...domain, dnsRecords: updated });
-    toast.success(updated[index].httpProxyEnabled ? "Proxy enabled" : "Proxy disabled");
+    toast.success(
+      updated[index].httpProxyEnabled ? "Proxy enabled" : "Proxy disabled",
+    );
   };
 
   const startEdit = (index) => {
@@ -155,12 +157,24 @@ export function DnsRecordsTable({ domain, onUpdate }) {
         <table className="w-full">
           <thead className="bg-muted/50 border-b">
             <tr>
-              <th className="text-left py-3 px-4 text-xs font-medium text-muted-foreground w-16">Type</th>
-              <th className="text-left py-3 px-4 text-xs font-medium text-muted-foreground">Name</th>
-              <th className="text-left py-3 px-4 text-xs font-medium text-muted-foreground">Value</th>
-              <th className="text-left py-3 px-4 text-xs font-medium text-muted-foreground w-20">TTL</th>
-              <th className="text-left py-3 px-4 text-xs font-medium text-muted-foreground w-16">Proxy</th>
-              <th className="text-right py-3 px-4 text-xs font-medium text-muted-foreground w-20">Actions</th>
+              <th className="text-left py-3 px-4 text-xs font-medium text-muted-foreground w-16">
+                Type
+              </th>
+              <th className="text-left py-3 px-4 text-xs font-medium text-muted-foreground">
+                Name
+              </th>
+              <th className="text-left py-3 px-4 text-xs font-medium text-muted-foreground">
+                Value
+              </th>
+              <th className="text-left py-3 px-4 text-xs font-medium text-muted-foreground w-20">
+                TTL
+              </th>
+              <th className="text-left py-3 px-4 text-xs font-medium text-muted-foreground w-16">
+                Proxy
+              </th>
+              <th className="text-right py-3 px-4 text-xs font-medium text-muted-foreground w-20">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/50">
@@ -170,14 +184,18 @@ export function DnsRecordsTable({ domain, onUpdate }) {
                 <td className="py-3 px-4">
                   <Select
                     value={newRecord.type}
-                    onValueChange={(v) => setNewRecord({ ...newRecord, type: v })}
+                    onValueChange={(v) =>
+                      setNewRecord({ ...newRecord, type: v })
+                    }
                   >
                     <SelectTrigger className="h-8 w-20">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       {RECORD_TYPES.map((t) => (
-                        <SelectItem key={t} value={t}>{t}</SelectItem>
+                        <SelectItem key={t} value={t}>
+                          {t}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -185,7 +203,9 @@ export function DnsRecordsTable({ domain, onUpdate }) {
                 <td className="py-3 px-4">
                   <Input
                     value={newRecord.name}
-                    onChange={(e) => setNewRecord({ ...newRecord, name: e.target.value })}
+                    onChange={(e) =>
+                      setNewRecord({ ...newRecord, name: e.target.value })
+                    }
                     placeholder="@ or subdomain"
                     className="h-8"
                   />
@@ -193,7 +213,9 @@ export function DnsRecordsTable({ domain, onUpdate }) {
                 <td className="py-3 px-4">
                   <Input
                     value={newRecord.value}
-                    onChange={(e) => setNewRecord({ ...newRecord, value: e.target.value })}
+                    onChange={(e) =>
+                      setNewRecord({ ...newRecord, value: e.target.value })
+                    }
                     placeholder="IP or value"
                     className="h-8"
                   />
@@ -202,7 +224,12 @@ export function DnsRecordsTable({ domain, onUpdate }) {
                   <Input
                     type="number"
                     value={newRecord.ttl}
-                    onChange={(e) => setNewRecord({ ...newRecord, ttl: parseInt(e.target.value) || 3600 })}
+                    onChange={(e) =>
+                      setNewRecord({
+                        ...newRecord,
+                        ttl: parseInt(e.target.value) || 3600,
+                      })
+                    }
                     className="h-8 w-20"
                   />
                 </td>
@@ -212,7 +239,12 @@ export function DnsRecordsTable({ domain, onUpdate }) {
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8"
-                      onClick={() => setNewRecord({ ...newRecord, httpProxyEnabled: !newRecord.httpProxyEnabled })}
+                      onClick={() =>
+                        setNewRecord({
+                          ...newRecord,
+                          httpProxyEnabled: !newRecord.httpProxyEnabled,
+                        })
+                      }
                     >
                       {newRecord.httpProxyEnabled ? (
                         <IconCloud className="h-4 w-4 text-primary" />
@@ -224,7 +256,12 @@ export function DnsRecordsTable({ domain, onUpdate }) {
                 </td>
                 <td className="py-3 px-4">
                   <div className="flex items-center justify-end gap-1">
-                    <Button size="icon" variant="ghost" className="h-8 w-8" onClick={handleSaveNew}>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8"
+                      onClick={handleSaveNew}
+                    >
                       <IconCheck className="h-4 w-4 text-green-600" />
                     </Button>
                     <Button
@@ -247,21 +284,31 @@ export function DnsRecordsTable({ domain, onUpdate }) {
               const subdomain = getFullDomain(record.name);
 
               return (
-                <tr key={index} className={cn("hover:bg-muted/30", isEditing && "bg-muted/50")}>
+                <tr
+                  key={index}
+                  className={cn(
+                    "hover:bg-muted/30",
+                    isEditing && "bg-muted/50",
+                  )}
+                >
                   {isEditing ? (
                     // Edit Mode
                     <>
                       <td className="py-3 px-4">
                         <Select
                           value={editingRecord.type}
-                          onValueChange={(v) => setEditingRecord({ ...editingRecord, type: v })}
+                          onValueChange={(v) =>
+                            setEditingRecord({ ...editingRecord, type: v })
+                          }
                         >
                           <SelectTrigger className="h-8 w-20">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
                             {RECORD_TYPES.map((t) => (
-                              <SelectItem key={t} value={t}>{t}</SelectItem>
+                              <SelectItem key={t} value={t}>
+                                {t}
+                              </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
@@ -269,14 +316,24 @@ export function DnsRecordsTable({ domain, onUpdate }) {
                       <td className="py-3 px-4">
                         <Input
                           value={editingRecord.name}
-                          onChange={(e) => setEditingRecord({ ...editingRecord, name: e.target.value })}
+                          onChange={(e) =>
+                            setEditingRecord({
+                              ...editingRecord,
+                              name: e.target.value,
+                            })
+                          }
                           className="h-8"
                         />
                       </td>
                       <td className="py-3 px-4">
                         <Input
                           value={editingRecord.value}
-                          onChange={(e) => setEditingRecord({ ...editingRecord, value: e.target.value })}
+                          onChange={(e) =>
+                            setEditingRecord({
+                              ...editingRecord,
+                              value: e.target.value,
+                            })
+                          }
                           className="h-8"
                         />
                       </td>
@@ -284,7 +341,12 @@ export function DnsRecordsTable({ domain, onUpdate }) {
                         <Input
                           type="number"
                           value={editingRecord.ttl}
-                          onChange={(e) => setEditingRecord({ ...editingRecord, ttl: parseInt(e.target.value) || 3600 })}
+                          onChange={(e) =>
+                            setEditingRecord({
+                              ...editingRecord,
+                              ttl: parseInt(e.target.value) || 3600,
+                            })
+                          }
                           className="h-8 w-20"
                         />
                       </td>
@@ -294,7 +356,13 @@ export function DnsRecordsTable({ domain, onUpdate }) {
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8"
-                            onClick={() => setEditingRecord({ ...editingRecord, httpProxyEnabled: !editingRecord.httpProxyEnabled })}
+                            onClick={() =>
+                              setEditingRecord({
+                                ...editingRecord,
+                                httpProxyEnabled:
+                                  !editingRecord.httpProxyEnabled,
+                              })
+                            }
                           >
                             {editingRecord.httpProxyEnabled ? (
                               <IconCloud className="h-4 w-4 text-primary" />
@@ -306,10 +374,20 @@ export function DnsRecordsTable({ domain, onUpdate }) {
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center justify-end gap-1">
-                          <Button size="icon" variant="ghost" className="h-8 w-8" onClick={handleSaveEdit}>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8"
+                            onClick={handleSaveEdit}
+                          >
                             <IconCheck className="h-4 w-4 text-green-600" />
                           </Button>
-                          <Button size="icon" variant="ghost" className="h-8 w-8" onClick={cancelEdit}>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8"
+                            onClick={cancelEdit}
+                          >
                             <IconX className="h-4 w-4 text-red-600" />
                           </Button>
                         </div>
@@ -321,15 +399,22 @@ export function DnsRecordsTable({ domain, onUpdate }) {
                       <td className="py-3 px-4">
                         <Badge
                           variant="outline"
-                          className={cn("font-mono text-xs", TYPE_COLORS[record.type])}
+                          className={cn(
+                            "font-mono text-xs",
+                            TYPE_COLORS[record.type],
+                          )}
                         >
                           {record.type}
                         </Badge>
                       </td>
                       <td className="py-3 px-4">
                         <div className="space-y-1">
-                          <code className="text-sm font-mono">{record.name || "@"}</code>
-                          <p className="text-xs text-muted-foreground">{subdomain}</p>
+                          <code className="text-sm font-mono">
+                            {record.name || "@"}
+                          </code>
+                          <p className="text-xs text-muted-foreground">
+                            {subdomain}
+                          </p>
                         </div>
                       </td>
                       <td className="py-3 px-4">
@@ -348,7 +433,9 @@ export function DnsRecordsTable({ domain, onUpdate }) {
                         </div>
                       </td>
                       <td className="py-3 px-4">
-                        <span className="text-sm text-muted-foreground">{record.ttl || 3600}s</span>
+                        <span className="text-sm text-muted-foreground">
+                          {record.ttl || 3600}s
+                        </span>
                       </td>
                       <td className="py-3 px-4">
                         {canProxy && (
@@ -370,12 +457,18 @@ export function DnsRecordsTable({ domain, onUpdate }) {
                         <div className="flex items-center justify-end">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                              >
                                 <IconDotsVertical className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => startEdit(index)}>
+                              <DropdownMenuItem
+                                onClick={() => startEdit(index)}
+                              >
                                 <IconPencil className="h-4 w-4 mr-2" />
                                 Edit
                               </DropdownMenuItem>
@@ -398,7 +491,10 @@ export function DnsRecordsTable({ domain, onUpdate }) {
 
             {records.length === 0 && !addingNew && (
               <tr>
-                <td colSpan={6} className="py-12 text-center text-muted-foreground">
+                <td
+                  colSpan={6}
+                  className="py-12 text-center text-muted-foreground"
+                >
                   No DNS records. Click "Add Record" to create one.
                 </td>
               </tr>

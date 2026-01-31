@@ -20,14 +20,14 @@ import { cn } from "@/lib/utils";
 
 // Color palette for charts
 const CHART_COLORS = [
-  "#3b82f6",  // blue
-  "#22c55e",  // green
-  "#f59e0b",  // amber
-  "#a855f7",  // purple
-  "#ec4899",  // pink
-  "#06b6d4",  // cyan
-  "#ef4444",  // red
-  "#eab308",  // yellow
+  "#3b82f6", // blue
+  "#22c55e", // green
+  "#f59e0b", // amber
+  "#a855f7", // purple
+  "#ec4899", // pink
+  "#06b6d4", // cyan
+  "#ef4444", // red
+  "#eab308", // yellow
 ];
 
 // Colors that work in both light and dark modes
@@ -46,28 +46,36 @@ const getChartColors = (isDark) => ({
 // Custom Tooltip Component
 function CustomTooltip({ active, payload, label, formatter, isDark }) {
   const colors = getChartColors(isDark);
-  
+
   if (!active || !payload?.length) return null;
 
   return (
-    <div 
+    <div
       className="rounded-lg shadow-lg p-3 text-sm border"
-      style={{ 
+      style={{
         backgroundColor: colors.tooltip.bg,
         borderColor: colors.tooltip.border,
-        color: colors.tooltip.text
+        color: colors.tooltip.text,
       }}
     >
-      <p className="font-medium mb-2" style={{ color: colors.tooltip.text }}>{label}</p>
+      <p className="font-medium mb-2" style={{ color: colors.tooltip.text }}>
+        {label}
+      </p>
       <div className="space-y-1">
         {payload.map((entry, idx) => (
-          <div key={`tooltip-${entry.name || idx}`} className="flex items-center gap-2">
+          <div
+            key={`tooltip-${entry.name || idx}`}
+            className="flex items-center gap-2"
+          >
             <div
               className="w-2 h-2 rounded-full"
               style={{ backgroundColor: entry.color }}
             />
             <span style={{ color: colors.tooltip.muted }}>{entry.name}:</span>
-            <span className="font-medium" style={{ color: colors.tooltip.text }}>
+            <span
+              className="font-medium"
+              style={{ color: colors.tooltip.text }}
+            >
               {formatter ? formatter(entry.value) : entry.value}
             </span>
           </div>
@@ -80,13 +88,17 @@ function CustomTooltip({ active, payload, label, formatter, isDark }) {
 // Custom Legend Component
 function CustomLegend({ payload, isDark }) {
   const colors = getChartColors(isDark);
-  
+
   return (
     <div className="flex flex-wrap gap-3 justify-center mt-4">
       {payload.map((entry) => (
-        <span key={`legend-${entry.value}`} className="flex items-center gap-1.5 text-xs" style={{ color: colors.text }}>
-          <span 
-            className="w-2.5 h-2.5 rounded-full" 
+        <span
+          key={`legend-${entry.value}`}
+          className="flex items-center gap-1.5 text-xs"
+          style={{ color: colors.text }}
+        >
+          <span
+            className="w-2.5 h-2.5 rounded-full"
             style={{ backgroundColor: entry.color }}
           />
           {entry.value}
@@ -117,9 +129,16 @@ export function TimeSeriesChart({
   return (
     <div className={cn("w-full", className)} style={{ height }}>
       <ResponsiveContainer width="100%" height="100%">
-        <ChartComponent data={data} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+        <ChartComponent
+          data={data}
+          margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
+        >
           {showGrid && (
-            <CartesianGrid strokeDasharray="3 3" stroke={colors.grid} opacity={0.5} />
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke={colors.grid}
+              opacity={0.5}
+            />
           )}
           <XAxis
             dataKey="time"
@@ -134,9 +153,15 @@ export function TimeSeriesChart({
             axisLine={false}
             tickLine={false}
           />
-          <Tooltip content={<CustomTooltip formatter={yAxisFormatter} isDark={isDark} />} />
+          <Tooltip
+            content={
+              <CustomTooltip formatter={yAxisFormatter} isDark={isDark} />
+            }
+          />
           {showLegend && (
-            <Legend content={(props) => <CustomLegend {...props} isDark={isDark} />} />
+            <Legend
+              content={(props) => <CustomLegend {...props} isDark={isDark} />}
+            />
           )}
           {series.map((s, index) => (
             <DataComponent
@@ -145,7 +170,11 @@ export function TimeSeriesChart({
               dataKey={s.key}
               name={s.name}
               stroke={s.color || CHART_COLORS[index % CHART_COLORS.length]}
-              fill={type === "area" ? s.color || CHART_COLORS[index % CHART_COLORS.length] : undefined}
+              fill={
+                type === "area"
+                  ? s.color || CHART_COLORS[index % CHART_COLORS.length]
+                  : undefined
+              }
               fillOpacity={type === "area" ? 0.2 : undefined}
               strokeWidth={2}
               dot={false}
@@ -181,7 +210,11 @@ export function BarChartComponent({
           margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
         >
           {showGrid && (
-            <CartesianGrid strokeDasharray="3 3" stroke={colors.grid} opacity={0.5} />
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke={colors.grid}
+              opacity={0.5}
+            />
           )}
           <XAxis
             type={layout === "horizontal" ? "category" : "number"}
@@ -198,8 +231,14 @@ export function BarChartComponent({
             axisLine={false}
             tickLine={false}
           />
-          <Tooltip content={<CustomTooltip formatter={yAxisFormatter} isDark={isDark} />} />
-          <Legend content={(props) => <CustomLegend {...props} isDark={isDark} />} />
+          <Tooltip
+            content={
+              <CustomTooltip formatter={yAxisFormatter} isDark={isDark} />
+            }
+          />
+          <Legend
+            content={(props) => <CustomLegend {...props} isDark={isDark} />}
+          />
           {series.map((s, index) => (
             <Bar
               key={s.key}
@@ -235,11 +274,14 @@ export function StatWithSparkline({
       <div className="flex items-baseline justify-between">
         <span className="text-sm text-muted-foreground">{title}</span>
         {trend !== undefined && (
-          <span className={cn(
-            "text-xs font-medium",
-            trend > 0 ? "text-emerald-500" : "text-red-500"
-          )}>
-            {trend > 0 ? "+" : ""}{trend}%
+          <span
+            className={cn(
+              "text-xs font-medium",
+              trend > 0 ? "text-emerald-500" : "text-red-500",
+            )}
+          >
+            {trend > 0 ? "+" : ""}
+            {trend}%
           </span>
         )}
       </div>
@@ -252,16 +294,22 @@ export function StatWithSparkline({
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data}>
               <defs>
-                <linearGradient id={`sparkline-${dataKey}-${color.replace(/[^a-zA-Z0-9]/g, '')}`} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={color} stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor={color} stopOpacity={0}/>
+                <linearGradient
+                  id={`sparkline-${dataKey}-${color.replace(/[^a-zA-Z0-9]/g, "")}`}
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop offset="5%" stopColor={color} stopOpacity={0.3} />
+                  <stop offset="95%" stopColor={color} stopOpacity={0} />
                 </linearGradient>
               </defs>
               <Area
                 type="monotone"
                 dataKey={dataKey}
                 stroke={color}
-                fill={`url(#sparkline-${dataKey}-${color.replace(/[^a-zA-Z0-9]/g, '')})`}
+                fill={`url(#sparkline-${dataKey}-${color.replace(/[^a-zA-Z0-9]/g, "")})`}
                 strokeWidth={2}
                 dot={false}
               />
@@ -285,11 +333,11 @@ export function GaugeChart({
 }) {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
-  
+
   React.useEffect(() => {
     setMounted(true);
   }, []);
-  
+
   // Default to dark mode colors if not mounted or dark theme
   const isDark = mounted ? resolvedTheme === "dark" : true;
   const percentage = Math.min((value / max) * 100, 100);
@@ -299,8 +347,10 @@ export function GaugeChart({
 
   // Color based on value
   let gaugeColor = color;
-  if (percentage > 80) gaugeColor = "#ef4444"; // red
-  else if (percentage > 60) gaugeColor = "#f59e0b"; // orange
+  if (percentage > 80)
+    gaugeColor = "#ef4444"; // red
+  else if (percentage > 60)
+    gaugeColor = "#f59e0b"; // orange
   else if (percentage > 40) gaugeColor = "#eab308"; // yellow
 
   const bgColor = isDark ? "#334155" : "#e2e8f0";
@@ -311,7 +361,11 @@ export function GaugeChart({
     <div className={cn("flex flex-col items-center", className)}>
       <div className="relative" style={{ width: size, height: size }}>
         <svg width={size} height={size} className="transform -rotate-90">
-          <title>{label ? `${label}: ${Math.round(percentage)}%` : `Gauge: ${Math.round(percentage)}%`}</title>
+          <title>
+            {label
+              ? `${label}: ${Math.round(percentage)}%`
+              : `Gauge: ${Math.round(percentage)}%`}
+          </title>
           {/* Background circle */}
           <circle
             cx={size / 2}
@@ -336,7 +390,9 @@ export function GaugeChart({
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-2xl font-bold text-white">{Math.round(percentage)}%</span>
+          <span className="text-2xl font-bold text-white">
+            {Math.round(percentage)}%
+          </span>
         </div>
       </div>
       {label && <span className="text-xs text-white/70 mt-2">{label}</span>}

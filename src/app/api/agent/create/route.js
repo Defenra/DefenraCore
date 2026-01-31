@@ -17,7 +17,7 @@ export async function POST(request) {
     if (!hasPermission(session.user.role, "agents.write")) {
       return NextResponse.json(
         { error: "Forbidden: You don't have permission to create agents" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 

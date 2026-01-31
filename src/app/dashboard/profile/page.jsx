@@ -25,7 +25,7 @@ function BentoCard({ children, className }) {
       className={cn(
         "border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300",
         "hover:border-border hover:shadow-lg hover:shadow-primary/5",
-        className
+        className,
       )}
     >
       {children}
@@ -194,7 +194,9 @@ export default function ProfilePage() {
     <div className="flex flex-col gap-4 md:gap-6 py-4 md:py-6 px-4 lg:px-8">
       {/* Header */}
       <div className="space-y-1">
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{t("profile.title")}</h1>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+          {t("profile.title")}
+        </h1>
         <p className="text-sm text-muted-foreground md:text-base">
           {t("profile.description")}
         </p>
@@ -205,7 +207,9 @@ export default function ProfilePage() {
         <BentoCard>
           <CardHeader>
             <CardTitle>{t("profile.infoCard.title")}</CardTitle>
-            <CardDescription>{t("profile.infoCard.description")}</CardDescription>
+            <CardDescription>
+              {t("profile.infoCard.description")}
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-4">
@@ -232,7 +236,9 @@ export default function ProfilePage() {
         <BentoCard>
           <CardHeader>
             <CardTitle>{t("profile.editCard.title")}</CardTitle>
-            <CardDescription>{t("profile.editCard.description")}</CardDescription>
+            <CardDescription>
+              {t("profile.editCard.description")}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -263,10 +269,14 @@ export default function ProfilePage() {
                 />
               </div>
               <div className="border-t pt-4">
-                <h3 className="text-sm font-medium mb-4">{t("profile.form.changePassword")}</h3>
+                <h3 className="text-sm font-medium mb-4">
+                  {t("profile.form.changePassword")}
+                </h3>
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="currentPassword">{t("profile.form.currentPassword")}</Label>
+                    <Label htmlFor="currentPassword">
+                      {t("profile.form.currentPassword")}
+                    </Label>
                     <Input
                       id="currentPassword"
                       type="password"
@@ -281,7 +291,9 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="newPassword">{t("profile.form.newPassword")}</Label>
+                    <Label htmlFor="newPassword">
+                      {t("profile.form.newPassword")}
+                    </Label>
                     <Input
                       id="newPassword"
                       type="password"

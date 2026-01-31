@@ -23,7 +23,7 @@ export default function DashboardLayout({ children }) {
         className={cn(
           "flex-1",
           "pb-24 pt-4 md:pt-6 lg:pt-8",
-          "px-4 md:px-6 lg:px-8"
+          "px-4 md:px-6 lg:px-8",
         )}
       >
         {children}

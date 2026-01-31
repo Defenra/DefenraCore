@@ -32,7 +32,7 @@ function BentoCard({ children, className }) {
       className={cn(
         "border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300",
         "hover:border-border hover:shadow-lg hover:shadow-primary/5",
-        className
+        className,
       )}
     >
       {children}
@@ -183,7 +183,9 @@ export default function GeoDnsMapPage() {
       <div className="grid gap-3 sm:gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
         <BentoCard>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t("geodns.stats.domains")}</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {t("geodns.stats.domains")}
+            </CardTitle>
             <IconWorld className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -192,7 +194,9 @@ export default function GeoDnsMapPage() {
         </BentoCard>
         <BentoCard>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t("geodns.stats.zones")}</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {t("geodns.stats.zones")}
+            </CardTitle>
             <IconMapPin className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -201,7 +205,9 @@ export default function GeoDnsMapPage() {
         </BentoCard>
         <BentoCard className="border-green-500/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t("geodns.stats.direct")}</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {t("geodns.stats.direct")}
+            </CardTitle>
             <IconCircleFilled className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
@@ -212,7 +218,9 @@ export default function GeoDnsMapPage() {
         </BentoCard>
         <BentoCard className="border-blue-500/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t("geodns.stats.fallback")}</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {t("geodns.stats.fallback")}
+            </CardTitle>
             <IconAlertCircle className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
@@ -223,7 +231,9 @@ export default function GeoDnsMapPage() {
         </BentoCard>
         <BentoCard>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t("geodns.stats.totalAgents")}</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {t("geodns.stats.totalAgents")}
+            </CardTitle>
             <IconWorld className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -232,7 +242,9 @@ export default function GeoDnsMapPage() {
         </BentoCard>
         <BentoCard className="border-green-500/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t("geodns.stats.active")}</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {t("geodns.stats.active")}
+            </CardTitle>
             <IconCircleFilled className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
@@ -267,8 +279,9 @@ export default function GeoDnsMapPage() {
                         <span className="truncate">{domain.domain}</span>
                       </CardTitle>
                       <CardDescription className="text-sm">
-                        {domain.locationCount} {t("geodns.zones")} • {domain.directCount} {t("geodns.direct")}
-                        • {domain.fallbackCount} {t("geodns.fallback")}
+                        {domain.locationCount} {t("geodns.zones")} •{" "}
+                        {domain.directCount} {t("geodns.direct")}•{" "}
+                        {domain.fallbackCount} {t("geodns.fallback")}
                       </CardDescription>
                     </div>
                     <Button

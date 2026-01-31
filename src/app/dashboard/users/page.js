@@ -45,7 +45,7 @@ function BentoCard({ children, className }) {
       className={cn(
         "border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300",
         "hover:border-border hover:shadow-lg hover:shadow-primary/5",
-        className
+        className,
       )}
     >
       {children}
@@ -140,7 +140,13 @@ export default function UsersPage() {
 
   const handleAddUser = () => {
     setEditingUser(null);
-    setFormData({ name: "", email: "", password: "", role: "viewer", canViewAllResources: false });
+    setFormData({
+      name: "",
+      email: "",
+      password: "",
+      role: "viewer",
+      canViewAllResources: false,
+    });
     setFormError(null);
     setShowModal(true);
   };
@@ -218,12 +224,18 @@ export default function UsersPage() {
   const getRoleBadgeColor = (role) => {
     const colors = {
       admin: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
-      "proxy-manager": "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
-      "domain-manager": "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
-      operator: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
+      "proxy-manager":
+        "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+      "domain-manager":
+        "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+      operator:
+        "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
       viewer: "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-400",
     };
-    return colors[role] || "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-400";
+    return (
+      colors[role] ||
+      "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-400"
+    );
   };
 
   const getRoleName = (role) => {
@@ -256,10 +268,7 @@ export default function UsersPage() {
           </p>
         </div>
         {hasPermission("users.write") && (
-          <Button
-            onClick={handleAddUser}
-            className="w-full sm:w-auto"
-          >
+          <Button onClick={handleAddUser} className="w-full sm:w-auto">
             {t("users.addUser")}
           </Button>
         )}
@@ -272,90 +281,98 @@ export default function UsersPage() {
       )}
 
       {/* Users Table */}
-      {loading ? (
-        <BentoCard>
-          <CardContent className="p-6">
-            <TableSkeleton />
-          </CardContent>
-        </BentoCard>
-      ) : (
-        <BentoCard>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-border hover:bg-transparent">
-                    <TableHead className="text-left">{t("users.table.name")}</TableHead>
-                    <TableHead className="text-left">{t("users.table.email")}</TableHead>
-                    <TableHead className="text-left">{t("users.table.role")}</TableHead>
-                    <TableHead className="text-left">{t("users.table.created")}</TableHead>
-                    {hasPermission("users.write") && (
-                      <TableHead className="text-right">{t("users.table.actions")}</TableHead>
-                    )}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {users.map((user) => (
-                    <TableRow
-                      key={user._id}
-                      className="border-border hover:bg-accent/50"
-                    >
-                      <TableCell className="font-medium">
-                        {user.name}
-                        {session?.user?.id === user._id && (
-                          <span className="ml-2 text-xs text-muted-foreground">
-                            ({t("users.you")})
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground break-all">
-                        {user.email}
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant="secondary"
-                          className={getRoleBadgeColor(user.role)}
-                        >
-                          {getRoleName(user.role)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {new Date(user.createdAt).toLocaleDateString()}
-                      </TableCell>
+      {loading
+        ? <BentoCard>
+            <CardContent className="p-6">
+              <TableSkeleton />
+            </CardContent>
+          </BentoCard>
+        : <BentoCard>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-border hover:bg-transparent">
+                      <TableHead className="text-left">
+                        {t("users.table.name")}
+                      </TableHead>
+                      <TableHead className="text-left">
+                        {t("users.table.email")}
+                      </TableHead>
+                      <TableHead className="text-left">
+                        {t("users.table.role")}
+                      </TableHead>
+                      <TableHead className="text-left">
+                        {t("users.table.created")}
+                      </TableHead>
                       {hasPermission("users.write") && (
-                        <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEditUser(user)}
-                          >
-                            {t("common.edit")}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteUser(user._id)}
-                            disabled={session?.user?.id === user._id}
-                            className="text-red-500 hover:text-red-600"
-                          >
-                            {t("common.delete")}
-                          </Button>
-                        </TableCell>
+                        <TableHead className="text-right">
+                          {t("users.table.actions")}
+                        </TableHead>
                       )}
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-
-            {users.length === 0 && (
-              <div className="text-center py-12 text-muted-foreground">
-                {t("users.noUsers")}
+                  </TableHeader>
+                  <TableBody>
+                    {users.map((user) => (
+                      <TableRow
+                        key={user._id}
+                        className="border-border hover:bg-accent/50"
+                      >
+                        <TableCell className="font-medium">
+                          {user.name}
+                          {session?.user?.id === user._id && (
+                            <span className="ml-2 text-xs text-muted-foreground">
+                              ({t("users.you")})
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground break-all">
+                          {user.email}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant="secondary"
+                            className={getRoleBadgeColor(user.role)}
+                          >
+                            {getRoleName(user.role)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {new Date(user.createdAt).toLocaleDateString()}
+                        </TableCell>
+                        {hasPermission("users.write") && (
+                          <TableCell className="text-right">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditUser(user)}
+                            >
+                              {t("common.edit")}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteUser(user._id)}
+                              disabled={session?.user?.id === user._id}
+                              className="text-red-500 hover:text-red-600"
+                            >
+                              {t("common.delete")}
+                            </Button>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
-            )}
-          </CardContent>
-        </BentoCard>
-      )}
+
+              {users.length === 0 && (
+                <div className="text-center py-12 text-muted-foreground">
+                  {t("users.noUsers")}
+                </div>
+              )}
+            </CardContent>
+          </BentoCard>}
 
       {/* Add/Edit User Dialog */}
       <Dialog open={showModal} onOpenChange={setShowModal}>
@@ -365,7 +382,9 @@ export default function UsersPage() {
               {editingUser ? t("users.editUser") : t("users.addUser")}
             </DialogTitle>
             <DialogDescription>
-              {editingUser ? t("users.editDescription") : t("users.addDescription")}
+              {editingUser
+                ? t("users.editDescription")
+                : t("users.addDescription")}
             </DialogDescription>
           </DialogHeader>
 
@@ -454,7 +473,8 @@ export default function UsersPage() {
               />
             </div>
             <p className="text-xs text-muted-foreground">
-              When enabled, user can view all agents, proxies and domains regardless of ownership
+              When enabled, user can view all agents, proxies and domains
+              regardless of ownership
             </p>
 
             <DialogFooter>

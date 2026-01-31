@@ -16,7 +16,7 @@ export async function DELETE(_request, { params }) {
     if (!hasPermission(session.user.role, "proxies.write")) {
       return NextResponse.json(
         { error: "Forbidden: You don't have permission to delete proxies" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -59,7 +59,7 @@ async function updateProxy(request, { params }) {
     if (!hasPermission(session.user.role, "proxies.write")) {
       return NextResponse.json(
         { error: "Forbidden: You don't have permission to update proxies" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 

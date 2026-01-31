@@ -16,7 +16,7 @@ export async function POST(request) {
     if (!hasPermission(session.user.role, "domains.write")) {
       return NextResponse.json(
         { error: "Forbidden: You don't have permission to create domains" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 

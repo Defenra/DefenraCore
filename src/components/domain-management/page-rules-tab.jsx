@@ -106,7 +106,10 @@ export function PageRulesTab({ domain, onUpdate }) {
         cacheLevel: rule.actions?.cacheLevel || "none",
         browserCacheTtl: rule.actions?.browserCacheTtl || "",
         alwaysUseHttps: rule.actions?.alwaysUseHttps || false,
-        forwardingUrl: rule.actions?.forwardingUrl || { statusCode: 301, url: "" },
+        forwardingUrl: rule.actions?.forwardingUrl || {
+          statusCode: 301,
+          url: "",
+        },
         disableSecurity: rule.actions?.disableSecurity || false,
         disableRateLimiting: rule.actions?.disableRateLimiting || false,
         resolveOverride: rule.actions?.resolveOverride || "",
@@ -126,8 +129,14 @@ export function PageRulesTab({ domain, onUpdate }) {
       ...formData,
       actions: {
         ...formData.actions,
-        securityLevel: formData.actions.securityLevel === "none" ? "" : formData.actions.securityLevel,
-        cacheLevel: formData.actions.cacheLevel === "none" ? "" : formData.actions.cacheLevel,
+        securityLevel:
+          formData.actions.securityLevel === "none"
+            ? ""
+            : formData.actions.securityLevel,
+        cacheLevel:
+          formData.actions.cacheLevel === "none"
+            ? ""
+            : formData.actions.cacheLevel,
       },
     };
 
@@ -183,7 +192,10 @@ export function PageRulesTab({ domain, onUpdate }) {
 
     const newRules = [...rules];
     const newIndex = direction === "up" ? index - 1 : index + 1;
-    [newRules[index], newRules[newIndex]] = [newRules[newIndex], newRules[index]];
+    [newRules[index], newRules[newIndex]] = [
+      newRules[newIndex],
+      newRules[index],
+    ];
 
     // Update priorities
     newRules.forEach((rule, i) => {
@@ -460,7 +472,9 @@ export function PageRulesTab({ domain, onUpdate }) {
                 <SelectContent>
                   <SelectItem value="none">Don't change</SelectItem>
                   <SelectItem value="off">Off</SelectItem>
-                  <SelectItem value="essentially_off">Essentially Off</SelectItem>
+                  <SelectItem value="essentially_off">
+                    Essentially Off
+                  </SelectItem>
                   <SelectItem value="low">Low</SelectItem>
                   <SelectItem value="medium">Medium</SelectItem>
                   <SelectItem value="high">High</SelectItem>
@@ -490,12 +504,16 @@ export function PageRulesTab({ domain, onUpdate }) {
                 <SelectContent>
                   <SelectItem value="none">Don't change</SelectItem>
                   <SelectItem value="bypass">Bypass</SelectItem>
-                  <SelectItem value="no_query_string">No Query String</SelectItem>
+                  <SelectItem value="no_query_string">
+                    No Query String
+                  </SelectItem>
                   <SelectItem value="ignore_query_string">
                     Ignore Query String
                   </SelectItem>
                   <SelectItem value="standard">Standard</SelectItem>
-                  <SelectItem value="cache_everything">Cache Everything</SelectItem>
+                  <SelectItem value="cache_everything">
+                    Cache Everything
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -532,7 +550,9 @@ export function PageRulesTab({ domain, onUpdate }) {
               </div>
               <div className="grid grid-cols-4 gap-2">
                 <Select
-                  value={String(formData.actions.forwardingUrl?.statusCode || 301)}
+                  value={String(
+                    formData.actions.forwardingUrl?.statusCode || 301,
+                  )}
                   onValueChange={(value) =>
                     setFormData({
                       ...formData,
@@ -578,7 +598,9 @@ export function PageRulesTab({ domain, onUpdate }) {
             <div className="p-4 rounded-lg border space-y-3">
               <div className="flex items-center gap-2">
                 <Globe className="h-4 w-4 text-primary" />
-                <label className="text-sm font-semibold">Backend Override</label>
+                <label className="text-sm font-semibold">
+                  Backend Override
+                </label>
               </div>
               <Input
                 placeholder="192.168.1.100:8080"

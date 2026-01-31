@@ -284,7 +284,9 @@ export function AnycastRoutingTab({ domain, agents = [], onUpdate }) {
                 <div className="space-y-2 text-sm">
                   <p className="font-medium">Auto-Discovery Active</p>
                   <div className="space-y-1 text-xs text-muted-foreground">
-                    <p>• Agents receive list of other active agents every 60s</p>
+                    <p>
+                      • Agents receive list of other active agents every 60s
+                    </p>
                     <p>• Health checks every 30s (latency, availability)</p>
                     <p>• Unavailable agents automatically excluded</p>
                     <p>• Loop prevention: no routing to visited nodes</p>

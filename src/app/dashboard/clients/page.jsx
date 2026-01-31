@@ -18,7 +18,7 @@ function BentoCard({ children, className, colSpan = 1 }) {
         "border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300",
         "hover:border-border hover:shadow-lg hover:shadow-primary/5",
         colSpan === 2 && "md:col-span-2",
-        className
+        className,
       )}
     >
       {children}
@@ -142,7 +142,9 @@ export default function ClientsPage() {
     return (
       <div className="flex items-center justify-center min-h-screen p-4">
         <div className="text-center space-y-4">
-          <p className="text-red-400">{t("common.error")}: {error.message}</p>
+          <p className="text-red-400">
+            {t("common.error")}: {error.message}
+          </p>
           <Button onClick={() => window.location.reload()} variant="outline">
             {t("common.retry")}
           </Button>
@@ -156,7 +158,9 @@ export default function ClientsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">{t("clients.title")}</h1>
+          <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">
+            {t("clients.title")}
+          </h1>
           <p className="text-sm text-muted-foreground md:text-base">
             {stats.totalClients} {t("clients.connectedClients")}
           </p>
@@ -172,8 +176,12 @@ export default function ClientsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-4xl md:text-5xl font-bold mb-2">{stats.totalClients}</div>
-            <p className="text-sm text-muted-foreground">{t("clients.stats.uniqueIPs")}</p>
+            <div className="text-4xl md:text-5xl font-bold mb-2">
+              {stats.totalClients}
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {t("clients.stats.uniqueIPs")}
+            </p>
           </CardContent>
         </BentoCard>
 
@@ -187,7 +195,9 @@ export default function ClientsPage() {
             <div className="text-4xl md:text-5xl font-bold mb-2">
               {stats.activeConnections}
             </div>
-            <p className="text-sm text-muted-foreground">{t("clients.stats.openSessions")}</p>
+            <p className="text-sm text-muted-foreground">
+              {t("clients.stats.openSessions")}
+            </p>
           </CardContent>
         </BentoCard>
 
@@ -201,7 +211,9 @@ export default function ClientsPage() {
             <div className="text-4xl md:text-5xl font-bold mb-2">
               {stats.uniqueCountries}
             </div>
-            <p className="text-sm text-muted-foreground">{t("clients.stats.locations")}</p>
+            <p className="text-sm text-muted-foreground">
+              {t("clients.stats.locations")}
+            </p>
           </CardContent>
         </BentoCard>
       </div>
@@ -210,7 +222,9 @@ export default function ClientsPage() {
       <BentoCard colSpan={2}>
         <CardHeader className="pb-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <CardTitle className="text-lg font-medium">{t("clients.list.title")}</CardTitle>
+            <CardTitle className="text-lg font-medium">
+              {t("clients.list.title")}
+            </CardTitle>
             <div className="relative w-full sm:w-64">
               <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -252,10 +266,13 @@ export default function ClientsPage() {
                         </div>
                         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-muted-foreground">
                           <span>
-                            {t("clients.agent")}: {client.agent?.name || t("clients.unknown")}
+                            {t("clients.agent")}:{" "}
+                            {client.agent?.name || t("clients.unknown")}
                           </span>
                           <span className="hidden sm:inline">•</span>
-                          <span>{client.connections} {t("clients.connections")}</span>
+                          <span>
+                            {client.connections} {t("clients.connections")}
+                          </span>
                           <span className="hidden sm:inline">•</span>
                           <span>
                             {t("clients.lastVisit")}:{" "}
@@ -269,7 +286,11 @@ export default function ClientsPage() {
                         )}
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="flex-shrink-0">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-shrink-0"
+                    >
                       {t("clients.details")}
                     </Button>
                   </div>

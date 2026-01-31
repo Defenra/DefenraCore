@@ -16,12 +16,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -71,8 +66,9 @@ function ModernCard({ children, className, hover = true }) {
     <Card
       className={cn(
         "border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden",
-        hover && "hover:border-border/80 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300",
-        className
+        hover &&
+          "hover:border-border/80 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300",
+        className,
       )}
     >
       {children}
@@ -99,9 +95,13 @@ function StatCard({ title, value, subtext, icon: Icon, color = "primary" }) {
             <div className="flex items-baseline gap-2">
               <span className="text-3xl font-bold tracking-tight">{value}</span>
             </div>
-            {subtext && <p className="text-xs text-muted-foreground">{subtext}</p>}
+            {subtext && (
+              <p className="text-xs text-muted-foreground">{subtext}</p>
+            )}
           </div>
-          <div className={cn("p-3 rounded-xl bg-primary/5", colorClasses[color])}>
+          <div
+            className={cn("p-3 rounded-xl bg-primary/5", colorClasses[color])}
+          >
             <Icon className="h-5 w-5" />
           </div>
         </div>
@@ -172,13 +172,22 @@ export default function ProxiesPage() {
 
   const agents = allAgents.filter((a) => a.isConnected);
 
-  const { data: clientsData, isLoading: clientsLoading, refetch: refetchClients } = useProxyClients(selectedProxy?.id);
+  const {
+    data: clientsData,
+    isLoading: clientsLoading,
+    refetch: refetchClients,
+  } = useProxyClients(selectedProxy?.id);
 
   const activeCount = proxies.filter((p) => p.isActive).length;
   const inactiveCount = proxies.length - activeCount;
 
   const handleCreateProxy = async () => {
-    if (!formData.name || !formData.sourcePort || !formData.destinationHost || !formData.destinationPort) {
+    if (
+      !formData.name ||
+      !formData.sourcePort ||
+      !formData.destinationHost ||
+      !formData.destinationPort
+    ) {
       toast.error(t("proxies.errors.requiredFields"));
       return;
     }
@@ -209,7 +218,9 @@ export default function ProxiesPage() {
   const handleToggleProxy = async (id, currentStatus) => {
     try {
       await updateProxy.mutateAsync({ id, isActive: !currentStatus });
-      toast.success(currentStatus ? t("proxies.deactivated") : t("proxies.activated"));
+      toast.success(
+        currentStatus ? t("proxies.deactivated") : t("proxies.activated"),
+      );
     } catch (error) {
       toast.error(error.message || t("proxies.errors.toggleFailed"));
     }
@@ -237,12 +248,24 @@ export default function ProxiesPage() {
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">{t("proxies.title")}</h1>
-            <p className="text-muted-foreground mt-1">{t("proxies.description")}</p>
+            <h1 className="text-3xl font-bold tracking-tight">
+              {t("proxies.title")}
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              {t("proxies.description")}
+            </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching} className="h-9">
-              <IconRefresh className={cn("h-4 w-4 mr-2", isFetching && "animate-spin")} />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => refetch()}
+              disabled={isFetching}
+              className="h-9"
+            >
+              <IconRefresh
+                className={cn("h-4 w-4 mr-2", isFetching && "animate-spin")}
+              />
               {t("common.refresh")}
             </Button>
             <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
@@ -255,7 +278,9 @@ export default function ProxiesPage() {
               <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
                   <DialogTitle>{t("proxies.createTitle")}</DialogTitle>
-                  <DialogDescription>{t("proxies.createDescription")}</DialogDescription>
+                  <DialogDescription>
+                    {t("proxies.createDescription")}
+                  </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                   <div className="grid grid-cols-2 gap-4">
@@ -264,14 +289,18 @@ export default function ProxiesPage() {
                       <Input
                         placeholder={t("proxies.form.namePlaceholder")}
                         value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, name: e.target.value })
+                        }
                       />
                     </div>
                     <div className="space-y-2">
                       <Label>{t("proxies.form.type")}</Label>
                       <Select
                         value={formData.type}
-                        onValueChange={(value) => setFormData({ ...formData, type: value })}
+                        onValueChange={(value) =>
+                          setFormData({ ...formData, type: value })
+                        }
                       >
                         <SelectTrigger>
                           <SelectValue />
@@ -290,7 +319,12 @@ export default function ProxiesPage() {
                         type="number"
                         placeholder="8080"
                         value={formData.sourcePort}
-                        onChange={(e) => setFormData({ ...formData, sourcePort: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            sourcePort: e.target.value,
+                          })
+                        }
                       />
                     </div>
                     <div className="space-y-2">
@@ -299,7 +333,12 @@ export default function ProxiesPage() {
                         type="number"
                         placeholder="80"
                         value={formData.destinationPort}
-                        onChange={(e) => setFormData({ ...formData, destinationPort: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            destinationPort: e.target.value,
+                          })
+                        }
                       />
                     </div>
                   </div>
@@ -308,20 +347,29 @@ export default function ProxiesPage() {
                     <Input
                       placeholder="example.com"
                       value={formData.destinationHost}
-                      onChange={(e) => setFormData({ ...formData, destinationHost: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          destinationHost: e.target.value,
+                        })
+                      }
                     />
                   </div>
                   <div className="space-y-2">
                     <Label>{t("proxies.form.applyTo")}</Label>
                     <Select
                       value={formData.agentId}
-                      onValueChange={(value) => setFormData({ ...formData, agentId: value })}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, agentId: value })
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">{t("proxies.allAgents")}</SelectItem>
+                        <SelectItem value="all">
+                          {t("proxies.allAgents")}
+                        </SelectItem>
                         {agents.map((agent) => (
                           <SelectItem key={agent.agentId} value={agent.agentId}>
                             {agent.name}
@@ -332,10 +380,15 @@ export default function ProxiesPage() {
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
+                  <Button
+                    variant="outline"
+                    onClick={() => setCreateDialogOpen(false)}
+                  >
                     {t("common.cancel")}
                   </Button>
-                  <Button onClick={handleCreateProxy}>{t("common.create")}</Button>
+                  <Button onClick={handleCreateProxy}>
+                    {t("common.create")}
+                  </Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -380,7 +433,10 @@ export default function ProxiesPage() {
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">{t("proxies.listTitle")}</h2>
             <span className="text-sm text-muted-foreground">
-              {proxies.length} {proxies.length === 1 ? t("proxies.single") : t("proxies.multiple")}
+              {proxies.length}{" "}
+              {proxies.length === 1
+                ? t("proxies.single")
+                : t("proxies.multiple")}
             </span>
           </div>
 
@@ -396,7 +452,9 @@ export default function ProxiesPage() {
                 <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                   <IconNetwork className="h-8 w-8 text-primary" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2">{t("proxies.noProxies")}</h3>
+                <h3 className="text-lg font-semibold mb-2">
+                  {t("proxies.noProxies")}
+                </h3>
                 <p className="text-sm text-muted-foreground max-w-sm mb-6">
                   {t("proxies.noProxiesDesc")}
                 </p>
@@ -428,7 +486,10 @@ export default function ProxiesPage() {
                             Active
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="text-xs text-muted-foreground">
+                          <Badge
+                            variant="outline"
+                            className="text-xs text-muted-foreground"
+                          >
                             Inactive
                           </Badge>
                         )}
@@ -437,7 +498,9 @@ export default function ProxiesPage() {
                         <span className="font-mono">{proxy.sourcePort}</span>
                         <IconArrowRight className="h-3 w-3" />
                         <span>{proxy.destinationHost}</span>
-                        <span className="font-mono">:{proxy.destinationPort}</span>
+                        <span className="font-mono">
+                          :{proxy.destinationPort}
+                        </span>
                       </div>
                     </div>
 
@@ -459,7 +522,9 @@ export default function ProxiesPage() {
                             <IconUsers className="h-4 w-4" />
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>{t("proxies.viewClients")}</TooltipContent>
+                        <TooltipContent>
+                          {t("proxies.viewClients")}
+                        </TooltipContent>
                       </Tooltip>
 
                       <Tooltip>
@@ -468,7 +533,9 @@ export default function ProxiesPage() {
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8"
-                            onClick={() => handleToggleProxy(proxy.id, proxy.isActive)}
+                            onClick={() =>
+                              handleToggleProxy(proxy.id, proxy.isActive)
+                            }
                           >
                             {proxy.isActive ? (
                               <IconToggleRight className="h-4 w-4 text-emerald-500" />
@@ -477,17 +544,26 @@ export default function ProxiesPage() {
                             )}
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>{proxy.isActive ? "Deactivate" : "Activate"}</TooltipContent>
+                        <TooltipContent>
+                          {proxy.isActive ? "Deactivate" : "Activate"}
+                        </TooltipContent>
                       </Tooltip>
 
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                          >
                             <IconDotsVertical className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleDeleteProxy(proxy.id)} className="text-red-600">
+                          <DropdownMenuItem
+                            onClick={() => handleDeleteProxy(proxy.id)}
+                            className="text-red-600"
+                          >
                             <IconTrash className="h-4 w-4 mr-2" />
                             {t("common.delete")}
                           </DropdownMenuItem>
@@ -502,14 +578,18 @@ export default function ProxiesPage() {
         </div>
 
         {/* Clients Dialog */}
-        <Dialog open={!!selectedProxy} onOpenChange={(open) => !open && setSelectedProxy(null)}>
+        <Dialog
+          open={!!selectedProxy}
+          onOpenChange={(open) => !open && setSelectedProxy(null)}
+        >
           <DialogContent className="sm:max-w-3xl max-h-[85vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {t("proxies.activeClients")}: {selectedProxy?.name}
               </DialogTitle>
               <DialogDescription>
-                {selectedProxy?.type.toUpperCase()} {t("proxies.port")} {selectedProxy?.sourcePort}
+                {selectedProxy?.type.toUpperCase()} {t("proxies.port")}{" "}
+                {selectedProxy?.sourcePort}
               </DialogDescription>
             </DialogHeader>
 
@@ -528,14 +608,21 @@ export default function ProxiesPage() {
                     {t("proxies.totalClients")}: {clientsData.totalClients}
                   </span>
                   <span className="text-sm text-muted-foreground">
-                    {t("proxies.totalTraffic")}: {formatBytes(
-                      clientsData.clients.reduce((sum, c) => sum + (c.total_bytes || 0), 0)
+                    {t("proxies.totalTraffic")}:{" "}
+                    {formatBytes(
+                      clientsData.clients.reduce(
+                        (sum, c) => sum + (c.total_bytes || 0),
+                        0,
+                      ),
                     )}
                   </span>
                 </div>
                 <div className="space-y-2">
                   {clientsData.clients.map((client, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between p-3 border rounded-lg"
+                    >
                       <div className="space-y-1">
                         <code className="text-sm font-mono">{client.ip}</code>
                         <p className="text-xs text-muted-foreground">

@@ -39,7 +39,7 @@ function BentoCard({ children, className, colSpan = 1 }) {
         "border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300",
         "hover:border-border hover:shadow-lg hover:shadow-primary/5",
         colSpan === 2 && "md:col-span-2",
-        className
+        className,
       )}
     >
       {children}
@@ -199,7 +199,9 @@ export default function LogsPage() {
     return (
       <div className="flex items-center justify-center min-h-screen p-4">
         <div className="text-center space-y-4">
-          <p className="text-red-400">{t("common.error")}: {error.message}</p>
+          <p className="text-red-400">
+            {t("common.error")}: {error.message}
+          </p>
           <Button onClick={() => refetch()} variant="outline">
             {t("common.retry")}
           </Button>
@@ -213,7 +215,9 @@ export default function LogsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">{t("logs.title")}</h1>
+          <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">
+            {t("logs.title")}
+          </h1>
           <p className="text-sm text-muted-foreground md:text-base">
             {data?.total || 0} {t("logs.entriesCount")}
           </p>
@@ -235,7 +239,9 @@ export default function LogsPage() {
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
               <IconFilter className="h-5 w-5 text-primary" />
             </div>
-            <CardTitle className="text-lg font-medium">{t("logs.filters.title")}</CardTitle>
+            <CardTitle className="text-lg font-medium">
+              {t("logs.filters.title")}
+            </CardTitle>
           </div>
         </CardHeader>
         <CardContent>
@@ -254,9 +260,13 @@ export default function LogsPage() {
                 <SelectValue placeholder={t("logs.filters.level")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{t("logs.filters.allLevels")}</SelectItem>
+                <SelectItem value="all">
+                  {t("logs.filters.allLevels")}
+                </SelectItem>
                 <SelectItem value="info">{t("logs.filters.info")}</SelectItem>
-                <SelectItem value="warning">{t("logs.filters.warning")}</SelectItem>
+                <SelectItem value="warning">
+                  {t("logs.filters.warning")}
+                </SelectItem>
                 <SelectItem value="error">{t("logs.filters.error")}</SelectItem>
               </SelectContent>
             </Select>
@@ -265,7 +275,9 @@ export default function LogsPage() {
                 <SelectValue placeholder={t("logs.filters.agent")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{t("logs.filters.allAgents")}</SelectItem>
+                <SelectItem value="all">
+                  {t("logs.filters.allAgents")}
+                </SelectItem>
                 <SelectItem value="agent-eu-01">agent-eu-01</SelectItem>
                 <SelectItem value="agent-us-01">agent-us-01</SelectItem>
                 <SelectItem value="agent-asia-01">agent-asia-01</SelectItem>
@@ -278,7 +290,9 @@ export default function LogsPage() {
       {/* Logs List */}
       <BentoCard colSpan={2}>
         <CardHeader className="pb-6">
-          <CardTitle className="text-lg font-medium">{t("logs.list.title")}</CardTitle>
+          <CardTitle className="text-lg font-medium">
+            {t("logs.list.title")}
+          </CardTitle>
           <CardDescription>{t("logs.list.description")}</CardDescription>
         </CardHeader>
         <CardContent>
@@ -333,8 +347,12 @@ export default function LogsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-4xl md:text-5xl font-bold mb-2">{levelStats.info}</div>
-            <p className="text-sm text-muted-foreground">{t("logs.stats.infoLabel")}</p>
+            <div className="text-4xl md:text-5xl font-bold mb-2">
+              {levelStats.info}
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {t("logs.stats.infoLabel")}
+            </p>
           </CardContent>
         </BentoCard>
 
@@ -345,8 +363,12 @@ export default function LogsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-4xl md:text-5xl font-bold mb-2">{levelStats.warning}</div>
-            <p className="text-sm text-muted-foreground">{t("logs.stats.warningsLabel")}</p>
+            <div className="text-4xl md:text-5xl font-bold mb-2">
+              {levelStats.warning}
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {t("logs.stats.warningsLabel")}
+            </p>
           </CardContent>
         </BentoCard>
 
@@ -357,8 +379,12 @@ export default function LogsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-4xl md:text-5xl font-bold mb-2">{levelStats.error}</div>
-            <p className="text-sm text-muted-foreground">{t("logs.stats.errorsLabel")}</p>
+            <div className="text-4xl md:text-5xl font-bold mb-2">
+              {levelStats.error}
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {t("logs.stats.errorsLabel")}
+            </p>
           </CardContent>
         </BentoCard>
       </div>

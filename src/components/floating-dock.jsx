@@ -25,26 +25,81 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 
 const mainNavItems = [
-  { key: "dashboard", url: "/dashboard", icon: IconDashboard, permission: null },
-  { key: "agents", url: "/dashboard/agents", icon: IconRobot, permission: "agents.read" },
-  { key: "proxies", url: "/dashboard/proxies", icon: IconNetwork, permission: "proxies.read" },
-  { key: "domains", url: "/dashboard/domains", icon: IconWorld, permission: "domains.read" },
+  {
+    key: "dashboard",
+    url: "/dashboard",
+    icon: IconDashboard,
+    permission: null,
+  },
+  {
+    key: "agents",
+    url: "/dashboard/agents",
+    icon: IconRobot,
+    permission: "agents.read",
+  },
+  {
+    key: "proxies",
+    url: "/dashboard/proxies",
+    icon: IconNetwork,
+    permission: "proxies.read",
+  },
+  {
+    key: "domains",
+    url: "/dashboard/domains",
+    icon: IconWorld,
+    permission: "domains.read",
+  },
 ];
 
 const secondaryNavItems = [
-  { key: "monitoring", url: "/dashboard/monitoring", icon: IconActivity, permission: null },
-  { key: "geodnsMap", url: "/dashboard/geodns-map", icon: IconMapPin, permission: "domains.read" },
-  { key: "clients", url: "/dashboard/clients", icon: IconUsers, permission: null },
-  { key: "bans", url: "/dashboard/bans", icon: IconShieldLock, permission: "bans.read" },
-  { key: "statistics", url: "/dashboard/statistics", icon: IconChartBar, permission: null },
+  {
+    key: "monitoring",
+    url: "/dashboard/monitoring",
+    icon: IconActivity,
+    permission: null,
+  },
+  {
+    key: "geodnsMap",
+    url: "/dashboard/geodns-map",
+    icon: IconMapPin,
+    permission: "domains.read",
+  },
+  {
+    key: "clients",
+    url: "/dashboard/clients",
+    icon: IconUsers,
+    permission: null,
+  },
+  {
+    key: "bans",
+    url: "/dashboard/bans",
+    icon: IconShieldLock,
+    permission: "bans.read",
+  },
+  {
+    key: "statistics",
+    url: "/dashboard/statistics",
+    icon: IconChartBar,
+    permission: null,
+  },
   { key: "logs", url: "/dashboard/logs", icon: IconFileText, permission: null },
-  { key: "users", url: "/dashboard/users", icon: IconUserCog, permission: "users.read" },
+  {
+    key: "users",
+    url: "/dashboard/users",
+    icon: IconUserCog,
+    permission: "users.read",
+  },
 ];
 
 export function FloatingDock() {
@@ -88,7 +143,7 @@ export function FloatingDock() {
                       "relative flex items-center justify-center h-11 w-11 rounded-xl transition-all duration-200",
                       active
                         ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent",
                     )}
                   >
                     <Icon className="h-5 w-5" strokeWidth={active ? 2.5 : 2} />
@@ -98,7 +153,9 @@ export function FloatingDock() {
                   </Link>
                 </TooltipTrigger>
                 <TooltipContent side="top" className="font-medium">
-                  {t(`floatingDock.${item.key === "geodnsMap" ? "map" : item.key}`)}
+                  {t(
+                    `floatingDock.${item.key === "geodnsMap" ? "map" : item.key}`,
+                  )}
                 </TooltipContent>
               </Tooltip>
             );
@@ -117,7 +174,7 @@ export function FloatingDock() {
                       "flex items-center justify-center h-11 w-11 rounded-xl transition-all duration-200",
                       moreOpen
                         ? "bg-accent text-foreground"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent",
                     )}
                   >
                     <IconMenu2 className="h-5 w-5" />
@@ -145,13 +202,13 @@ export function FloatingDock() {
                       href={item.url}
                       className={cn(
                         "flex items-center gap-3 cursor-pointer",
-                        active && "bg-accent"
+                        active && "bg-accent",
                       )}
                     >
                       <Icon
                         className={cn(
                           "h-4 w-4",
-                          active ? "text-primary" : "text-muted-foreground"
+                          active ? "text-primary" : "text-muted-foreground",
                         )}
                       />
                       <span className={cn(active && "font-medium")}>

@@ -5,21 +5,26 @@ export function useDashboardStats() {
   return useQuery({
     queryKey: ["dashboard", "stats"],
     queryFn: async () => {
-      const [agentsRes, proxiesRes, domainsRes, bansRes, statsRes] = await Promise.all([
-        fetch("/api/agent/list"),
-        fetch("/api/proxy/list"),
-        fetch("/api/domain/list"),
-        fetch("/api/bans?type=active&limit=5"),
-        fetch("/api/statistics"),
-      ]);
+      const [agentsRes, proxiesRes, domainsRes, bansRes, statsRes] =
+        await Promise.all([
+          fetch("/api/agent/list"),
+          fetch("/api/proxy/list"),
+          fetch("/api/domain/list"),
+          fetch("/api/bans?type=active&limit=5"),
+          fetch("/api/statistics"),
+        ]);
 
       if (!agentsRes.ok) throw new Error("Failed to fetch agents");
       if (!proxiesRes.ok) throw new Error("Failed to fetch proxies");
 
       const agentsData = await agentsRes.json();
       const proxiesData = await proxiesRes.json();
-      const domainsData = domainsRes.ok ? await domainsRes.json() : { domains: [] };
-      const bansData = bansRes.ok ? await bansRes.json() : { bans: [], stats: {} };
+      const domainsData = domainsRes.ok
+        ? await domainsRes.json()
+        : { domains: [] };
+      const bansData = bansRes.ok
+        ? await bansRes.json()
+        : { bans: [], stats: {} };
       const statsData = statsRes.ok ? await statsRes.json() : { summary: {} };
 
       const agents = agentsData.agents || [];
@@ -27,13 +32,19 @@ export function useDashboardStats() {
       const domains = domainsData.domains || [];
 
       // Calculate average load score across all agents
-      const avgLoadScore = agents.length > 0
-        ? agents.reduce((sum, a) => sum + (a.loadScore || 0), 0) / agents.length
-        : 0;
+      const avgLoadScore =
+        agents.length > 0
+          ? agents.reduce((sum, a) => sum + (a.loadScore || 0), 0) /
+            agents.length
+          : 0;
 
       // Count healthy vs overloaded agents
-      const healthyAgents = agents.filter(a => (a.loadScore || 0) < 80).length;
-      const overloadedAgents = agents.filter(a => (a.loadScore || 0) >= 80).length;
+      const healthyAgents = agents.filter(
+        (a) => (a.loadScore || 0) < 80,
+      ).length;
+      const overloadedAgents = agents.filter(
+        (a) => (a.loadScore || 0) >= 80,
+      ).length;
 
       return {
         agents: {
@@ -55,7 +66,7 @@ export function useDashboardStats() {
           total: domains.length,
           active: domains.filter((d) => d.isActive).length,
           withProxy: domains.filter((d) =>
-            d.dnsRecords?.some((r) => r.httpProxyEnabled)
+            d.dnsRecords?.some((r) => r.httpProxyEnabled),
           ).length,
           withSSL: domains.filter((d) => d.httpProxy?.ssl?.enabled).length,
           data: domains,

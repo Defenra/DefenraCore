@@ -45,13 +45,13 @@ export function useTranslation() {
       if (params) {
         return Object.entries(params).reduce(
           (str, [key, val]) => str.replace(`{{${key}}}`, String(val)),
-          value
+          value,
         );
       }
 
       return value;
     },
-    [dictionary]
+    [dictionary],
   );
 
   return {

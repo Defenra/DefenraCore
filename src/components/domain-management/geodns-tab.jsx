@@ -338,7 +338,9 @@ export function GeoDnsTab({ domain, agents, onUpdate }) {
 
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {agents.map((agent) => {
-                    const isSelected = location.agentIds?.includes(agent.agentId);
+                    const isSelected = location.agentIds?.includes(
+                      agent.agentId,
+                    );
                     return (
                       <label
                         key={agent.agentId}

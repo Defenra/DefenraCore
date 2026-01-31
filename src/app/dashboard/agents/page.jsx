@@ -35,10 +35,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -84,8 +81,9 @@ function ModernCard({ children, className, hover = true }) {
     <Card
       className={cn(
         "border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden",
-        hover && "hover:border-border/80 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300",
-        className
+        hover &&
+          "hover:border-border/80 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300",
+        className,
       )}
     >
       {children}
@@ -94,7 +92,14 @@ function ModernCard({ children, className, hover = true }) {
 }
 
 // Stat Card
-function StatCard({ title, value, subtext, icon: Icon, trend, color = "primary" }) {
+function StatCard({
+  title,
+  value,
+  subtext,
+  icon: Icon,
+  trend,
+  color = "primary",
+}) {
   const colorClasses = {
     primary: "text-primary",
     success: "text-emerald-500",
@@ -112,8 +117,14 @@ function StatCard({ title, value, subtext, icon: Icon, trend, color = "primary" 
             <div className="flex items-baseline gap-2">
               <span className="text-3xl font-bold tracking-tight">{value}</span>
               {trend && (
-                <span className={cn("text-xs font-medium", trend > 0 ? "text-emerald-500" : "text-red-500")}>
-                  {trend > 0 ? "+" : ""}{trend}%
+                <span
+                  className={cn(
+                    "text-xs font-medium",
+                    trend > 0 ? "text-emerald-500" : "text-red-500",
+                  )}
+                >
+                  {trend > 0 ? "+" : ""}
+                  {trend}%
                 </span>
               )}
             </div>
@@ -121,7 +132,9 @@ function StatCard({ title, value, subtext, icon: Icon, trend, color = "primary" 
               <p className="text-xs text-muted-foreground">{subtext}</p>
             )}
           </div>
-          <div className={cn("p-3 rounded-xl bg-primary/5", colorClasses[color])}>
+          <div
+            className={cn("p-3 rounded-xl bg-primary/5", colorClasses[color])}
+          >
             <Icon className="h-5 w-5" />
           </div>
         </div>
@@ -173,7 +186,9 @@ function MetricBar({ value, max = 100, size = "sm" }) {
   const heightClass = size === "sm" ? "h-1.5" : "h-2";
 
   return (
-    <div className={`${heightClass} w-full bg-secondary rounded-full overflow-hidden`}>
+    <div
+      className={`${heightClass} w-full bg-secondary rounded-full overflow-hidden`}
+    >
       <div
         className={cn("h-full rounded-full transition-all", colors)}
         style={{ width: `${Math.min(value, 100)}%` }}
@@ -186,7 +201,10 @@ function MetricBar({ value, max = 100, size = "sm" }) {
 function AgentStatusBadge({ agent }) {
   if (!agent.isConnected) {
     return (
-      <Badge variant="outline" className="text-muted-foreground border-muted text-xs">
+      <Badge
+        variant="outline"
+        className="text-muted-foreground border-muted text-xs"
+      >
         <IconCircle className="h-3 w-3 mr-1" />
         Offline
       </Badge>
@@ -292,7 +310,9 @@ function filterAgents(agents, searchQuery, statusFilter, loadFilter) {
         agent.ipInfo?.city?.toLowerCase().includes(query) ||
         agent.ipInfo?.country?.toLowerCase().includes(query);
       const idMatch = agent.agentId?.toLowerCase().includes(query);
-      const tagMatch = agent.tags?.some((tag) => tag.toLowerCase().includes(query));
+      const tagMatch = agent.tags?.some((tag) =>
+        tag.toLowerCase().includes(query),
+      );
 
       if (!nameMatch && !ipMatch && !locationMatch && !idMatch && !tagMatch) {
         return false;
@@ -302,8 +322,10 @@ function filterAgents(agents, searchQuery, statusFilter, loadFilter) {
     // Status filter
     if (statusFilter !== "all") {
       if (statusFilter === "offline" && agent.isConnected) return false;
-      if (statusFilter === "active" && (!agent.isConnected || !agent.isActive)) return false;
-      if (statusFilter === "standby" && (!agent.isConnected || agent.isActive)) return false;
+      if (statusFilter === "active" && (!agent.isConnected || !agent.isActive))
+        return false;
+      if (statusFilter === "standby" && (!agent.isConnected || agent.isActive))
+        return false;
     }
 
     // Load filter
@@ -320,7 +342,12 @@ function filterAgents(agents, searchQuery, statusFilter, loadFilter) {
 
 export default function AgentsPage() {
   const { t } = useTranslation();
-  const { data: agents = [], isLoading, refetch, isFetching } = useAgents({
+  const {
+    data: agents = [],
+    isLoading,
+    refetch,
+    isFetching,
+  } = useAgents({
     refetchInterval: 60000,
   });
   const createAgent = useCreateAgent();
@@ -353,13 +380,19 @@ export default function AgentsPage() {
   const activeCount = agents.filter((a) => a.isActive).length;
   const disconnectedCount = agents.filter((a) => !a.isConnected).length;
   const overloadedCount = agents.filter((a) => (a.loadScore || 0) > 80).length;
-  const avgLoadScore = agents.length > 0
-    ? agents.reduce((sum, a) => sum + (a.loadScore || 0), 0) / agents.length
-    : 0;
+  const avgLoadScore =
+    agents.length > 0
+      ? agents.reduce((sum, a) => sum + (a.loadScore || 0), 0) / agents.length
+      : 0;
 
   // Filtered and sorted agents
   const filteredAgents = useMemo(() => {
-    const filtered = filterAgents(agents, searchQuery, statusFilter, loadFilter);
+    const filtered = filterAgents(
+      agents,
+      searchQuery,
+      statusFilter,
+      loadFilter,
+    );
     return sortAgents(filtered, sortBy, sortOrder);
   }, [agents, searchQuery, statusFilter, loadFilter, sortBy, sortOrder]);
 
@@ -367,7 +400,7 @@ export default function AgentsPage() {
   const totalPages = Math.ceil(filteredAgents.length / ITEMS_PER_PAGE);
   const paginatedAgents = filteredAgents.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+    currentPage * ITEMS_PER_PAGE,
   );
 
   // Reset page when filters change
@@ -390,15 +423,18 @@ export default function AgentsPage() {
   }, []);
 
   // Sorting
-  const handleSort = useCallback((column) => {
-    if (sortBy === column) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-    } else {
-      setSortBy(column);
-      setSortOrder("asc");
-    }
-    setCurrentPage(1);
-  }, [sortBy, sortOrder]);
+  const handleSort = useCallback(
+    (column) => {
+      if (sortBy === column) {
+        setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+      } else {
+        setSortBy(column);
+        setSortOrder("asc");
+      }
+      setCurrentPage(1);
+    },
+    [sortBy, sortOrder],
+  );
 
   // Selection handlers
   const toggleSelectAll = useCallback(() => {
@@ -409,15 +445,18 @@ export default function AgentsPage() {
     }
   }, [selectedAgents, paginatedAgents]);
 
-  const toggleSelectAgent = useCallback((agentId) => {
-    const newSet = new Set(selectedAgents);
-    if (newSet.has(agentId)) {
-      newSet.delete(agentId);
-    } else {
-      newSet.add(agentId);
-    }
-    setSelectedAgents(newSet);
-  }, [selectedAgents]);
+  const toggleSelectAgent = useCallback(
+    (agentId) => {
+      const newSet = new Set(selectedAgents);
+      if (newSet.has(agentId)) {
+        newSet.delete(agentId);
+      } else {
+        newSet.add(agentId);
+      }
+      setSelectedAgents(newSet);
+    },
+    [selectedAgents],
+  );
 
   const handleSelectAllFiltered = useCallback(() => {
     setSelectedAgents(new Set(filteredAgents.map((a) => a.id)));
@@ -431,7 +470,7 @@ export default function AgentsPage() {
   const handleBulkDelete = useCallback(async () => {
     try {
       const promises = Array.from(selectedAgents).map((id) =>
-        deleteAgent.mutateAsync(id)
+        deleteAgent.mutateAsync(id),
       );
       await Promise.all(promises);
       toast.success(`Deleted ${selectedAgents.size} agents`);
@@ -540,7 +579,7 @@ export default function AgentsPage() {
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(
-      `curl -sSL https://raw.githubusercontent.com/Defenra/DefenraAgent/main/quick-install.sh | \\\n   sudo CONNECT_URL="${connectionUrl}" bash`
+      `curl -sSL https://raw.githubusercontent.com/Defenra/DefenraAgent/main/quick-install.sh | \\\n   sudo CONNECT_URL="${connectionUrl}" bash`,
     );
     setCopied(true);
     toast.success("Copied to clipboard");
@@ -555,7 +594,10 @@ export default function AgentsPage() {
 
   // Sort indicator
   const SortIndicator = ({ column }) => {
-    if (sortBy !== column) return <IconSortAscending className="h-3.5 w-3.5 text-muted-foreground/50" />;
+    if (sortBy !== column)
+      return (
+        <IconSortAscending className="h-3.5 w-3.5 text-muted-foreground/50" />
+      );
     return sortOrder === "asc" ? (
       <IconArrowUp className="h-3.5 w-3.5 text-primary" />
     ) : (
@@ -569,8 +611,12 @@ export default function AgentsPage() {
         {/* Header Section */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">{t("agents.title")}</h1>
-            <p className="text-muted-foreground mt-1">{t("agents.description")}</p>
+            <h1 className="text-3xl font-bold tracking-tight">
+              {t("agents.title")}
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              {t("agents.description")}
+            </p>
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -580,7 +626,9 @@ export default function AgentsPage() {
               disabled={isFetching}
               className="h-9"
             >
-              <IconRefresh className={cn("h-4 w-4 mr-2", isFetching && "animate-spin")} />
+              <IconRefresh
+                className={cn("h-4 w-4 mr-2", isFetching && "animate-spin")}
+              />
               {t("common.refresh")}
             </Button>
             <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
@@ -593,7 +641,9 @@ export default function AgentsPage() {
               <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
                   <DialogTitle>{t("agents.createToken")}</DialogTitle>
-                  <DialogDescription>{t("agents.createTokenDesc")}</DialogDescription>
+                  <DialogDescription>
+                    {t("agents.createTokenDesc")}
+                  </DialogDescription>
                 </DialogHeader>
                 {!connectionUrl ? (
                   <div className="space-y-4 py-4">
@@ -607,7 +657,9 @@ export default function AgentsPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="polling">{t("agents.form.pollingInterval")}</Label>
+                      <Label htmlFor="polling">
+                        {t("agents.form.pollingInterval")}
+                      </Label>
                       <Input
                         id="polling"
                         type="number"
@@ -621,7 +673,9 @@ export default function AgentsPage() {
                   <div className="space-y-4 py-4">
                     <div className="rounded-lg bg-muted p-4">
                       <code className="text-xs break-all font-mono">
-                        curl -sSL https://raw.githubusercontent.com/Defenra/DefenraAgent/main/quick-install.sh | \\\n                        sudo CONNECT_URL="{connectionUrl}" bash
+                        curl -sSL
+                        https://raw.githubusercontent.com/Defenra/DefenraAgent/main/quick-install.sh
+                        | \\\n sudo CONNECT_URL="{connectionUrl}" bash
                       </code>
                     </div>
                   </div>
@@ -632,12 +686,18 @@ export default function AgentsPage() {
                       <Button variant="outline" onClick={closeDialog}>
                         {t("common.cancel")}
                       </Button>
-                      <Button onClick={handleCreateAgent}>{t("common.create")}</Button>
+                      <Button onClick={handleCreateAgent}>
+                        {t("common.create")}
+                      </Button>
                     </>
                   ) : (
                     <>
                       <Button variant="outline" onClick={copyToClipboard}>
-                        {copied ? <IconCheck className="h-4 w-4 mr-2" /> : <IconCopy className="h-4 w-4 mr-2" />}
+                        {copied ? (
+                          <IconCheck className="h-4 w-4 mr-2" />
+                        ) : (
+                          <IconCopy className="h-4 w-4 mr-2" />
+                        )}
                         {copied ? t("common.copied") : t("common.copy")}
                       </Button>
                       <Button onClick={closeDialog}>{t("common.done")}</Button>
@@ -682,9 +742,19 @@ export default function AgentsPage() {
             <StatCard
               title={t("agents.stats.avgLoad")}
               value={`${avgLoadScore.toFixed(0)}%`}
-              subtext={overloadedCount > 0 ? `${overloadedCount} overloaded` : t("agents.stats.networkWide")}
+              subtext={
+                overloadedCount > 0
+                  ? `${overloadedCount} overloaded`
+                  : t("agents.stats.networkWide")
+              }
               icon={IconActivity}
-              color={avgLoadScore > 80 ? "danger" : avgLoadScore > 60 ? "warning" : "primary"}
+              color={
+                avgLoadScore > 80
+                  ? "danger"
+                  : avgLoadScore > 60
+                    ? "warning"
+                    : "primary"
+              }
             />
           </div>
         )}
@@ -714,7 +784,10 @@ export default function AgentsPage() {
 
             {/* Filters */}
             <div className="flex flex-wrap gap-2">
-              <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
+              <Select
+                value={statusFilter}
+                onValueChange={handleStatusFilterChange}
+              >
                 <SelectTrigger className="w-[140px]">
                   <IconFilter className="h-4 w-4 mr-2" />
                   <SelectValue placeholder="Status" />
@@ -734,7 +807,9 @@ export default function AgentsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Load</SelectItem>
-                  <SelectItem value="overloaded">Overloaded (&gt;80%)</SelectItem>
+                  <SelectItem value="overloaded">
+                    Overloaded (&gt;80%)
+                  </SelectItem>
                   <SelectItem value="high">High (60-80%)</SelectItem>
                   <SelectItem value="normal">Normal (&lt;60%)</SelectItem>
                 </SelectContent>
@@ -758,10 +833,16 @@ export default function AgentsPage() {
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+                onClick={() =>
+                  setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+                }
                 className="h-9 w-9"
               >
-                {sortOrder === "asc" ? <IconArrowUp className="h-4 w-4" /> : <IconArrowDown className="h-4 w-4" />}
+                {sortOrder === "asc" ? (
+                  <IconArrowUp className="h-4 w-4" />
+                ) : (
+                  <IconArrowDown className="h-4 w-4" />
+                )}
               </Button>
             </div>
           </div>
@@ -770,11 +851,15 @@ export default function AgentsPage() {
           <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/40">
             <div className="text-sm text-muted-foreground">
               Showing {filteredAgents.length} of {agents.length} agents
-              {(searchQuery || statusFilter !== "all" || loadFilter !== "all") && (
+              {(searchQuery ||
+                statusFilter !== "all" ||
+                loadFilter !== "all") && (
                 <span className="ml-2">(filtered)</span>
               )}
             </div>
-            {(searchQuery || statusFilter !== "all" || loadFilter !== "all") && (
+            {(searchQuery ||
+              statusFilter !== "all" ||
+              loadFilter !== "all") && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -809,11 +894,7 @@ export default function AgentsPage() {
               )}
             </div>
             <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleClearSelection}
-              >
+              <Button variant="ghost" size="sm" onClick={handleClearSelection}>
                 Clear
               </Button>
               <Button
@@ -852,7 +933,11 @@ export default function AgentsPage() {
                     ? "Try adjusting your search or filters"
                     : t("agents.noAgentsDesc")}
                 </p>
-                {!(searchQuery || statusFilter !== "all" || loadFilter !== "all") && (
+                {!(
+                  searchQuery ||
+                  statusFilter !== "all" ||
+                  loadFilter !== "all"
+                ) && (
                   <Button onClick={() => setCreateDialogOpen(true)}>
                     <IconPlus className="h-4 w-4 mr-2" />
                     {t("agents.addAgent")}
@@ -867,7 +952,10 @@ export default function AgentsPage() {
                 <div className="flex items-center gap-4 p-3 border-b border-border/40 bg-muted/30 text-sm font-medium">
                   <div className="w-4 flex justify-center">
                     <Checkbox
-                      checked={selectedAgents.size === paginatedAgents.length && paginatedAgents.length > 0}
+                      checked={
+                        selectedAgents.size === paginatedAgents.length &&
+                        paginatedAgents.length > 0
+                      }
                       onCheckedChange={toggleSelectAll}
                     />
                   </div>
@@ -940,7 +1028,8 @@ export default function AgentsPage() {
                 <div className="divide-y divide-border/40">
                   {paginatedAgents.map((agent) => {
                     const cpuUsage = agent.systemMetrics?.cpuUsagePercent || 0;
-                    const memoryUsage = agent.systemMetrics?.memoryUsagePercent || 0;
+                    const memoryUsage =
+                      agent.systemMetrics?.memoryUsagePercent || 0;
                     const loadScore = agent.loadScore || 0;
                     const isSelected = selectedAgents.has(agent.id);
 
@@ -949,7 +1038,7 @@ export default function AgentsPage() {
                         key={agent.id}
                         className={cn(
                           "flex items-center gap-4 p-3 hover:bg-muted/30 transition-colors",
-                          isSelected && "bg-primary/5"
+                          isSelected && "bg-primary/5",
                         )}
                       >
                         <div className="w-4 flex justify-center">
@@ -961,34 +1050,50 @@ export default function AgentsPage() {
 
                         {/* Agent Info */}
                         <div className="flex-1 min-w-0 flex items-center gap-3">
-                          <div className={cn(
-                            "h-2.5 w-2.5 rounded-full shrink-0",
-                            agent.isActive ? "bg-emerald-500" :
-                            agent.isConnected ? "bg-amber-500" : "bg-muted-foreground/30"
-                          )}>
+                          <div
+                            className={cn(
+                              "h-2.5 w-2.5 rounded-full shrink-0",
+                              agent.isActive
+                                ? "bg-emerald-500"
+                                : agent.isConnected
+                                  ? "bg-amber-500"
+                                  : "bg-muted-foreground/30",
+                            )}
+                          >
                             {agent.isActive && (
                               <span className="animate-ping absolute inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400 opacity-75" />
                             )}
                           </div>
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className="font-medium truncate">{agent.name}</span>
+                              <span className="font-medium truncate">
+                                {agent.name}
+                              </span>
                               {agent.label && (
-                                <Badge variant="outline" className="text-xs hidden sm:inline-flex shrink-0">
+                                <Badge
+                                  variant="outline"
+                                  className="text-xs hidden sm:inline-flex shrink-0"
+                                >
                                   {agent.label}
                                 </Badge>
                               )}
                             </div>
                             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                              <code className="text-[10px] bg-muted px-1 rounded">{agent.agentId?.slice(0, 8)}</code>
+                              <code className="text-[10px] bg-muted px-1 rounded">
+                                {agent.agentId?.slice(0, 8)}
+                              </code>
                               <span>•</span>
-                              <span className="truncate">{agent.ipAddress || "—"}</span>
-                              {(agent.manualLocation?.city || agent.ipInfo?.city) && (
+                              <span className="truncate">
+                                {agent.ipAddress || "—"}
+                              </span>
+                              {(agent.manualLocation?.city ||
+                                agent.ipInfo?.city) && (
                                 <>
                                   <span>•</span>
                                   <span className="flex items-center gap-0.5">
                                     <IconMapPin className="h-3 w-3" />
-                                    {agent.manualLocation?.city || agent.ipInfo?.city}
+                                    {agent.manualLocation?.city ||
+                                      agent.ipInfo?.city}
                                   </span>
                                 </>
                               )}
@@ -1004,11 +1109,16 @@ export default function AgentsPage() {
                         {/* CPU */}
                         <div className="w-32 hidden lg:block">
                           <div className="flex items-center gap-2">
-                            <span className={cn(
-                              "text-xs w-8 text-right",
-                              cpuUsage > 80 ? "text-red-500" :
-                              cpuUsage > 60 ? "text-amber-500" : "text-emerald-500"
-                            )}>
+                            <span
+                              className={cn(
+                                "text-xs w-8 text-right",
+                                cpuUsage > 80
+                                  ? "text-red-500"
+                                  : cpuUsage > 60
+                                    ? "text-amber-500"
+                                    : "text-emerald-500",
+                              )}
+                            >
                               {cpuUsage.toFixed(0)}%
                             </span>
                             <div className="flex-1">
@@ -1020,11 +1130,16 @@ export default function AgentsPage() {
                         {/* Memory */}
                         <div className="w-32 hidden lg:block">
                           <div className="flex items-center gap-2">
-                            <span className={cn(
-                              "text-xs w-8 text-right",
-                              memoryUsage > 80 ? "text-red-500" :
-                              memoryUsage > 60 ? "text-amber-500" : "text-emerald-500"
-                            )}>
+                            <span
+                              className={cn(
+                                "text-xs w-8 text-right",
+                                memoryUsage > 80
+                                  ? "text-red-500"
+                                  : memoryUsage > 60
+                                    ? "text-amber-500"
+                                    : "text-emerald-500",
+                              )}
+                            >
                               {memoryUsage.toFixed(0)}%
                             </span>
                             <div className="flex-1">
@@ -1036,11 +1151,16 @@ export default function AgentsPage() {
                         {/* Load Score */}
                         <div className="w-24 hidden md:block">
                           <div className="flex items-center gap-2">
-                            <span className={cn(
-                              "text-xs font-medium",
-                              loadScore > 80 ? "text-red-500" :
-                              loadScore > 60 ? "text-amber-500" : "text-emerald-500"
-                            )}>
+                            <span
+                              className={cn(
+                                "text-xs font-medium",
+                                loadScore > 80
+                                  ? "text-red-500"
+                                  : loadScore > 60
+                                    ? "text-amber-500"
+                                    : "text-emerald-500",
+                              )}
+                            >
                               {loadScore.toFixed(0)}%
                             </span>
                             <MetricBar value={loadScore} />
@@ -1065,7 +1185,9 @@ export default function AgentsPage() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => handleEditAgent(agent)}>
+                              <DropdownMenuItem
+                                onClick={() => handleEditAgent(agent)}
+                              >
                                 <IconEdit className="h-4 w-4 mr-2" />
                                 {t("common.edit")}
                               </DropdownMenuItem>
@@ -1090,13 +1212,14 @@ export default function AgentsPage() {
               {totalPages > 1 && (
                 <div className="flex items-center justify-between">
                   <div className="text-sm text-muted-foreground">
-                    Page {currentPage} of {totalPages} ({filteredAgents.length} total)
+                    Page {currentPage} of {totalPages} ({filteredAgents.length}{" "}
+                    total)
                   </div>
                   <div className="flex items-center gap-1">
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
                     >
                       <IconChevronLeft className="h-4 w-4" />
@@ -1115,7 +1238,9 @@ export default function AgentsPage() {
                       return (
                         <Button
                           key={pageNum}
-                          variant={currentPage === pageNum ? "default" : "outline"}
+                          variant={
+                            currentPage === pageNum ? "default" : "outline"
+                          }
                           size="sm"
                           className="w-8 h-8 p-0"
                           onClick={() => setCurrentPage(pageNum)}
@@ -1127,7 +1252,9 @@ export default function AgentsPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      onClick={() =>
+                        setCurrentPage((p) => Math.min(totalPages, p + 1))
+                      }
                       disabled={currentPage === totalPages}
                     >
                       <IconChevronRight className="h-4 w-4" />
@@ -1143,8 +1270,12 @@ export default function AgentsPage() {
         {!isLoading && agents.length > 0 && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">{t("agents.analytics.title")}</h2>
-              <span className="text-xs text-muted-foreground">{t("agents.analytics.realtime")}</span>
+              <h2 className="text-lg font-semibold">
+                {t("agents.analytics.title")}
+              </h2>
+              <span className="text-xs text-muted-foreground">
+                {t("agents.analytics.realtime")}
+              </span>
             </div>
             <AgentsStatusGraph agents={agents} />
           </div>
@@ -1164,14 +1295,24 @@ export default function AgentsPage() {
                     <Label>{t("agents.form.name")}</Label>
                     <Input
                       value={editingAgent.name}
-                      onChange={(e) => setEditingAgent({ ...editingAgent, name: e.target.value })}
+                      onChange={(e) =>
+                        setEditingAgent({
+                          ...editingAgent,
+                          name: e.target.value,
+                        })
+                      }
                     />
                   </div>
                   <div className="space-y-2">
                     <Label>{t("agents.form.label")}</Label>
                     <Input
                       value={editingAgent.label}
-                      onChange={(e) => setEditingAgent({ ...editingAgent, label: e.target.value })}
+                      onChange={(e) =>
+                        setEditingAgent({
+                          ...editingAgent,
+                          label: e.target.value,
+                        })
+                      }
                     />
                   </div>
                 </div>
@@ -1180,9 +1321,13 @@ export default function AgentsPage() {
                   <Label>{t("agents.form.tags")}</Label>
                   <Input
                     value={editingAgent.tags}
-                    onChange={(e) => setEditingAgent({ ...editingAgent, tags: e.target.value })}
+                    onChange={(e) =>
+                      setEditingAgent({ ...editingAgent, tags: e.target.value })
+                    }
                   />
-                  <p className="text-xs text-muted-foreground">{t("agents.form.tagsHint")}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("agents.form.tagsHint")}
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -1190,14 +1335,24 @@ export default function AgentsPage() {
                     <Label>{t("agents.form.category")}</Label>
                     <Input
                       value={editingAgent.category}
-                      onChange={(e) => setEditingAgent({ ...editingAgent, category: e.target.value })}
+                      onChange={(e) =>
+                        setEditingAgent({
+                          ...editingAgent,
+                          category: e.target.value,
+                        })
+                      }
                     />
                   </div>
                   <div className="space-y-2">
                     <Label>{t("agents.form.provider")}</Label>
                     <Input
                       value={editingAgent.provider}
-                      onChange={(e) => setEditingAgent({ ...editingAgent, provider: e.target.value })}
+                      onChange={(e) =>
+                        setEditingAgent({
+                          ...editingAgent,
+                          provider: e.target.value,
+                        })
+                      }
                     />
                   </div>
                 </div>
@@ -1208,7 +1363,12 @@ export default function AgentsPage() {
                     <Input
                       type="number"
                       value={editingAgent.price}
-                      onChange={(e) => setEditingAgent({ ...editingAgent, price: e.target.value })}
+                      onChange={(e) =>
+                        setEditingAgent({
+                          ...editingAgent,
+                          price: e.target.value,
+                        })
+                      }
                     />
                   </div>
                   <div className="space-y-2">
@@ -1216,14 +1376,22 @@ export default function AgentsPage() {
                     <Input
                       type="number"
                       value={editingAgent.maxTraffic}
-                      onChange={(e) => setEditingAgent({ ...editingAgent, maxTraffic: e.target.value })}
+                      onChange={(e) =>
+                        setEditingAgent({
+                          ...editingAgent,
+                          maxTraffic: e.target.value,
+                        })
+                      }
                     />
                   </div>
                 </div>
               </div>
             )}
             <DialogFooter>
-              <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setEditDialogOpen(false)}
+              >
                 {t("common.cancel")}
               </Button>
               <Button onClick={handleSaveAgent}>{t("common.save")}</Button>
@@ -1232,7 +1400,10 @@ export default function AgentsPage() {
         </Dialog>
 
         {/* Bulk Delete Confirmation */}
-        <Dialog open={bulkDeleteDialogOpen} onOpenChange={setBulkDeleteDialogOpen}>
+        <Dialog
+          open={bulkDeleteDialogOpen}
+          onOpenChange={setBulkDeleteDialogOpen}
+        >
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-red-600">
@@ -1240,11 +1411,15 @@ export default function AgentsPage() {
                 Delete {selectedAgents.size} Agents?
               </DialogTitle>
               <DialogDescription>
-                This action cannot be undone. All selected agents will be permanently removed from your network.
+                This action cannot be undone. All selected agents will be
+                permanently removed from your network.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="gap-2">
-              <Button variant="outline" onClick={() => setBulkDeleteDialogOpen(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setBulkDeleteDialogOpen(false)}
+              >
                 Cancel
               </Button>
               <Button variant="destructive" onClick={handleBulkDelete}>

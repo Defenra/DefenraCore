@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,7 +56,7 @@ function BentoCard({ children, className, colSpan = 1 }) {
         "border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300",
         "hover:border-border hover:shadow-lg hover:shadow-primary/5",
         colSpan === 2 && "md:col-span-2",
-        className
+        className,
       )}
     >
       {children}
@@ -83,14 +83,30 @@ function StatCardSkeleton() {
 function TableRowSkeleton() {
   return (
     <TableRow>
-      <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-      <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-      <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-      <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-      <TableCell><Skeleton className="h-4 w-28" /></TableCell>
-      <TableCell><Skeleton className="h-4 w-28" /></TableCell>
-      <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-      <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
+      <TableCell>
+        <Skeleton className="h-4 w-24" />
+      </TableCell>
+      <TableCell>
+        <Skeleton className="h-4 w-32" />
+      </TableCell>
+      <TableCell>
+        <Skeleton className="h-4 w-20" />
+      </TableCell>
+      <TableCell>
+        <Skeleton className="h-4 w-24" />
+      </TableCell>
+      <TableCell>
+        <Skeleton className="h-4 w-28" />
+      </TableCell>
+      <TableCell>
+        <Skeleton className="h-4 w-28" />
+      </TableCell>
+      <TableCell>
+        <Skeleton className="h-4 w-20" />
+      </TableCell>
+      <TableCell className="text-right">
+        <Skeleton className="h-8 w-8 ml-auto" />
+      </TableCell>
     </TableRow>
   );
 }
@@ -99,6 +115,7 @@ export default function BansPage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
+  const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [type, setType] = useState("active");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -109,6 +126,15 @@ export default function BansPage() {
     isPermanent: false,
     isCIDR: false,
   });
+
+  // Debounce search input to avoid re-renders while typing
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(searchInput);
+      setPage(1); // Reset to first page when search changes
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   // Fetch bans
   const { data, isLoading, refetch } = useQuery({
@@ -320,7 +346,9 @@ export default function BansPage() {
               <Shield className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl md:text-3xl font-bold">{data.stats.total}</div>
+              <div className="text-2xl md:text-3xl font-bold">
+                {data.stats.total}
+              </div>
             </CardContent>
           </BentoCard>
 
@@ -390,8 +418,8 @@ export default function BansPage() {
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder={t("bans.searchPlaceholder")}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
                 className="pl-10"
               />
             </div>
@@ -401,9 +429,15 @@ export default function BansPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("bans.filters.all")}</SelectItem>
-                <SelectItem value="active">{t("bans.filters.active")}</SelectItem>
-                <SelectItem value="expired">{t("bans.filters.expired")}</SelectItem>
-                <SelectItem value="permanent">{t("bans.filters.permanent")}</SelectItem>
+                <SelectItem value="active">
+                  {t("bans.filters.active")}
+                </SelectItem>
+                <SelectItem value="expired">
+                  {t("bans.filters.expired")}
+                </SelectItem>
+                <SelectItem value="permanent">
+                  {t("bans.filters.permanent")}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -424,13 +458,18 @@ export default function BansPage() {
                   <TableHead>{t("bans.table.bannedAt")}</TableHead>
                   <TableHead>{t("bans.table.expiresAt")}</TableHead>
                   <TableHead>{t("bans.table.remaining")}</TableHead>
-                  <TableHead className="text-right">{t("common.actions")}</TableHead>
+                  <TableHead className="text-right">
+                    {t("common.actions")}
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {data?.bans?.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                    <TableCell
+                      colSpan={8}
+                      className="text-center py-8 text-muted-foreground"
+                    >
                       {t("bans.noBans")}
                     </TableCell>
                   </TableRow>
@@ -471,7 +510,10 @@ export default function BansPage() {
                             {t("bans.status.active")}
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="text-muted-foreground">
+                          <Badge
+                            variant="outline"
+                            className="text-muted-foreground"
+                          >
                             {t("bans.status.expired")}
                           </Badge>
                         )}
@@ -518,7 +560,9 @@ export default function BansPage() {
       {data?.pagination && data.pagination.pages > 1 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            {t("common.page")} {data.pagination.page} {t("common.of")} {data.pagination.pages} ({data.pagination.total} {t("common.total")})
+            {t("common.page")} {data.pagination.page} {t("common.of")}{" "}
+            {data.pagination.pages} ({data.pagination.total} {t("common.total")}
+            )
           </p>
           <div className="flex gap-2">
             <Button
@@ -548,9 +592,7 @@ export default function BansPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t("bans.addBan")}</DialogTitle>
-            <DialogDescription>
-              {t("bans.addBanDesc")}
-            </DialogDescription>
+            <DialogDescription>{t("bans.addBanDesc")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
@@ -587,10 +629,18 @@ export default function BansPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="3600">{t("bans.durations.1h")}</SelectItem>
-                  <SelectItem value="21600">{t("bans.durations.6h")}</SelectItem>
-                  <SelectItem value="86400">{t("bans.durations.24h")}</SelectItem>
-                  <SelectItem value="604800">{t("bans.durations.7d")}</SelectItem>
-                  <SelectItem value="2592000">{t("bans.durations.30d")}</SelectItem>
+                  <SelectItem value="21600">
+                    {t("bans.durations.6h")}
+                  </SelectItem>
+                  <SelectItem value="86400">
+                    {t("bans.durations.24h")}
+                  </SelectItem>
+                  <SelectItem value="604800">
+                    {t("bans.durations.7d")}
+                  </SelectItem>
+                  <SelectItem value="2592000">
+                    {t("bans.durations.30d")}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>

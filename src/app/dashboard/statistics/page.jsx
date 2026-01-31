@@ -51,7 +51,7 @@ function BentoCard({ children, className, colSpan = 1 }) {
         "border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300",
         "hover:border-border hover:shadow-lg hover:shadow-primary/5",
         colSpan === 2 && "md:col-span-2",
-        className
+        className,
       )}
     >
       {children}
@@ -103,7 +103,10 @@ function TopAgentsSkeleton() {
       <CardContent className="space-y-4">
         <Skeleton className="h-80 w-full" />
         {[...Array(3)].map((_, i) => (
-          <div key={i} className="flex items-center justify-between p-4 border rounded-lg">
+          <div
+            key={i}
+            className="flex items-center justify-between p-4 border rounded-lg"
+          >
             <div className="flex items-center gap-4">
               <Skeleton className="h-8 w-8" />
               <div className="space-y-2">
@@ -242,7 +245,9 @@ export default function StatisticsPage() {
     return (
       <div className="flex items-center justify-center min-h-screen p-4">
         <div className="text-center space-y-4">
-          <p className="text-red-400">{t("common.error")}: {error.message}</p>
+          <p className="text-red-400">
+            {t("common.error")}: {error.message}
+          </p>
           <Button onClick={() => refetch()} variant="outline">
             {t("common.retry")}
           </Button>
@@ -269,9 +274,15 @@ export default function StatisticsPage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t("statistics.filters.allResources")}</SelectItem>
-              <SelectItem value="proxy">{t("statistics.filters.onlyProxies")}</SelectItem>
-              <SelectItem value="domain">{t("statistics.filters.onlyDomains")}</SelectItem>
+              <SelectItem value="all">
+                {t("statistics.filters.allResources")}
+              </SelectItem>
+              <SelectItem value="proxy">
+                {t("statistics.filters.onlyProxies")}
+              </SelectItem>
+              <SelectItem value="domain">
+                {t("statistics.filters.onlyDomains")}
+              </SelectItem>
             </SelectContent>
           </Select>
           <Select value={timeRange} onValueChange={setTimeRange}>
@@ -279,11 +290,21 @@ export default function StatisticsPage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="1h">{t("statistics.timeRanges.1h")}</SelectItem>
-              <SelectItem value="24h">{t("statistics.timeRanges.24h")}</SelectItem>
-              <SelectItem value="7d">{t("statistics.timeRanges.7d")}</SelectItem>
-              <SelectItem value="30d">{t("statistics.timeRanges.30d")}</SelectItem>
-              <SelectItem value="90d">{t("statistics.timeRanges.90d")}</SelectItem>
+              <SelectItem value="1h">
+                {t("statistics.timeRanges.1h")}
+              </SelectItem>
+              <SelectItem value="24h">
+                {t("statistics.timeRanges.24h")}
+              </SelectItem>
+              <SelectItem value="7d">
+                {t("statistics.timeRanges.7d")}
+              </SelectItem>
+              <SelectItem value="30d">
+                {t("statistics.timeRanges.30d")}
+              </SelectItem>
+              <SelectItem value="90d">
+                {t("statistics.timeRanges.90d")}
+              </SelectItem>
             </SelectContent>
           </Select>
           <Button
@@ -379,7 +400,9 @@ export default function StatisticsPage() {
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-500/10">
                 <IconNetwork className="h-5 w-5 text-indigo-500" />
               </div>
-              <CardTitle className="text-lg font-medium">{t("statistics.cards.proxies")}</CardTitle>
+              <CardTitle className="text-lg font-medium">
+                {t("statistics.cards.proxies")}
+              </CardTitle>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -400,7 +423,9 @@ export default function StatisticsPage() {
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10">
                 <IconWorld className="h-5 w-5 text-emerald-500" />
               </div>
-              <CardTitle className="text-lg font-medium">{t("statistics.cards.domains")}</CardTitle>
+              <CardTitle className="text-lg font-medium">
+                {t("statistics.cards.domains")}
+              </CardTitle>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -409,7 +434,8 @@ export default function StatisticsPage() {
                 {formatBytes(byType.domain.totalBytes)}
               </div>
               <p className="text-sm text-muted-foreground">
-                {formatNumber(byType.domain.requests)} {t("statistics.requests")}
+                {formatNumber(byType.domain.requests)}{" "}
+                {t("statistics.requests")}
               </p>
             </div>
           </CardContent>
@@ -429,7 +455,9 @@ export default function StatisticsPage() {
               <div className="text-4xl md:text-5xl font-bold mb-2">
                 {formatNumber(stats.requests)}
               </div>
-              <p className="text-sm text-muted-foreground">{t("statistics.processed")}</p>
+              <p className="text-sm text-muted-foreground">
+                {t("statistics.processed")}
+              </p>
             </div>
           </CardContent>
         </BentoCard>
@@ -445,7 +473,9 @@ export default function StatisticsPage() {
               <div className="text-4xl md:text-5xl font-bold mb-2">
                 {stats.avgResponseTime}
               </div>
-              <p className="text-sm text-muted-foreground">{t("statistics.milliseconds")}</p>
+              <p className="text-sm text-muted-foreground">
+                {t("statistics.milliseconds")}
+              </p>
             </div>
           </CardContent>
         </BentoCard>
@@ -458,8 +488,12 @@ export default function StatisticsPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <div className="text-4xl md:text-5xl font-bold mb-2">{stats.uptime}%</div>
-              <p className="text-sm text-muted-foreground">{t("statistics.uptimeLabel")}</p>
+              <div className="text-4xl md:text-5xl font-bold mb-2">
+                {stats.uptime}%
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {t("statistics.uptimeLabel")}
+              </p>
             </div>
           </CardContent>
         </BentoCard>
@@ -483,7 +517,9 @@ export default function StatisticsPage() {
               <div className="text-4xl md:text-5xl font-bold mb-2">
                 {formatNumber(stats.blockedRequests || 0)}
               </div>
-              <p className="text-sm text-muted-foreground">{t("statistics.blockedRequests")}</p>
+              <p className="text-sm text-muted-foreground">
+                {t("statistics.blockedRequests")}
+              </p>
             </div>
           </CardContent>
         </BentoCard>
@@ -499,7 +535,9 @@ export default function StatisticsPage() {
               <div className="text-4xl md:text-5xl font-bold mb-2 text-orange-500">
                 {formatNumber(stats.rateLimitBlocks || 0)}
               </div>
-              <p className="text-sm text-muted-foreground">{t("statistics.rateLimitBlocks")}</p>
+              <p className="text-sm text-muted-foreground">
+                {t("statistics.rateLimitBlocks")}
+              </p>
             </div>
           </CardContent>
         </BentoCard>
@@ -515,7 +553,9 @@ export default function StatisticsPage() {
               <div className="text-4xl md:text-5xl font-bold mb-2 text-red-500">
                 {formatNumber(stats.firewallBlocks || 0)}
               </div>
-              <p className="text-sm text-muted-foreground">{t("statistics.firewallBlocks")}</p>
+              <p className="text-sm text-muted-foreground">
+                {t("statistics.firewallBlocks")}
+              </p>
             </div>
           </CardContent>
         </BentoCard>
@@ -531,7 +571,9 @@ export default function StatisticsPage() {
               <div className="text-4xl md:text-5xl font-bold mb-2 text-purple-500">
                 {formatNumber(stats.l4Blocks || 0)}
               </div>
-              <p className="text-sm text-muted-foreground">{t("statistics.l4Blocks")}</p>
+              <p className="text-sm text-muted-foreground">
+                {t("statistics.l4Blocks")}
+              </p>
             </div>
           </CardContent>
         </BentoCard>
@@ -540,15 +582,21 @@ export default function StatisticsPage() {
       {/* Traffic Chart */}
       <BentoCard colSpan={2}>
         <CardHeader className="pb-6">
-          <CardTitle className="text-lg font-medium">{t("statistics.trafficChart.title")}</CardTitle>
-          <CardDescription>{t("statistics.trafficChart.description")}</CardDescription>
+          <CardTitle className="text-lg font-medium">
+            {t("statistics.trafficChart.title")}
+          </CardTitle>
+          <CardDescription>
+            {t("statistics.trafficChart.description")}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {timeSeries.length === 0 ? (
             <div className="h-80 flex items-center justify-center border border-border rounded-lg bg-muted/50">
               <div className="text-center">
                 <IconChartBar className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <p className="text-muted-foreground">{t("statistics.noData")}</p>
+                <p className="text-muted-foreground">
+                  {t("statistics.noData")}
+                </p>
                 <p className="text-sm text-muted-foreground mt-2">
                   {t("statistics.dataWillAppear")}
                 </p>
@@ -632,8 +680,12 @@ export default function StatisticsPage() {
       {/* Top Agents by Traffic */}
       <BentoCard colSpan={2}>
         <CardHeader className="pb-6">
-          <CardTitle className="text-lg font-medium">{t("statistics.topAgents.title")}</CardTitle>
-          <CardDescription>{t("statistics.topAgents.description")}</CardDescription>
+          <CardTitle className="text-lg font-medium">
+            {t("statistics.topAgents.title")}
+          </CardTitle>
+          <CardDescription>
+            {t("statistics.topAgents.description")}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {topAgents.length === 0 ? (
@@ -676,7 +728,10 @@ export default function StatisticsPage() {
                         borderRadius: "8px",
                       }}
                       labelStyle={{ color: "hsl(var(--foreground))" }}
-                      formatter={(value) => [formatBytes(value), t("statistics.traffic")]}
+                      formatter={(value) => [
+                        formatBytes(value),
+                        t("statistics.traffic"),
+                      ]}
                     />
                     <Bar
                       dataKey="totalBytes"
@@ -710,7 +765,8 @@ export default function StatisticsPage() {
                         {formatBytes(agent.totalBytes)}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {formatNumber(agent.requests)} {t("statistics.requests")}
+                        {formatNumber(agent.requests)}{" "}
+                        {t("statistics.requests")}
                       </p>
                     </div>
                   </div>

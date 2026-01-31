@@ -47,7 +47,7 @@ export async function PATCH(_request, { params }) {
     if (!hasPermission(session.user.role, "agents.write")) {
       return NextResponse.json(
         { error: "Forbidden: You don't have permission to update agents" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -114,7 +114,7 @@ export async function DELETE(_request, { params }) {
     if (!hasPermission(session.user.role, "agents.write")) {
       return NextResponse.json(
         { error: "Forbidden: You don't have permission to delete agents" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 

@@ -27,12 +27,7 @@ import { PageRulesTab } from "@/components/domain-management/page-rules-tab";
 import { SslTab } from "@/components/domain-management/ssl-tab";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -46,7 +41,7 @@ function ModernCard({ children, className }) {
     <Card
       className={cn(
         "border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden",
-        className
+        className,
       )}
     >
       {children}
@@ -156,7 +151,8 @@ export default function DomainManagePage({ params }) {
     );
   }
 
-  const proxiedCount = domain.dnsRecords?.filter((r) => r.httpProxyEnabled).length || 0;
+  const proxiedCount =
+    domain.dnsRecords?.filter((r) => r.httpProxyEnabled).length || 0;
   const sslEnabled = domain.httpProxy?.ssl?.enabled;
 
   return (
@@ -171,8 +167,15 @@ export default function DomainManagePage({ params }) {
           </Link>
           <div>
             <div className="flex items-center gap-3 mb-1">
-              <h1 className="text-2xl font-bold tracking-tight">{domain.domain}</h1>
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={copyDomain}>
+              <h1 className="text-2xl font-bold tracking-tight">
+                {domain.domain}
+              </h1>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={copyDomain}
+              >
                 <IconCopy className="h-4 w-4" />
               </Button>
             </div>
@@ -184,7 +187,11 @@ export default function DomainManagePage({ params }) {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => window.open(`https://${domain.domain}`, "_blank")}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.open(`https://${domain.domain}`, "_blank")}
+          >
             <IconExternalLink className="h-4 w-4 mr-2" />
             Visit
           </Button>
@@ -203,7 +210,9 @@ export default function DomainManagePage({ params }) {
               <IconGlobe className="h-5 w-5 text-blue-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold">{domain.dnsRecords?.length || 0}</p>
+              <p className="text-2xl font-bold">
+                {domain.dnsRecords?.length || 0}
+              </p>
               <p className="text-xs text-muted-foreground">DNS Records</p>
             </div>
           </CardContent>
@@ -236,7 +245,9 @@ export default function DomainManagePage({ params }) {
               <IconMapPin className="h-5 w-5 text-green-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold">{domain.geoDnsConfig?.length || 0}</p>
+              <p className="text-2xl font-bold">
+                {domain.geoDnsConfig?.length || 0}
+              </p>
               <p className="text-xs text-muted-foreground">Geo Zones</p>
             </div>
           </CardContent>
@@ -244,7 +255,11 @@ export default function DomainManagePage({ params }) {
       </div>
 
       {/* Tabs - 7 useful tabs, Proxy removed as it's configured per DNS record */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-4"
+      >
         <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 h-auto">
           <TabsTrigger value="dns" className="gap-2">
             <IconGlobe className="h-4 w-4 hidden sm:inline" />

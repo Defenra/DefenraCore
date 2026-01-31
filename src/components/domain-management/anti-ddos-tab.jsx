@@ -274,8 +274,8 @@ export function AntiDDoSTab({ domain, onUpdate }) {
                 Anti-DDoS Protection
               </CardTitle>
               <p className="text-sm text-muted-foreground mt-0.5">
-                Multi-layer protection with TLS fingerprinting, challenge system,
-                and custom rules
+                Multi-layer protection with TLS fingerprinting, challenge
+                system, and custom rules
               </p>
             </div>
           </div>
@@ -292,7 +292,10 @@ export function AntiDDoSTab({ domain, onUpdate }) {
                 <Fingerprint className="h-4 w-4" />
                 L7 Protection
               </TabsTrigger>
-              <TabsTrigger value="challenges" className="flex items-center gap-2">
+              <TabsTrigger
+                value="challenges"
+                className="flex items-center gap-2"
+              >
                 <Brain className="h-4 w-4" />
                 Challenges
               </TabsTrigger>
@@ -368,7 +371,9 @@ export function AntiDDoSTab({ domain, onUpdate }) {
                         <Input
                           type="number"
                           value={antiDDoS.blockDurationSeconds}
-                          onChange={handleNumberChange(["blockDurationSeconds"])}
+                          onChange={handleNumberChange([
+                            "blockDurationSeconds",
+                          ])}
                           min={60}
                         />
                       </div>
@@ -379,7 +384,9 @@ export function AntiDDoSTab({ domain, onUpdate }) {
                   <div className="p-5 rounded-lg border space-y-4">
                     <div className="flex items-center gap-2">
                       <Clock className="h-4 w-4 text-orange-500" />
-                      <h3 className="font-semibold text-sm">Slowloris Protection</h3>
+                      <h3 className="font-semibold text-sm">
+                        Slowloris Protection
+                      </h3>
                     </div>
 
                     <div className="grid gap-4 sm:grid-cols-3">
@@ -493,7 +500,9 @@ export function AntiDDoSTab({ domain, onUpdate }) {
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="flex items-center justify-between p-4 rounded-lg border">
                       <div>
-                        <p className="font-medium text-sm">TLS Fingerprinting</p>
+                        <p className="font-medium text-sm">
+                          TLS Fingerprinting
+                        </p>
                         <p className="text-xs text-muted-foreground">
                           Analyze TLS fingerprints
                         </p>
@@ -585,7 +594,9 @@ export function AntiDDoSTab({ domain, onUpdate }) {
                     <div className="p-1.5 bg-blue-500/10 rounded">
                       <Shield className="h-4 w-4 text-blue-500" />
                     </div>
-                    <h3 className="font-semibold text-sm">Cookie Challenge (Stage 1)</h3>
+                    <h3 className="font-semibold text-sm">
+                      Cookie Challenge (Stage 1)
+                    </h3>
                   </div>
                   <Switch
                     checked={antiDDoS.challengeSettings.cookieChallenge.enabled}
@@ -620,7 +631,9 @@ export function AntiDDoSTab({ domain, onUpdate }) {
                     <div className="p-1.5 bg-green-500/10 rounded">
                       <Code className="h-4 w-4 text-green-500" />
                     </div>
-                    <h3 className="font-semibold text-sm">JavaScript PoW (Stage 2)</h3>
+                    <h3 className="font-semibold text-sm">
+                      JavaScript PoW (Stage 2)
+                    </h3>
                   </div>
                   <Switch
                     checked={antiDDoS.challengeSettings.jsChallenge.enabled}
@@ -673,10 +686,14 @@ export function AntiDDoSTab({ domain, onUpdate }) {
                     <div className="p-1.5 bg-orange-500/10 rounded">
                       <ShieldAlert className="h-4 w-4 text-orange-500" />
                     </div>
-                    <h3 className="font-semibold text-sm">CAPTCHA Challenge (Stage 3)</h3>
+                    <h3 className="font-semibold text-sm">
+                      CAPTCHA Challenge (Stage 3)
+                    </h3>
                   </div>
                   <Switch
-                    checked={antiDDoS.challengeSettings.captchaChallenge.enabled}
+                    checked={
+                      antiDDoS.challengeSettings.captchaChallenge.enabled
+                    }
                     onCheckedChange={handleToggle([
                       "challengeSettings",
                       "captchaChallenge",
@@ -733,7 +750,8 @@ export function AntiDDoSTab({ domain, onUpdate }) {
                     <Input
                       type="number"
                       value={
-                        antiDDoS.challengeSettings.autoOffloading?.failureThreshold ?? 5
+                        antiDDoS.challengeSettings.autoOffloading
+                          ?.failureThreshold ?? 5
                       }
                       onChange={handleNumberChange([
                         "challengeSettings",
@@ -751,7 +769,8 @@ export function AntiDDoSTab({ domain, onUpdate }) {
                     <Input
                       type="number"
                       value={
-                        antiDDoS.challengeSettings.autoOffloading?.timeWindowSeconds ?? 10
+                        antiDDoS.challengeSettings.autoOffloading
+                          ?.timeWindowSeconds ?? 10
                       }
                       onChange={handleNumberChange([
                         "challengeSettings",
@@ -769,7 +788,8 @@ export function AntiDDoSTab({ domain, onUpdate }) {
                     <Input
                       type="number"
                       value={
-                        antiDDoS.challengeSettings.autoOffloading?.banDurationMinutes ?? 60
+                        antiDDoS.challengeSettings.autoOffloading
+                          ?.banDurationMinutes ?? 60
                       }
                       onChange={handleNumberChange([
                         "challengeSettings",
@@ -819,7 +839,9 @@ export function AntiDDoSTab({ domain, onUpdate }) {
                               updateCustomRule(index, "enabled", checked)
                             }
                           />
-                          <Badge variant={rule.enabled ? "default" : "secondary"}>
+                          <Badge
+                            variant={rule.enabled ? "default" : "secondary"}
+                          >
                             {rule.enabled ? "Active" : "Disabled"}
                           </Badge>
                         </div>
@@ -861,9 +883,13 @@ export function AntiDDoSTab({ domain, onUpdate }) {
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="block">Block</SelectItem>
-                              <SelectItem value="challenge">Challenge</SelectItem>
+                              <SelectItem value="challenge">
+                                Challenge
+                              </SelectItem>
                               <SelectItem value="allow">Allow</SelectItem>
-                              <SelectItem value="rate_limit">Rate Limit</SelectItem>
+                              <SelectItem value="rate_limit">
+                                Rate Limit
+                              </SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -876,14 +902,19 @@ export function AntiDDoSTab({ domain, onUpdate }) {
                         <Textarea
                           value={rule.expression}
                           onChange={(e) =>
-                            updateCustomRule(index, "expression", e.target.value)
+                            updateCustomRule(
+                              index,
+                              "expression",
+                              e.target.value,
+                            )
                           }
                           placeholder="ip.country == 'CN' || ip.country == 'RU'"
                           className="text-xs font-mono"
                           rows={2}
                         />
                         <p className="text-xs text-muted-foreground">
-                          Examples: ip.country == &apos;CN&apos;, request.path.startsWith(&apos;/api&apos;)
+                          Examples: ip.country == &apos;CN&apos;,
+                          request.path.startsWith(&apos;/api&apos;)
                         </p>
                       </div>
                     </div>

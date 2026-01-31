@@ -399,7 +399,10 @@ export function LuaWafTab({ domain, onUpdate }) {
               </Button>
             </div>
 
-            <div className="border rounded-lg overflow-hidden" style={{ height: "300px" }}>
+            <div
+              className="border rounded-lg overflow-hidden"
+              style={{ height: "300px" }}
+            >
               <MonacoEditor
                 height="100%"
                 language="lua"

@@ -125,7 +125,8 @@ export function SslTab({ domain, onUpdate }) {
   const getExpiryStatus = () => {
     if (daysUntilExpiry === null) return { color: "gray", label: "Unknown" };
     if (daysUntilExpiry <= 7) return { color: "red", label: "Critical" };
-    if (daysUntilExpiry <= 30) return { color: "yellow", label: "Expiring Soon" };
+    if (daysUntilExpiry <= 30)
+      return { color: "yellow", label: "Expiring Soon" };
     return { color: "green", label: "Valid" };
   };
 
@@ -428,8 +429,9 @@ export function SslTab({ domain, onUpdate }) {
                   <label
                     key={mode.value}
                     className={`flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-all ${
-                      (domain.httpProxy?.ssl?.encryptionMode || "full_strict") ===
-                      mode.value
+                      (
+                        domain.httpProxy?.ssl?.encryptionMode || "full_strict"
+                      ) === mode.value
                         ? mode.color === "red"
                           ? "border-red-500/30 bg-red-500/5"
                           : "border-primary bg-primary/5"

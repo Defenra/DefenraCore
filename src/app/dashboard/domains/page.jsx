@@ -16,12 +16,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -49,8 +44,9 @@ function ModernCard({ children, className, hover = true }) {
     <Card
       className={cn(
         "border border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden",
-        hover && "hover:border-border/80 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300",
-        className
+        hover &&
+          "hover:border-border/80 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300",
+        className,
       )}
     >
       {children}
@@ -77,9 +73,13 @@ function StatCard({ title, value, subtext, icon: Icon, color = "primary" }) {
             <div className="flex items-baseline gap-2">
               <span className="text-3xl font-bold tracking-tight">{value}</span>
             </div>
-            {subtext && <p className="text-xs text-muted-foreground">{subtext}</p>}
+            {subtext && (
+              <p className="text-xs text-muted-foreground">{subtext}</p>
+            )}
           </div>
-          <div className={cn("p-3 rounded-xl bg-primary/5", colorClasses[color])}>
+          <div
+            className={cn("p-3 rounded-xl bg-primary/5", colorClasses[color])}
+          >
             <Icon className="h-5 w-5" />
           </div>
         </div>
@@ -155,17 +155,23 @@ export default function DomainsPage() {
 
   const activeCount = domains.filter((d) => d.isActive).length;
   const proxyEnabledCount = domains.filter((d) =>
-    d.dnsRecords?.some((r) => r.httpProxyEnabled)
+    d.dnsRecords?.some((r) => r.httpProxyEnabled),
   ).length;
-  const sslEnabledCount = domains.filter((d) => d.httpProxy?.ssl?.enabled).length;
+  const sslEnabledCount = domains.filter(
+    (d) => d.httpProxy?.ssl?.enabled,
+  ).length;
 
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t("domains.title")}</h1>
-          <p className="text-muted-foreground mt-1">{t("domains.description")}</p>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {t("domains.title")}
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            {t("domains.description")}
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <Link href="/dashboard/domains/guide">
@@ -174,8 +180,16 @@ export default function DomainsPage() {
               {t("domains.howToAdd")}
             </Button>
           </Link>
-          <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching} className="h-9">
-            <IconRefresh className={cn("h-4 w-4 mr-2", isFetching && "animate-spin")} />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            disabled={isFetching}
+            className="h-9"
+          >
+            <IconRefresh
+              className={cn("h-4 w-4 mr-2", isFetching && "animate-spin")}
+            />
             {t("common.refresh")}
           </Button>
           <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
@@ -188,7 +202,9 @@ export default function DomainsPage() {
             <DialogContent className="sm:max-w-lg">
               <DialogHeader>
                 <DialogTitle>{t("domains.addDomain")}</DialogTitle>
-                <DialogDescription>{t("domains.addDescription")}</DialogDescription>
+                <DialogDescription>
+                  {t("domains.addDescription")}
+                </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
@@ -196,7 +212,9 @@ export default function DomainsPage() {
                   <Input
                     placeholder="example.com"
                     value={newDomain.domain}
-                    onChange={(e) => setNewDomain({ ...newDomain, domain: e.target.value })}
+                    onChange={(e) =>
+                      setNewDomain({ ...newDomain, domain: e.target.value })
+                    }
                   />
                 </div>
                 <div className="space-y-2">
@@ -204,15 +222,25 @@ export default function DomainsPage() {
                   <Textarea
                     placeholder={t("domains.form.descriptionPlaceholder")}
                     value={newDomain.description}
-                    onChange={(e) => setNewDomain({ ...newDomain, description: e.target.value })}
+                    onChange={(e) =>
+                      setNewDomain({
+                        ...newDomain,
+                        description: e.target.value,
+                      })
+                    }
                   />
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setCreateDialogOpen(false)}
+                >
                   {t("common.cancel")}
                 </Button>
-                <Button onClick={handleCreateDomain}>{t("common.create")}</Button>
+                <Button onClick={handleCreateDomain}>
+                  {t("common.create")}
+                </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -257,7 +285,8 @@ export default function DomainsPage() {
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">{t("domains.listTitle")}</h2>
           <span className="text-sm text-muted-foreground">
-            {domains.length} {domains.length === 1 ? t("domains.single") : t("domains.multiple")}
+            {domains.length}{" "}
+            {domains.length === 1 ? t("domains.single") : t("domains.multiple")}
           </span>
         </div>
 
@@ -273,7 +302,9 @@ export default function DomainsPage() {
               <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                 <IconGlobe className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">{t("domains.noDomains")}</h3>
+              <h3 className="text-lg font-semibold mb-2">
+                {t("domains.noDomains")}
+              </h3>
               <p className="text-sm text-muted-foreground max-w-sm mb-6">
                 {t("domains.noDomainsDesc")}
               </p>
@@ -294,7 +325,9 @@ export default function DomainsPage() {
         ) : (
           <div className="space-y-3">
             {domains.map((domain) => {
-              const proxyCount = domain.dnsRecords?.filter((r) => r.httpProxyEnabled)?.length || 0;
+              const proxyCount =
+                domain.dnsRecords?.filter((r) => r.httpProxyEnabled)?.length ||
+                0;
               return (
                 <ModernCard key={domain.id} className="group">
                   <div className="flex items-center gap-4 p-4">
@@ -306,22 +339,31 @@ export default function DomainsPage() {
                     {/* Domain Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-3">
-                        <h3 className="font-semibold truncate text-lg">{domain.domain}</h3>
+                        <h3 className="font-semibold truncate text-lg">
+                          {domain.domain}
+                        </h3>
                         {domain.isActive ? (
                           <Badge className="bg-emerald-500/10 text-emerald-600 border-0 text-xs">
                             Active
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="text-xs text-muted-foreground">
+                          <Badge
+                            variant="outline"
+                            className="text-xs text-muted-foreground"
+                          >
                             Inactive
                           </Badge>
                         )}
                       </div>
                       {domain.description && (
-                        <p className="text-sm text-muted-foreground truncate">{domain.description}</p>
+                        <p className="text-sm text-muted-foreground truncate">
+                          {domain.description}
+                        </p>
                       )}
                       <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
-                        <span>{domain.dnsRecords?.length || 0} DNS records</span>
+                        <span>
+                          {domain.dnsRecords?.length || 0} DNS records
+                        </span>
                         {proxyCount > 0 && (
                           <span className="flex items-center gap-1">
                             <IconNetwork className="h-3 w-3" />

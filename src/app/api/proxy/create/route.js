@@ -17,7 +17,7 @@ export async function POST(request) {
     if (!hasPermission(session.user.role, "proxies.write")) {
       return NextResponse.json(
         { error: "Forbidden: You don't have permission to create proxies" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 

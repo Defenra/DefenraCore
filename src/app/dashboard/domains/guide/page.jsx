@@ -30,7 +30,7 @@ function BentoCard({ children, className }) {
       className={cn(
         "border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300",
         "hover:border-border hover:shadow-lg hover:shadow-primary/5",
-        className
+        className,
       )}
     >
       {children}
@@ -82,8 +82,12 @@ export default function DomainGuide() {
                 1
               </div>
               <div>
-                <CardTitle className="text-xl">{t("guide.step1.title")}</CardTitle>
-                <CardDescription>{t("guide.step1.description")}</CardDescription>
+                <CardTitle className="text-xl">
+                  {t("guide.step1.title")}
+                </CardTitle>
+                <CardDescription>
+                  {t("guide.step1.description")}
+                </CardDescription>
               </div>
             </div>
           </CardHeader>
@@ -103,8 +107,12 @@ export default function DomainGuide() {
                 2
               </div>
               <div>
-                <CardTitle className="text-xl">{t("guide.step2.title")}</CardTitle>
-                <CardDescription>{t("guide.step2.description")}</CardDescription>
+                <CardTitle className="text-xl">
+                  {t("guide.step2.title")}
+                </CardTitle>
+                <CardDescription>
+                  {t("guide.step2.description")}
+                </CardDescription>
               </div>
             </div>
           </CardHeader>
@@ -186,8 +194,12 @@ export default function DomainGuide() {
                 3
               </div>
               <div>
-                <CardTitle className="text-xl">{t("guide.step3.title")}</CardTitle>
-                <CardDescription>{t("guide.step3.description")}</CardDescription>
+                <CardTitle className="text-xl">
+                  {t("guide.step3.title")}
+                </CardTitle>
+                <CardDescription>
+                  {t("guide.step3.description")}
+                </CardDescription>
               </div>
             </div>
           </CardHeader>
@@ -244,8 +256,12 @@ export default function DomainGuide() {
                 <IconCheck className="h-5 w-5" />
               </div>
               <div>
-                <CardTitle className="text-xl">{t("guide.step4.title")}</CardTitle>
-                <CardDescription>{t("guide.step4.description")}</CardDescription>
+                <CardTitle className="text-xl">
+                  {t("guide.step4.title")}
+                </CardTitle>
+                <CardDescription>
+                  {t("guide.step4.description")}
+                </CardDescription>
               </div>
             </div>
           </CardHeader>
@@ -278,15 +294,11 @@ export default function DomainGuide() {
           <div className="space-y-2 text-sm">
             <div className="flex gap-2">
               <span className="text-blue-500 font-bold">•</span>
-              <p className="text-muted-foreground">
-                {t("guide.notes.note1")}
-              </p>
+              <p className="text-muted-foreground">{t("guide.notes.note1")}</p>
             </div>
             <div className="flex gap-2">
               <span className="text-blue-500 font-bold">•</span>
-              <p className="text-muted-foreground">
-                {t("guide.notes.note2")}
-              </p>
+              <p className="text-muted-foreground">{t("guide.notes.note2")}</p>
             </div>
             <div className="flex gap-2">
               <span className="text-blue-500 font-bold">•</span>

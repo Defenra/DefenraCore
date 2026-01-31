@@ -146,7 +146,9 @@ export default function SetupPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">{t("setup.form.confirmPassword")}</Label>
+              <Label htmlFor="confirmPassword">
+                {t("setup.form.confirmPassword")}
+              </Label>
               <Input
                 id="confirmPassword"
                 type="password"

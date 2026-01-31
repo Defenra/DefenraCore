@@ -131,14 +131,16 @@ export const en = {
     createTokenDesc: "Specify name and parameters for the new agent",
     tokenCreated: "Connection token created",
     connectionUrl: "Connection URL",
-    connectionUrlDesc: "Copy this command and paste it into the server terminal. The command is valid for 24 hours and can only be used once.",
+    connectionUrlDesc:
+      "Copy this command and paste it into the server terminal. The command is valid for 24 hours and can only be used once.",
     editAgent: "Edit Agent",
     editAgentDesc: "Configure agent metadata and parameters",
     updated: "Agent updated",
     deleted: "Agent deleted",
     confirmDelete: "Delete this agent?",
     noAgents: "No Agents",
-    noAgentsDesc: "Add your first agent to start protecting your infrastructure",
+    noAgentsDesc:
+      "Add your first agent to start protecting your infrastructure",
     networkNodes: "Network Nodes",
     count: "agents",
     lastActivity: "Last activity",
@@ -329,10 +331,12 @@ export const en = {
     proxy: {
       howItWorks: "How proxying works",
       step1: "Client makes DNS request to your domain",
-      step2: "Agents (GeoDNS) determine client geolocation and return IP of nearest agent",
-      step3: "Traffic goes to nearest agent which proxies to real IP from DNS record",
+      step2:
+        "Agents (GeoDNS) determine client geolocation and return IP of nearest agent",
+      step3:
+        "Traffic goes to nearest agent which proxies to real IP from DNS record",
       step4: "SSL and Lua middleware applied (if configured)",
-      tip: "Target IP is specified in the \"Value\" field of DNS record. Agents automatically proxy to it.",
+      tip: 'Target IP is specified in the "Value" field of DNS record. Agents automatically proxy to it.',
     },
   },
   bans: {
@@ -348,7 +352,8 @@ export const en = {
     cleanup: "Cleanup Expired",
     noBans: "No bans found",
     searchPlaceholder: "Search by IP address...",
-    addBanDesc: "Manually add an IP ban that will be synchronized across all agents",
+    addBanDesc:
+      "Manually add an IP ban that will be synchronized across all agents",
     form: {
       ip: "IP Address or CIDR",
       reason: "Reason",
@@ -629,36 +634,44 @@ export const en = {
     description: "Step-by-step guide to set up a domain for Defenra",
     backToDomains: "Back to domains",
     copied: "Copied to clipboard",
-    nsRecordsAlert: "To use the domain, you must configure NS records at your registrar to point to our DNS agents",
+    nsRecordsAlert:
+      "To use the domain, you must configure NS records at your registrar to point to our DNS agents",
     step1: {
       title: "Create Domain in Defenra",
       description: 'Add domain via the "Add Domain" button',
-      content: 'On the domains page click the "Add Domain" button and enter your domain (e.g.,',
+      content:
+        'On the domains page click the "Add Domain" button and enter your domain (e.g.,',
     },
     step2: {
       title: "Create Subdomains for Agents",
       description: "Configure A-records for DNS agents",
       content: "You need to create two subdomains for agents. For example:",
-      agent1Description: "First DNS agent - create A-record to first agent's IP address",
-      agent2Description: "Second DNS agent - create A-record to second agent's IP address",
+      agent1Description:
+        "First DNS agent - create A-record to first agent's IP address",
+      agent2Description:
+        "Second DNS agent - create A-record to second agent's IP address",
       agentIpAlert: "You can find agent IP addresses in the",
       agentsLink: "Agents",
     },
     step3: {
       title: "Configure NS Records at Registrar",
       description: "Delegate domain to our DNS servers",
-      content: "Now in your domain registrar's control panel (where you purchased the domain) find NS server settings and specify:",
-      dnsPropagationWarning: "NS record changes may take from a few minutes to 48 hours due to DNS propagation",
+      content:
+        "Now in your domain registrar's control panel (where you purchased the domain) find NS server settings and specify:",
+      dnsPropagationWarning:
+        "NS record changes may take from a few minutes to 48 hours due to DNS propagation",
     },
     step4: {
       title: "Done!",
       description: "Domain is configured and ready to use",
-      content: "After DNS records propagate, you can manage domain DNS records and configure HTTP proxy directly from the Defenra panel.",
+      content:
+        "After DNS records propagate, you can manage domain DNS records and configure HTTP proxy directly from the Defenra panel.",
       button: "Go to domains list",
     },
     notes: {
       title: "Important Notes",
-      note1: "Use different IP addresses for agent1 and agent2 to ensure fault tolerance",
+      note1:
+        "Use different IP addresses for agent1 and agent2 to ensure fault tolerance",
       note2: "Make sure port 53 (DNS) is open on your agents",
       note3: "You can verify configuration with command:",
     },

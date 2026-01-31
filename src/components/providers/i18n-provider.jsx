@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { dictionaries } from "@/dictionaries";
 
 export const I18nContext = createContext(null);
@@ -30,7 +36,7 @@ export function I18nProvider({ children, defaultLocale = "en" }) {
       locale,
       setLocale,
     }),
-    [dictionary, locale, setLocale]
+    [dictionary, locale, setLocale],
   );
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;

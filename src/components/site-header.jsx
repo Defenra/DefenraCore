@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  IconLanguage,
-  IconShieldLock,
-} from "@tabler/icons-react";
+import { IconLanguage, IconShieldLock } from "@tabler/icons-react";
 import { usePathname } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -51,7 +48,7 @@ export function SiteHeader({ className }) {
     <header
       className={cn(
         "sticky top-0 z-40 w-full border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60",
-        className
+        className,
       )}
     >
       <div className="flex h-16 items-center justify-between px-4 md:px-6 lg:px-8">
@@ -108,7 +105,10 @@ export function SiteHeader({ className }) {
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-2 rounded-full p-1 pr-3 transition-colors hover:bg-accent">
                 <Avatar className="h-8 w-8 border border-border">
-                  <AvatarImage src={user.image || undefined} alt={user.name || ""} />
+                  <AvatarImage
+                    src={user.image || undefined}
+                    alt={user.name || ""}
+                  />
                   <AvatarFallback className="bg-primary/10 text-primary text-xs">
                     {user.name?.charAt(0).toUpperCase() || "U"}
                   </AvatarFallback>

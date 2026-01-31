@@ -59,7 +59,7 @@ export async function PUT(request, { params }) {
     if (!hasPermission(session.user.role, "domains.write")) {
       return NextResponse.json(
         { error: "Forbidden: You don't have permission to update domains" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -119,7 +119,7 @@ export async function DELETE(_request, { params }) {
     if (!hasPermission(session.user.role, "domains.write")) {
       return NextResponse.json(
         { error: "Forbidden: You don't have permission to delete domains" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
