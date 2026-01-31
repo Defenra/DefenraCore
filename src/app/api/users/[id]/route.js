@@ -52,7 +52,7 @@ export async function PUT(request, { params }) {
   try {
     const { id } = await params;
     const body = await request.json();
-    const { name, email, password, role } = body;
+    const { name, email, password, role, canViewAllResources } = body;
 
     await connectDB();
 
@@ -117,6 +117,9 @@ export async function PUT(request, { params }) {
     if (name) user.name = name;
     if (email) user.email = email;
     if (role) user.role = role;
+    if (typeof canViewAllResources === "boolean") {
+      user.canViewAllResources = canViewAllResources;
+    }
     if (password) {
       user.password = await bcrypt.hash(password, 10);
     }
@@ -129,6 +132,7 @@ export async function PUT(request, { params }) {
       name: user.name,
       email: user.email,
       role: user.role,
+      canViewAllResources: user.canViewAllResources,
       updatedAt: user.updatedAt,
     };
 

@@ -48,7 +48,7 @@ export async function POST(request) {
 
   try {
     const body = await request.json();
-    const { name, email, password, role } = body;
+    const { name, email, password, role, canViewAllResources } = body;
 
     // Validation
     if (!name || !email || !password || !role) {
@@ -100,6 +100,7 @@ export async function POST(request) {
       email,
       password: hashedPassword,
       role,
+      canViewAllResources: canViewAllResources || false,
     });
 
     // Return user without password
@@ -108,6 +109,7 @@ export async function POST(request) {
       name: user.name,
       email: user.email,
       role: user.role,
+      canViewAllResources: user.canViewAllResources,
       createdAt: user.createdAt,
     };
 

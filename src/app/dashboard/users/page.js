@@ -27,6 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -92,6 +93,7 @@ export default function UsersPage() {
     email: "",
     password: "",
     role: "viewer",
+    canViewAllResources: false,
   });
   const [formError, setFormError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -138,7 +140,7 @@ export default function UsersPage() {
 
   const handleAddUser = () => {
     setEditingUser(null);
-    setFormData({ name: "", email: "", password: "", role: "viewer" });
+    setFormData({ name: "", email: "", password: "", role: "viewer", canViewAllResources: false });
     setFormError(null);
     setShowModal(true);
   };
@@ -150,6 +152,7 @@ export default function UsersPage() {
       email: user.email,
       password: "",
       role: user.role,
+      canViewAllResources: user.canViewAllResources || false,
     });
     setFormError(null);
     setShowModal(true);
@@ -439,6 +442,20 @@ export default function UsersPage() {
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="flex items-center justify-between">
+              <Label htmlFor="canViewAllResources">View All Resources</Label>
+              <Switch
+                id="canViewAllResources"
+                checked={formData.canViewAllResources}
+                onCheckedChange={(checked) =>
+                  setFormData({ ...formData, canViewAllResources: checked })
+                }
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              When enabled, user can view all agents, proxies and domains regardless of ownership
+            </p>
 
             <DialogFooter>
               <Button
