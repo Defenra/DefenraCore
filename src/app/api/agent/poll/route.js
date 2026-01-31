@@ -475,10 +475,9 @@ export async function POST(request) {
         return null;
       };
 
-      // DISABLED: Auto-fallback generation removed to enforce strict geo-routing
-      // Countries without agents will get NXDOMAIN instead of being routed to distant agents
-      /*
       // Fallback: Coordinates
+      // Creates fallbacks to nearest agents while respecting political restrictions
+      // (e.g., UA users can't use RU agents, RU users can't use UA agents)
       for (const country of allCountryCodes) {
         const countryLower = country.toLowerCase();
         let nearestAgent = null;
@@ -497,7 +496,6 @@ export async function POST(request) {
         }
         if (nearestAgent) geoDnsFallbackMap[countryLower] = nearestAgent;
       }
-      */
 
       // DISABLED: Auto-fallback generation removed to enforce strict geo-routing
       // Countries without agents will get NXDOMAIN instead of being routed to distant agents
