@@ -158,7 +158,11 @@ export async function POST(request) {
 
       // 3. Политики и Fallback
       const allCountryCodes = Object.keys(LOCATION_COORDINATES);
-      const politicalRestrictions = { ua: ["ru", "by"] }; // UA protected from RU/BY
+      // Political routing restrictions - bidirectional blocks between conflicting regions
+      const politicalRestrictions = {
+        ua: ["ru", "by"], // UA protected from RU/BY
+        ru: ["ua"],       // RU protected from UA (bidirectional)
+      };
 
       const calculateCountryDistance = (fromCountry, toCountry) => {
         const from = LOCATION_COORDINATES[fromCountry.toLowerCase()];
@@ -471,6 +475,9 @@ export async function POST(request) {
         return null;
       };
 
+      // DISABLED: Auto-fallback generation removed to enforce strict geo-routing
+      // Countries without agents will get NXDOMAIN instead of being routed to distant agents
+      /*
       // Fallback: Coordinates
       for (const country of allCountryCodes) {
         const countryLower = country.toLowerCase();
@@ -490,7 +497,11 @@ export async function POST(request) {
         }
         if (nearestAgent) geoDnsFallbackMap[countryLower] = nearestAgent;
       }
+      */
 
+      // DISABLED: Auto-fallback generation removed to enforce strict geo-routing
+      // Countries without agents will get NXDOMAIN instead of being routed to distant agents
+      /*
       // Fallback: Continents
       const allIsoCodes = [
         "af",
@@ -755,6 +766,7 @@ export async function POST(request) {
         );
         if (fallbackAgent) geoDnsFallbackMap[countryLower] = fallbackAgent;
       }
+      */
 
       // =========================================================
       // SECURITY FILTER: Prevent Origin IP Leak
