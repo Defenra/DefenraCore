@@ -38,7 +38,7 @@ export const LOCATION_COORDINATES = {
   pe: { lat: -9.19, lon: -75.0152 }, // Peru
 
   // Europe
-  ru: { lat: 61.524, lon: 105.3188 }, // Russia
+  ru: { lat: 55.7558, lon: 37.6173 }, // Russia (Moscow - population weighted)
   gb: { lat: 55.3781, lon: -3.436 }, // United Kingdom
   de: { lat: 51.1657, lon: 10.4515 }, // Germany
   fr: { lat: 46.2276, lon: 2.2137 }, // France
@@ -217,6 +217,61 @@ const LOCATION_DISTANCES = {
 // Get continent for a country code
 function _getContinentForCountry(countryCode) {
   return LOCATION_DISTANCES[countryCode] || null;
+}
+
+/**
+ * Get continent for a country code (Public version)
+ * @param {string} countryCode - 2-letter ISO code
+ * @returns {string} - Continent code (europe, asia, north-america, etc.)
+ */
+export function getContinentForCountry(countryCode) {
+  const code = countryCode.toUpperCase();
+  
+  // North America
+  if (['US', 'CA', 'MX', 'GT', 'BZ', 'SV', 'HN', 'NI', 'CR', 'PA', 'CU', 'DO', 'HT', 'JM', 'BS', 'BB', 'AG', 'DM', 'GD', 'KN', 'LC', 'VC', 'TT', 'PR', 'KY', 'BM', 'GL'].includes(code)) return 'north-america';
+  
+  // South America
+  if (['BR', 'AR', 'CO', 'PE', 'VE', 'CL', 'EC', 'BO', 'PY', 'UY', 'GY', 'SR', 'GF', 'FK'].includes(code)) return 'south-america';
+  
+  // Europe (including RU/TR geographically for routing preference)
+  if (['RU', 'UA', 'BY', 'MD', 'EE', 'LV', 'LT', 'PL', 'CZ', 'SK', 'HU', 'RO', 'BG', 'RS', 'HR', 'SI', 'BA', 'ME', 'MK', 'AL', 'GR', 'TR', 'CY', 'MT', 'IT', 'SM', 'VA', 'ES', 'PT', 'AD', 'FR', 'MC', 'BE', 'NL', 'LU', 'DE', 'AT', 'CH', 'LI', 'GB', 'IE', 'IS', 'NO', 'SE', 'FI', 'DK', 'FO'].includes(code)) return 'europe';
+  
+  // Asia
+  if (['CN', 'JP', 'KR', 'KP', 'MN', 'TW', 'HK', 'MO', 'VN', 'LA', 'KH', 'TH', 'MM', 'MY', 'SG', 'ID', 'PH', 'BN', 'TL', 'IN', 'PK', 'BD', 'LK', 'NP', 'BT', 'MV', 'AF', 'IR', 'IQ', 'SY', 'LB', 'IL', 'PS', 'JO', 'SA', 'YE', 'OM', 'AE', 'QA', 'BH', 'KW', 'KZ', 'UZ', 'TM', 'KG', 'TJ', 'GE', 'AM', 'AZ'].includes(code)) return 'asia';
+  
+  // Oceania
+  if (['AU', 'NZ', 'PG', 'SB', 'VU', 'FJ', 'NC', 'PF', 'GU', 'MP', 'AS', 'WS', 'TO', 'TV', 'KI', 'MH', 'FM', 'PW', 'NR'].includes(code)) return 'oceania';
+  
+  // Africa
+  if (['EG', 'LY', 'TN', 'DZ', 'MA', 'EH', 'SD', 'SS', 'ER', 'ET', 'DJ', 'SO', 'KE', 'UG', 'TZ', 'RW', 'BI', 'MZ', 'MW', 'ZM', 'ZW', 'BW', 'NA', 'ZA', 'LS', 'SZ', 'AO', 'CD', 'CG', 'GA', 'GQ', 'CM', 'CF', 'TD', 'NE', 'NG', 'BJ', 'TG', 'GH', 'CI', 'LR', 'SL', 'GN', 'GW', 'GM', 'SN', 'MR', 'ML', 'BF', 'CV', 'ST', 'KM', 'SC', 'MU', 'MG', 'RE', 'YT'].includes(code)) return 'africa';
+
+  return 'unknown';
+}
+
+/**
+ * Calculate weighted distance between two countries
+ * Penalizes cross-continent routing by adding 10,000 km
+ * @param {string} fromCountry - ISO code
+ * @param {string} toCountry - ISO code
+ * @returns {number} - Distance in km
+ */
+export function calculateWeightedDistance(fromCountry, toCountry) {
+  const from = LOCATION_COORDINATES[fromCountry.toLowerCase()];
+  const to = LOCATION_COORDINATES[toCountry.toLowerCase()];
+  
+  if (!from || !to) return 999999;
+  
+  let dist = calculateHaversineDistance(from.lat, from.lon, to.lat, to.lon);
+  
+  // Apply continent penalty
+  const cont1 = getContinentForCountry(fromCountry);
+  const cont2 = getContinentForCountry(toCountry);
+  
+  if (cont1 !== 'unknown' && cont2 !== 'unknown' && cont1 !== cont2) {
+    dist += 10000; // Heavy penalty for cross-continent
+  }
+  
+  return dist;
 }
 
 // Get distance between two locations

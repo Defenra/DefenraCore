@@ -3,6 +3,8 @@ import { checkAgentHealth } from "@/lib/agentHealthCheck";
 import {
   buildAnycastRecords,
   calculateHaversineDistance,
+  calculateWeightedDistance,
+  getContinentForCountry,
   LOCATION_COORDINATES,
 } from "@/lib/geoFallback";
 import { extractIpFromRequest, getIpInfo } from "@/lib/ipInfo";
@@ -164,13 +166,6 @@ export async function POST(request) {
         ru: ["ua"],       // RU protected from UA (bidirectional)
       };
 
-      const calculateCountryDistance = (fromCountry, toCountry) => {
-        const from = LOCATION_COORDINATES[fromCountry.toLowerCase()];
-        const to = LOCATION_COORDINATES[toCountry.toLowerCase()];
-        if (!from || !to) return 999999;
-        return calculateHaversineDistance(from.lat, from.lon, to.lat, to.lon);
-      };
-
       const isRoutingRestricted = (fromCountry, toCountry) => {
         const restrictions = politicalRestrictions[fromCountry.toLowerCase()];
         return restrictions
@@ -178,308 +173,15 @@ export async function POST(request) {
           : false;
       };
 
-      const getContinentForCountry = (countryCode) => {
-        const code = countryCode.toUpperCase();
-        if (
-          [
-            "AL",
-            "AD",
-            "AT",
-            "BY",
-            "BE",
-            "BA",
-            "BG",
-            "HR",
-            "CY",
-            "CZ",
-            "DK",
-            "EE",
-            "FO",
-            "FI",
-            "FR",
-            "DE",
-            "GI",
-            "GR",
-            "GG",
-            "HU",
-            "IS",
-            "IE",
-            "IM",
-            "IT",
-            "JE",
-            "XK",
-            "LV",
-            "LI",
-            "LT",
-            "LU",
-            "MK",
-            "MT",
-            "MD",
-            "MC",
-            "ME",
-            "NL",
-            "NO",
-            "PL",
-            "PT",
-            "RO",
-            "RU",
-            "SM",
-            "RS",
-            "SK",
-            "SI",
-            "ES",
-            "SJ",
-            "SE",
-            "CH",
-            "UA",
-            "GB",
-            "VA",
-            "TR",
-          ].includes(code)
-        )
-          return "europe";
-        if (
-          [
-            "AF",
-            "AM",
-            "AZ",
-            "BH",
-            "BD",
-            "BT",
-            "BN",
-            "KH",
-            "CN",
-            "CX",
-            "CC",
-            "IO",
-            "GE",
-            "HK",
-            "IN",
-            "ID",
-            "IR",
-            "IQ",
-            "IL",
-            "JP",
-            "JO",
-            "KZ",
-            "KP",
-            "KR",
-            "KW",
-            "KG",
-            "LA",
-            "LB",
-            "MO",
-            "MY",
-            "MV",
-            "MN",
-            "MM",
-            "NP",
-            "OM",
-            "PK",
-            "PS",
-            "PH",
-            "QA",
-            "SA",
-            "SG",
-            "LK",
-            "SY",
-            "TW",
-            "TJ",
-            "TH",
-            "TL",
-            "TM",
-            "AE",
-            "UZ",
-            "VN",
-            "YE",
-          ].includes(code)
-        )
-          return "asia";
-        if (
-          [
-            "AI",
-            "AG",
-            "AW",
-            "BS",
-            "BB",
-            "BZ",
-            "BM",
-            "BQ",
-            "CA",
-            "KY",
-            "CR",
-            "CU",
-            "CW",
-            "DM",
-            "DO",
-            "SV",
-            "GL",
-            "GD",
-            "GP",
-            "GT",
-            "HT",
-            "HN",
-            "JM",
-            "MQ",
-            "MX",
-            "MS",
-            "NI",
-            "PA",
-            "PM",
-            "PR",
-            "BL",
-            "KN",
-            "LC",
-            "MF",
-            "VC",
-            "SX",
-            "TT",
-            "TC",
-            "US",
-            "VG",
-            "VI",
-          ].includes(code)
-        )
-          return "north-america";
-        if (
-          [
-            "AR",
-            "BO",
-            "BR",
-            "CL",
-            "CO",
-            "EC",
-            "FK",
-            "GF",
-            "GY",
-            "PY",
-            "PE",
-            "SR",
-            "UY",
-            "VE",
-          ].includes(code)
-        )
-          return "south-america";
-        if (
-          [
-            "DZ",
-            "AO",
-            "BJ",
-            "BW",
-            "BF",
-            "BI",
-            "CM",
-            "CV",
-            "CF",
-            "TD",
-            "KM",
-            "CG",
-            "CD",
-            "CI",
-            "DJ",
-            "EG",
-            "GQ",
-            "ER",
-            "ET",
-            "GA",
-            "GM",
-            "GH",
-            "GN",
-            "GW",
-            "KE",
-            "LS",
-            "LR",
-            "LY",
-            "MG",
-            "MW",
-            "ML",
-            "MR",
-            "MU",
-            "YT",
-            "MA",
-            "MZ",
-            "NA",
-            "NE",
-            "NG",
-            "RE",
-            "RW",
-            "ST",
-            "SN",
-            "SC",
-            "SL",
-            "SO",
-            "ZA",
-            "SS",
-            "SD",
-            "SZ",
-            "TZ",
-            "TG",
-            "TN",
-            "UG",
-            "EH",
-            "ZM",
-            "ZW",
-          ].includes(code)
-        )
-          return "africa";
-        if (
-          [
-            "AS",
-            "AU",
-            "CK",
-            "FJ",
-            "PF",
-            "GU",
-            "KI",
-            "MH",
-            "FM",
-            "NR",
-            "NC",
-            "NZ",
-            "NU",
-            "NF",
-            "MP",
-            "PW",
-            "PG",
-            "PN",
-            "WS",
-            "SB",
-            "TK",
-            "TO",
-            "TV",
-            "VU",
-            "WF",
-          ].includes(code)
-        )
-          return "oceania";
-        return "unknown";
-      };
-
-      const findContinentAgent = (continent, fromCountry) => {
-        // 1. Same continent, check politics
-        for (const [agentCountry, agentIp] of Object.entries(geoDnsMap)) {
-          if (agentCountry === "default") continue;
-          if (agentCountry.toLowerCase() === fromCountry.toLowerCase())
-            continue;
-          if (isRoutingRestricted(fromCountry, agentCountry)) continue;
-
-          if (getContinentForCountry(agentCountry) === continent)
-            return agentIp;
-        }
-        // 2. Any valid agent
-        for (const [agentCountry, agentIp] of Object.entries(geoDnsMap)) {
-          if (agentCountry === "default") continue;
-          if (isRoutingRestricted(fromCountry, agentCountry)) continue;
-          return agentIp;
-        }
-        return null;
-      };
-
-      // Fallback: Coordinates
+      // Fallback: Coordinates + Continent Penalty
       // Creates fallbacks to nearest agents while respecting political restrictions
       // (e.g., UA users can't use RU agents, RU users can't use UA agents)
       for (const country of allCountryCodes) {
         const countryLower = country.toLowerCase();
+        
+        // Skip if we already have an exact match
+        if (geoDnsMap[countryLower]) continue;
+
         let nearestAgent = null;
         let nearestDistance = 999999;
 
@@ -488,7 +190,8 @@ export async function POST(request) {
           if (agentCountry.toLowerCase() === countryLower) continue;
           if (isRoutingRestricted(countryLower, agentCountry)) continue;
 
-          const distance = calculateCountryDistance(countryLower, agentCountry);
+          // Use weighted distance (adds 10,000km penalty for cross-continent)
+          const distance = calculateWeightedDistance(countryLower, agentCountry);
           if (distance < nearestDistance) {
             nearestDistance = distance;
             nearestAgent = agentIp;
