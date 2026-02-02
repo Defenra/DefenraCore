@@ -173,11 +173,22 @@ async function sendConfigUpdate(agentId) {
     const agent = await Agent.findOne({ agentId }).lean();
     if (!agent) return;
 
+    // Get all active agents for coordinate-based fallback
+    const allActiveAgents = await Agent.find({ isActive: true }).lean();
+    const agentsList = allActiveAgents.map(a => ({
+      agentId: a.agentId,
+      agentName: a.name,
+      agentIp: a.ipAddress,
+      loadScore: a.loadScore || 0,
+      countryCode: a.manualLocation?.country || a.ipInfo?.countryCode,
+      city: a.manualLocation?.city || a.ipInfo?.city,
+    }));
+
     // Build new config
     const domains = await Domain.find({}).lean();
     const domainConfigs = [];
     for (const domain of domains) {
-      const config = await buildDomainConfig(domain, agent);
+      const config = await buildDomainConfig(domain, agent, allActiveAgents);
       domainConfigs.push(config);
     }
 
@@ -189,6 +200,7 @@ async function sendConfigUpdate(agentId) {
     const newConfig = {
       agentId,
       domains: domainConfigs,
+      agents: agentsList, // All agents for coordinate-based fallback
       bans: bans.map((b) => ({
         ip: b.ip,
         reason: b.reason,
@@ -231,8 +243,7 @@ async function sendConfigUpdate(agentId) {
 }
 
 // Build domain configuration (matches HTTP poll structure exactly)
-async function buildDomainConfig(domain, agent) {
-  const allAgents = await Agent.find({ isActive: true }).lean();
+async function buildDomainConfig(domain, agent, allAgents) {
 
   // Build GeoDNS maps (same as poll route)
   const geoDnsMap = {};
