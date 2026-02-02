@@ -7,6 +7,15 @@ import { buildAnycastRecords, findAllAgentsForLocation } from "@/lib/geoFallback
 // Connected agents map: agentId -> { ws, lastPing, agent }
 const connectedAgents = new Map();
 
+// Config cache: agentId -> { config, version, timestamp }
+const configCache = new Map();
+const CONFIG_CACHE_TTL = 30000; // 30 seconds
+
+// Calculate simple hash of config object
+function getConfigHash(config) {
+  return JSON.stringify(config).length; // Simple hash based on length
+}
+
 export const SOCKET = async (client, request, server, context) => {
   const url = new URL(request.url, `http://${request.headers.host}`);
   const agentId = url.searchParams.get("agentId");
@@ -101,6 +110,16 @@ async function handleAgentMessage(agentId, message) {
   switch (message.type) {
     case "stats":
       console.log(`[WebSocket] Stats from ${agentId}:`, message.data);
+      // Store stats in agent document or separate collection
+      await Agent.updateOne(
+        { agentId },
+        { 
+          $set: { 
+            lastStats: message.data,
+            lastStatsAt: new Date(),
+          }
+        }
+      );
       break;
     case "ban_report":
       console.log(`[WebSocket] Ban report from ${agentId}:`, message.data);
@@ -154,6 +173,7 @@ async function sendConfigUpdate(agentId) {
     const agent = await Agent.findOne({ agentId }).lean();
     if (!agent) return;
 
+    // Build new config
     const domains = await Domain.find({}).lean();
     const domainConfigs = [];
     for (const domain of domains) {
@@ -166,33 +186,45 @@ async function sendConfigUpdate(agentId) {
       $or: [{ isPermanent: true }, { expiresAt: { $gt: now } }],
     }).lean();
 
+    const newConfig = {
+      agentId,
+      domains: domainConfigs,
+      bans: bans.map((b) => ({
+        ip: b.ip,
+        reason: b.reason,
+        bannedAt: b.bannedAt,
+        expiresAt: b.expiresAt,
+        isPermanent: b.isPermanent,
+        isCIDR: b.isCIDR,
+      })),
+    };
+
+    // Check if config changed
+    const newHash = getConfigHash(newConfig);
+    const cached = configCache.get(agentId);
+    
+    if (cached && cached.hash === newHash && (Date.now() - cached.timestamp) < CONFIG_CACHE_TTL) {
+      // Config unchanged, only update lastSeen
+      await Agent.updateOne({ agentId }, { lastSeen: new Date() });
+      return;
+    }
+
+    // Config changed or cache expired, send update
+    configCache.set(agentId, {
+      config: newConfig,
+      hash: newHash,
+      timestamp: Date.now(),
+    });
+
     const message = {
       type: "config",
       timestamp: Date.now(),
-      data: {
-        agentId,
-        domains: domainConfigs,
-        bans: bans.map((b) => ({
-          ip: b.ip,
-          reason: b.reason,
-          bannedAt: b.bannedAt,
-          expiresAt: b.expiresAt,
-          isPermanent: b.isPermanent,
-          isCIDR: b.isCIDR,
-        })),
-      },
+      data: newConfig,
     };
 
     conn.ws.send(JSON.stringify(message));
-    conn.configVersion = Date.now();
-
-    // Update lastSeen to show agent is active
-    await Agent.updateOne(
-      { agentId },
-      { lastSeen: new Date() }
-    );
-
-    console.log(`[WebSocket] Config sent to ${agentId}`);
+    await Agent.updateOne({ agentId }, { lastSeen: new Date() });
+    console.log(`[WebSocket] Config sent to ${agentId} (hash: ${newHash})`);
   } catch (error) {
     console.error(`[WebSocket] Error sending config to ${agentId}:`, error);
   }
@@ -243,3 +275,49 @@ setInterval(async () => {
     }
   }
 }, 5000);
+
+// Periodic ban sync (every 30 seconds)
+setInterval(async () => {
+  for (const [agentId, conn] of connectedAgents.entries()) {
+    try {
+      await sendBanSync(agentId);
+    } catch (error) {
+      console.error(`[WebSocket] Error syncing bans to ${agentId}:`, error);
+    }
+  }
+}, 30000);
+
+// Send ban sync to specific agent
+async function sendBanSync(agentId) {
+  const conn = connectedAgents.get(agentId);
+  if (!conn || conn.ws.readyState !== 1) return;
+
+  try {
+    await connectDB();
+    const now = new Date();
+    const bans = await GlobalBan.find({
+      $or: [{ isPermanent: true }, { expiresAt: { $gt: now } }],
+    }).lean();
+
+    const message = {
+      type: "ban_sync",
+      timestamp: Date.now(),
+      data: {
+        bans: bans.map((b) => ({
+          ip: b.ip,
+          reason: b.reason,
+          bannedAt: b.bannedAt,
+          expiresAt: b.expiresAt,
+          isPermanent: b.isPermanent,
+          isCIDR: b.isCIDR,
+        })),
+        total: bans.length,
+      },
+    };
+
+    conn.ws.send(JSON.stringify(message));
+    console.log(`[WebSocket] Ban sync sent to ${agentId} (${bans.length} bans)`);
+  } catch (error) {
+    console.error(`[WebSocket] Error sending ban sync to ${agentId}:`, error);
+  }
+}
