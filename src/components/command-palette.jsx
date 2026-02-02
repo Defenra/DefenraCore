@@ -9,6 +9,7 @@ import {
   IconMapPin,
   IconNetwork,
   IconRobot,
+  IconSearch,
   IconShieldLock,
   IconUserCog,
   IconUsers,
@@ -35,6 +36,7 @@ const iconMap = {
   proxies: IconNetwork,
   domains: IconWorld,
   geodnsMap: IconMapPin,
+  ipCheck: IconSearch,
   clients: IconUsers,
   bans: IconShieldLock,
   statistics: IconChartBar,
@@ -98,6 +100,12 @@ export function CommandPalette() {
       url: "/dashboard/geodns-map",
       permission: "domains.read",
       shortcut: "M",
+    },
+    {
+      key: "ipCheck",
+      url: "/dashboard/ip-check",
+      permission: null,
+      shortcut: "I",
     },
     {
       key: "clients",
@@ -258,6 +266,12 @@ function CommandPaletteDialog({ open, onOpenChange }) {
       url: "/dashboard/geodns-map",
       permission: "domains.read",
       shortcut: "M",
+    },
+    {
+      key: "ipCheck",
+      url: "/dashboard/ip-check",
+      permission: null,
+      shortcut: "I",
     },
     {
       key: "clients",

@@ -10,6 +10,7 @@ import {
   IconMenu2,
   IconNetwork,
   IconRobot,
+  IconSearch,
   IconShieldLock,
   IconUserCog,
   IconUsers,
@@ -74,6 +75,12 @@ const secondaryNavItems = [
     url: "/dashboard/geodns-map",
     icon: IconMapPin,
     permission: "domains.read",
+  },
+  {
+    key: "ipCheck",
+    url: "/dashboard/ip-check",
+    icon: IconSearch,
+    permission: null,
   },
   {
     key: "clients",

@@ -1,0 +1,477 @@
+"use client";
+
+import {
+  IconSearch,
+  IconMapPin,
+  IconServer,
+  IconWorld,
+  IconRouter,
+  IconAlertCircle,
+  IconCheck,
+  IconX,
+} from "@tabler/icons-react";
+import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
+import { useTranslation } from "@/hooks/useTranslation";
+import { cn } from "@/lib/utils";
+
+// Bento Card Component
+function BentoCard({ children, className }) {
+  return (
+    <Card
+      className={cn(
+        "border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300",
+        "hover:border-border hover:shadow-lg hover:shadow-primary/5",
+        className
+      )}
+    >
+      {children}
+    </Card>
+  );
+}
+
+// Skeleton for loading state
+function ResultSkeleton() {
+  return (
+    <div className="space-y-4">
+      <BentoCard>
+        <CardHeader>
+          <Skeleton className="h-6 w-32" />
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-4 w-1/2" />
+        </CardContent>
+      </BentoCard>
+      <BentoCard>
+        <CardHeader>
+          <Skeleton className="h-6 w-32" />
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-2/3" />
+        </CardContent>
+      </BentoCard>
+    </div>
+  );
+}
+
+async function checkIP(ip, domainId = null) {
+  const url = new URL("/api/ip-check", window.location.origin);
+  url.searchParams.set("ip", ip);
+  if (domainId) url.searchParams.set("domainId", domainId);
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || "Failed to check IP");
+  }
+  return response.json();
+}
+
+export default function IPCheckPage() {
+  const { t } = useTranslation();
+  const [ip, setIp] = useState("");
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleCheck = async () => {
+    if (!ip.trim()) {
+      toast({
+        title: t("common.error"),
+        description: t("ipCheck.error.noIp"),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const data = await checkIP(ip.trim());
+      setResult(data);
+    } catch (error) {
+      toast({
+        title: t("common.error"),
+        description: error.message,
+        variant: "destructive",
+      });
+      setResult(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") handleCheck();
+  };
+
+  const getSelectionMethodBadge = (method) => {
+    switch (method) {
+      case "exact_match":
+        return (
+          <Badge
+            variant="outline"
+            className="bg-green-500/10 text-green-500 border-green-500/20"
+          >
+            <IconCheck className="mr-1 h-3 w-3" />
+            {t("ipCheck.routing.exactMatch")}
+          </Badge>
+        );
+      case "nearest_fallback":
+        return (
+          <Badge
+            variant="outline"
+            className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20"
+          >
+            <IconRouter className="mr-1 h-3 w-3" />
+            {t("ipCheck.routing.nearestFallback")}
+          </Badge>
+        );
+      default:
+        return (
+          <Badge
+            variant="outline"
+            className="bg-red-500/10 text-red-500 border-red-500/20"
+          >
+            <IconX className="mr-1 h-3 w-3" />
+            {t("ipCheck.routing.noAgent")}
+          </Badge>
+        );
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {t("ipCheck.title")}
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            {t("ipCheck.description")}
+          </p>
+        </div>
+      </div>
+
+      {/* Input Card */}
+      <BentoCard>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <IconSearch className="h-5 w-5" />
+            {t("ipCheck.input.title")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-3">
+            <div className="flex-1">
+              <Label htmlFor="ip-input" className="sr-only">
+                {t("ipCheck.input.label")}
+              </Label>
+              <Input
+                id="ip-input"
+                placeholder={t("ipCheck.input.placeholder")}
+                value={ip}
+                onChange={(e) => setIp(e.target.value)}
+                onKeyDown={handleKeyDown}
+                className="bg-background/50"
+              />
+            </div>
+            <Button
+              onClick={handleCheck}
+              disabled={loading}
+              className="min-w-[120px]"
+            >
+              {loading ? (
+                <Skeleton className="h-4 w-16" />
+              ) : (
+                <>
+                  <IconSearch className="mr-2 h-4 w-4" />
+                  {t("ipCheck.input.checkButton")}
+                </>
+              )}
+            </Button>
+          </div>
+        </CardContent>
+      </BentoCard>
+
+      {/* Results */}
+      {loading && <ResultSkeleton />}
+
+      {result && !loading && (
+        <div className="space-y-4">
+          {/* GeoIP Info */}
+          <BentoCard>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <IconWorld className="h-5 w-5" />
+                {t("ipCheck.geoInfo.title")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {result.geoInfo ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center py-2 border-b border-border/50">
+                      <span className="text-muted-foreground">
+                        {t("ipCheck.geoInfo.ip")}
+                      </span>
+                      <span className="font-mono font-medium">{result.ip}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-border/50">
+                      <span className="text-muted-foreground">
+                        {t("ipCheck.geoInfo.country")}
+                      </span>
+                      <span className="font-medium">
+                        {result.geoInfo.country} ({result.geoInfo.countryCode})
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-border/50">
+                      <span className="text-muted-foreground">
+                        {t("ipCheck.geoInfo.city")}
+                      </span>
+                      <span className="font-medium">
+                        {result.geoInfo.city || "N/A"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-border/50">
+                      <span className="text-muted-foreground">
+                        {t("ipCheck.geoInfo.region")}
+                      </span>
+                      <span className="font-medium">
+                        {result.geoInfo.region || "N/A"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center py-2 border-b border-border/50">
+                      <span className="text-muted-foreground">
+                        {t("ipCheck.geoInfo.timezone")}
+                      </span>
+                      <span className="font-medium">
+                        {result.geoInfo.timezone || "N/A"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-border/50">
+                      <span className="text-muted-foreground">
+                        {t("ipCheck.geoInfo.isp")}
+                      </span>
+                      <span className="font-medium text-right max-w-[200px] truncate">
+                        {result.geoInfo.isp || "N/A"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-border/50">
+                      <span className="text-muted-foreground">
+                        {t("ipCheck.geoInfo.coordinates")}
+                      </span>
+                      <span className="font-mono text-sm">
+                        {result.geoInfo.lat?.toFixed(4)},{" "}
+                        {result.geoInfo.lon?.toFixed(4)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3 text-amber-500">
+                  <IconAlertCircle className="h-5 w-5" />
+                  <span>{result.error || t("ipCheck.geoInfo.unknown")}</span>
+                </div>
+              )}
+            </CardContent>
+          </BentoCard>
+
+          {/* Routing Info */}
+          {result.routing && (
+            <BentoCard>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <IconRouter className="h-5 w-5" />
+                  {t("ipCheck.routing.title")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Selection Method */}
+                <div className="flex items-center justify-between py-3 border-b border-border/50">
+                  <span className="text-muted-foreground">
+                    {t("ipCheck.routing.method")}
+                  </span>
+                  {getSelectionMethodBadge(result.routing.selectionMethod)}
+                </div>
+
+                {/* Client Location */}
+                <div className="flex items-center justify-between py-3 border-b border-border/50">
+                  <span className="text-muted-foreground">
+                    {t("ipCheck.routing.clientLocation")}
+                  </span>
+                  <Badge variant="secondary" className="font-mono">
+                    {result.routing.clientLocation}
+                  </Badge>
+                </div>
+
+                {/* Distance */}
+                {result.routing.distance && (
+                  <div className="flex items-center justify-between py-3 border-b border-border/50">
+                    <span className="text-muted-foreground">
+                      {t("ipCheck.routing.distance")}
+                    </span>
+                    <span className="font-medium">
+                      {result.routing.distance} km
+                    </span>
+                  </div>
+                )}
+
+                {/* Political Restriction */}
+                {result.routing.politicalRestriction && (
+                  <div className="flex items-center gap-3 py-3 px-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                    <IconAlertCircle className="h-5 w-5 text-amber-500 flex-shrink-0" />
+                    <span className="text-amber-700 dark:text-amber-300 text-sm">
+                      {result.routing.politicalRestriction}
+                    </span>
+                  </div>
+                )}
+
+                {/* Selected Agent */}
+                {result.routing.selectedAgent ? (
+                  <div className="mt-4 p-4 bg-primary/5 border border-primary/10 rounded-lg">
+                    <div className="flex items-center gap-3 mb-3">
+                      <IconServer className="h-5 w-5 text-primary" />
+                      <span className="font-semibold">
+                        {t("ipCheck.routing.selectedAgent")}
+                      </span>
+                    </div>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">
+                          {t("ipCheck.agent.name")}
+                        </span>
+                        <span className="font-medium">
+                          {result.routing.selectedAgent.name}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">
+                          {t("ipCheck.agent.ip")}
+                        </span>
+                        <span className="font-mono">
+                          {result.routing.selectedAgent.ip}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">
+                          {t("ipCheck.agent.location")}
+                        </span>
+                        <span className="font-medium flex items-center gap-1">
+                          <IconMapPin className="h-3 w-3" />
+                          {result.routing.selectedAgent.location?.country ||
+                            "Unknown"}
+                          {result.routing.selectedAgent.location?.city &&
+                            ` (${result.routing.selectedAgent.location.city})`}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">
+                          {t("ipCheck.agent.load")}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-24 h-2 bg-secondary rounded-full overflow-hidden">
+                            <div
+                              className={cn(
+                                "h-full rounded-full",
+                                result.routing.selectedAgent.loadScore > 80
+                                  ? "bg-red-500"
+                                  : result.routing.selectedAgent.loadScore >
+                                    60
+                                  ? "bg-yellow-500"
+                                  : "bg-green-500"
+                              )}
+                              style={{
+                                width: `${result.routing.selectedAgent.loadScore}%`,
+                              }}
+                            />
+                          </div>
+                          <span className="font-mono text-xs">
+                            {result.routing.selectedAgent.loadScore}%
+                          </span>
+                          {result.routing.selectedAgent.isOverloaded && (
+                            <Badge
+                              variant="outline"
+                              className="text-red-500 border-red-500/20 text-xs"
+                            >
+                              {t("ipCheck.agent.overloaded")}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Alternative Agents */}
+                    {result.routing.selectedAgent.alternativeAgents?.length >
+                      0 && (
+                      <div className="mt-4 pt-4 border-t border-border/50">
+                        <p className="text-sm text-muted-foreground mb-2">
+                          {t("ipCheck.routing.alternativeAgents", {
+                            count:
+                              result.routing.selectedAgent.totalAgentsInPool,
+                          })}
+                        </p>
+                        <div className="space-y-1">
+                          {result.routing.selectedAgent.alternativeAgents.map(
+                            (agent) => (
+                              <div
+                                key={agent.agentId}
+                                className="flex justify-between items-center text-sm py-1 px-2 bg-background/50 rounded"
+                              >
+                                <span className="font-medium">
+                                  {agent.name}
+                                </span>
+                                <div className="flex items-center gap-3 text-muted-foreground">
+                                  <span className="font-mono text-xs">
+                                    {agent.ip}
+                                  </span>
+                                  <Badge
+                                    variant="outline"
+                                    className={cn(
+                                      "text-xs",
+                                      agent.isOverloaded
+                                        ? "text-red-500 border-red-500/20"
+                                        : "text-green-500 border-green-500/20"
+                                    )}
+                                  >
+                                    {agent.loadScore}%
+                                  </Badge>
+                                </div>
+                              </div>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3 py-4 px-4 bg-red-500/10 border border-red-500/20 rounded-lg">
+                    <IconX className="h-5 w-5 text-red-500 flex-shrink-0" />
+                    <div>
+                      <p className="text-red-700 dark:text-red-300 font-medium">
+                        {t("ipCheck.routing.noAgentAvailable")}
+                      </p>
+                      <p className="text-red-600/80 dark:text-red-400/80 text-sm mt-1">
+                        {t("ipCheck.routing.nxdomainWarning")}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </BentoCard>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
