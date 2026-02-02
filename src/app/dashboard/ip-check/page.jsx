@@ -9,6 +9,7 @@ import {
   IconAlertCircle,
   IconCheck,
   IconX,
+  IconShieldLock,
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -84,11 +85,7 @@ export default function IPCheckPage() {
 
   const handleCheck = async () => {
     if (!ip.trim()) {
-      toast({
-        title: t("common.error"),
-        description: t("ipCheck.error.noIp"),
-        variant: "destructive",
-      });
+      toast.error(t("ipCheck.error.noIp"));
       return;
     }
 
@@ -97,11 +94,7 @@ export default function IPCheckPage() {
       const data = await checkIP(ip.trim());
       setResult(data);
     } catch (error) {
-      toast({
-        title: t("common.error"),
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error.message);
       setResult(null);
     } finally {
       setLoading(false);
@@ -523,6 +516,75 @@ export default function IPCheckPage() {
                     )}
                   </div>
                 </div>
+              </CardContent>
+            </BentoCard>
+          )}
+
+          {/* Ban Status */}
+          {result.banInfo && (
+            <BentoCard className={cn(
+              result.banInfo.isBanned ? "border-red-500/30" : "border-green-500/30"
+            )}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <IconShieldLock className={cn(
+                    "h-5 w-5",
+                    result.banInfo.isBanned ? "text-red-500" : "text-green-500"
+                  )} />
+                  {t("ipCheck.banStatus.title")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {result.banInfo.isBanned ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 py-2 px-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                      <IconX className="h-5 w-5 text-red-500 flex-shrink-0" />
+                      <span className="text-red-700 dark:text-red-300 font-medium">
+                        {t("ipCheck.banStatus.banned")}
+                      </span>
+                    </div>
+                    
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between py-2 border-b border-border/50">
+                        <span className="text-muted-foreground">{t("ipCheck.banStatus.reason")}</span>
+                        <span className="font-medium">{result.banInfo.reason}</span>
+                      </div>
+                      <div className="flex justify-between py-2 border-b border-border/50">
+                        <span className="text-muted-foreground">{t("ipCheck.banStatus.bannedAt")}</span>
+                        <span className="font-medium">
+                          {new Date(result.banInfo.bannedAt).toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex justify-between py-2 border-b border-border/50">
+                        <span className="text-muted-foreground">{t("ipCheck.banStatus.expiresAt")}</span>
+                        <span className="font-medium">
+                          {result.banInfo.isPermanent 
+                            ? t("ipCheck.banStatus.permanent") 
+                            : new Date(result.banInfo.expiresAt).toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex justify-between py-2 border-b border-border/50">
+                        <span className="text-muted-foreground">{t("ipCheck.banStatus.sourceAgent")}</span>
+                        <span className="font-mono text-xs">{result.banInfo.sourceAgentId}</span>
+                      </div>
+                      {result.banInfo.isCIDR && (
+                        <div className="flex justify-between py-2 border-b border-border/50">
+                          <span className="text-muted-foreground">{t("ipCheck.banStatus.matchedRange")}</span>
+                          <Badge variant="outline" className="font-mono">
+                            {result.banInfo.matchedIP}
+                          </Badge>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3 py-4 px-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+                    <IconCheck className="h-5 w-5 text-green-500 flex-shrink-0" />
+                    <span className="text-green-700 dark:text-green-300 font-medium">
+                      {t("ipCheck.banStatus.notBanned")}
+                    </span>
+                  </div>
+                )}
               </CardContent>
             </BentoCard>
           )}

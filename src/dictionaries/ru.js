@@ -772,6 +772,17 @@ export const ru = {
       fallbackExplanation:
         "При отсутствии точного совпадения - выбор ближайшего агента по расстоянию",
     },
+    banStatus: {
+      title: "Статус блокировки",
+      banned: "IP ЗАБЛОКИРОВАН",
+      notBanned: "IP не заблокирован",
+      reason: "Причина",
+      bannedAt: "Заблокирован",
+      expiresAt: "Истекает",
+      permanent: "Постоянно",
+      sourceAgent: "Агент-источник",
+      matchedRange: "Совпавший диапазон CIDR",
+    },
     error: {
       noIp: "Пожалуйста, введите IP-адрес",
     },

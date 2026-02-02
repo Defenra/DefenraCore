@@ -767,6 +767,17 @@ export const en = {
       fallbackExplanation:
         "If no exact match, falls back to nearest agent by distance",
     },
+    banStatus: {
+      title: "Ban Status",
+      banned: "IP is BANNED",
+      notBanned: "IP is not banned",
+      reason: "Reason",
+      bannedAt: "Banned At",
+      expiresAt: "Expires At",
+      permanent: "Permanent",
+      sourceAgent: "Source Agent",
+      matchedRange: "Matched CIDR Range",
+    },
     error: {
       noIp: "Please enter an IP address",
     },

@@ -9,6 +9,16 @@ import {
 import connectDB from "@/lib/mongodb";
 import Agent from "@/models/Agent";
 import Domain from "@/models/Domain";
+import GlobalBan from "@/models/GlobalBan";
+
+function isIPInCIDR(ip, cidr) {
+  const [range, bits] = cidr.split("/");
+  const mask = parseInt(bits);
+  const ipLong = ip.split(".").reduce((acc, octet) => (acc << 8) + parseInt(octet), 0) >>> 0;
+  const rangeLong = range.split(".").reduce((acc, octet) => (acc << 8) + parseInt(octet), 0) >>> 0;
+  const maskLong = (0xFFFFFFFF << (32 - mask)) >>> 0;
+  return (ipLong & maskLong) === (rangeLong & maskLong);
+}
 
 export async function GET(request) {
   try {
@@ -151,6 +161,45 @@ export async function GET(request) {
       }
     }
 
+    // 4. Check if IP is banned
+    let banInfo = null;
+    const now = new Date();
+    const activeBans = await GlobalBan.find({
+      $or: [{ expiresAt: { $gt: now } }, { isPermanent: true }],
+    }).lean();
+
+    for (const ban of activeBans) {
+      // Check exact IP match
+      if (ban.ip === ip) {
+        banInfo = {
+          isBanned: true,
+          reason: ban.reason,
+          bannedAt: ban.bannedAt,
+          expiresAt: ban.expiresAt,
+          sourceAgentId: ban.sourceAgentId,
+          isPermanent: ban.isPermanent || false,
+          isCIDR: ban.isCIDR || false,
+          matchedIP: ip,
+        };
+        break;
+      }
+
+      // Check CIDR match
+      if (ban.isCIDR && isIPInCIDR(ip, ban.ip)) {
+        banInfo = {
+          isBanned: true,
+          reason: ban.reason,
+          bannedAt: ban.bannedAt,
+          expiresAt: ban.expiresAt,
+          sourceAgentId: ban.sourceAgentId,
+          isPermanent: ban.isPermanent || false,
+          isCIDR: true,
+          matchedIP: ban.ip,
+        };
+        break;
+      }
+    }
+
     // Format agent data
     let agentData = null;
     if (selectedAgent) {
@@ -204,6 +253,7 @@ export async function GET(request) {
               : null,
       },
       domainConfig,
+      banInfo,
     });
   } catch (error) {
     console.error("IP Check error:", error);
