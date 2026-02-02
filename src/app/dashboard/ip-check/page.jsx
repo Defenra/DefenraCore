@@ -28,7 +28,7 @@ function BentoCard({ children, className }) {
       className={cn(
         "border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300",
         "hover:border-border hover:shadow-lg hover:shadow-primary/5",
-        className
+        className,
       )}
     >
       {children}
@@ -206,9 +206,9 @@ export default function IPCheckPage() {
       {loading && <ResultSkeleton />}
 
       {result && !loading && (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* GeoIP Info */}
-          <BentoCard>
+          <BentoCard className="md:col-span-2 lg:col-span-2">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <IconWorld className="h-5 w-5" />
@@ -287,186 +287,242 @@ export default function IPCheckPage() {
             </CardContent>
           </BentoCard>
 
+          {/* Agent Perspective */}
+          <BentoCard className="md:col-span-1 lg:col-span-1">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <IconServer className="h-5 w-5" />
+                {t("ipCheck.agentPerspective.title")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {result.geoInfo ? (
+                <>
+                  <div className="flex justify-between items-center py-2 border-b border-border/50">
+                    <span className="text-muted-foreground">
+                      {t("ipCheck.agentPerspective.database")}
+                    </span>
+                    <span className="font-medium text-right">
+                      {t("ipCheck.agentPerspective.databaseValue")}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-2 border-b border-border/50">
+                    <span className="text-muted-foreground">
+                      {t("ipCheck.agentPerspective.countryCode")}
+                    </span>
+                    <Badge variant="secondary" className="font-mono text-base">
+                      {result.routing?.clientLocation?.toUpperCase() || "XX"}
+                    </Badge>
+                  </div>
+                  <div className="pt-2">
+                    <p className="text-sm text-muted-foreground mb-1">
+                      {t("ipCheck.agentPerspective.fallbackLogic")}
+                    </p>
+                    <p className="text-xs text-muted-foreground/80">
+                      {t("ipCheck.agentPerspective.fallbackExplanation")}
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center gap-3 text-amber-500">
+                  <IconAlertCircle className="h-5 w-5" />
+                  <span>{t("ipCheck.geoInfo.unknown")}</span>
+                </div>
+              )}
+            </CardContent>
+          </BentoCard>
+
           {/* Routing Info */}
           {result.routing && (
-            <BentoCard>
+            <BentoCard className="md:col-span-2 lg:col-span-3">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <IconRouter className="h-5 w-5" />
                   {t("ipCheck.routing.title")}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Selection Method */}
-                <div className="flex items-center justify-between py-3 border-b border-border/50">
-                  <span className="text-muted-foreground">
-                    {t("ipCheck.routing.method")}
-                  </span>
-                  {getSelectionMethodBadge(result.routing.selectionMethod)}
-                </div>
-
-                {/* Client Location */}
-                <div className="flex items-center justify-between py-3 border-b border-border/50">
-                  <span className="text-muted-foreground">
-                    {t("ipCheck.routing.clientLocation")}
-                  </span>
-                  <Badge variant="secondary" className="font-mono">
-                    {result.routing.clientLocation}
-                  </Badge>
-                </div>
-
-                {/* Distance */}
-                {result.routing.distance && (
-                  <div className="flex items-center justify-between py-3 border-b border-border/50">
-                    <span className="text-muted-foreground">
-                      {t("ipCheck.routing.distance")}
-                    </span>
-                    <span className="font-medium">
-                      {result.routing.distance} km
-                    </span>
-                  </div>
-                )}
-
-                {/* Political Restriction */}
-                {result.routing.politicalRestriction && (
-                  <div className="flex items-center gap-3 py-3 px-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-                    <IconAlertCircle className="h-5 w-5 text-amber-500 flex-shrink-0" />
-                    <span className="text-amber-700 dark:text-amber-300 text-sm">
-                      {result.routing.politicalRestriction}
-                    </span>
-                  </div>
-                )}
-
-                {/* Selected Agent */}
-                {result.routing.selectedAgent ? (
-                  <div className="mt-4 p-4 bg-primary/5 border border-primary/10 rounded-lg">
-                    <div className="flex items-center gap-3 mb-3">
-                      <IconServer className="h-5 w-5 text-primary" />
-                      <span className="font-semibold">
-                        {t("ipCheck.routing.selectedAgent")}
+              <CardContent>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Routing Summary - Compact on wide screens */}
+                  <div className="lg:col-span-1 space-y-3">
+                    {/* Selection Method */}
+                    <div className="flex items-center justify-between py-2 border-b border-border/50">
+                      <span className="text-muted-foreground text-sm">
+                        {t("ipCheck.routing.method")}
                       </span>
+                      {getSelectionMethodBadge(result.routing.selectionMethod)}
                     </div>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">
-                          {t("ipCheck.agent.name")}
+
+                    {/* Client Location */}
+                    <div className="flex items-center justify-between py-2 border-b border-border/50">
+                      <span className="text-muted-foreground text-sm">
+                        {t("ipCheck.routing.clientLocation")}
+                      </span>
+                      <Badge variant="secondary" className="font-mono">
+                        {result.routing.clientLocation}
+                      </Badge>
+                    </div>
+
+                    {/* Distance */}
+                    {result.routing.distance && (
+                      <div className="flex items-center justify-between py-2 border-b border-border/50">
+                        <span className="text-muted-foreground text-sm">
+                          {t("ipCheck.routing.distance")}
                         </span>
                         <span className="font-medium">
-                          {result.routing.selectedAgent.name}
+                          {result.routing.distance} km
                         </span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">
-                          {t("ipCheck.agent.ip")}
-                        </span>
-                        <span className="font-mono">
-                          {result.routing.selectedAgent.ip}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">
-                          {t("ipCheck.agent.location")}
-                        </span>
-                        <span className="font-medium flex items-center gap-1">
-                          <IconMapPin className="h-3 w-3" />
-                          {result.routing.selectedAgent.location?.country ||
-                            "Unknown"}
-                          {result.routing.selectedAgent.location?.city &&
-                            ` (${result.routing.selectedAgent.location.city})`}
+                    )}
+
+                    {/* Political Restriction */}
+                    {result.routing.politicalRestriction && (
+                      <div className="flex items-center gap-3 py-3 px-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                        <IconAlertCircle className="h-5 w-5 text-amber-500 flex-shrink-0" />
+                        <span className="text-amber-700 dark:text-amber-300 text-sm">
+                          {result.routing.politicalRestriction}
                         </span>
                       </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground">
-                          {t("ipCheck.agent.load")}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <div className="w-24 h-2 bg-secondary rounded-full overflow-hidden">
-                            <div
-                              className={cn(
-                                "h-full rounded-full",
-                                result.routing.selectedAgent.loadScore > 80
-                                  ? "bg-red-500"
-                                  : result.routing.selectedAgent.loadScore >
-                                    60
-                                  ? "bg-yellow-500"
-                                  : "bg-green-500"
-                              )}
-                              style={{
-                                width: `${result.routing.selectedAgent.loadScore}%`,
-                              }}
-                            />
-                          </div>
-                          <span className="font-mono text-xs">
-                            {result.routing.selectedAgent.loadScore}%
+                    )}
+                  </div>
+
+                  {/* Selected Agent Details */}
+                  <div className="lg:col-span-2">
+                    {result.routing.selectedAgent ? (
+                      <div className="p-4 bg-primary/5 border border-primary/10 rounded-lg h-full">
+                        <div className="flex items-center gap-3 mb-4">
+                          <IconServer className="h-5 w-5 text-primary" />
+                          <span className="font-semibold">
+                            {t("ipCheck.routing.selectedAgent")}
                           </span>
-                          {result.routing.selectedAgent.isOverloaded && (
-                            <Badge
-                              variant="outline"
-                              className="text-red-500 border-red-500/20 text-xs"
-                            >
-                              {t("ipCheck.agent.overloaded")}
-                            </Badge>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">
+                                {t("ipCheck.agent.name")}
+                              </span>
+                              <span className="font-medium">
+                                {result.routing.selectedAgent.name}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">
+                                {t("ipCheck.agent.ip")}
+                              </span>
+                              <span className="font-mono">
+                                {result.routing.selectedAgent.ip}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">
+                                {t("ipCheck.agent.location")}
+                              </span>
+                              <span className="font-medium flex items-center gap-1">
+                                <IconMapPin className="h-3 w-3" />
+                                {result.routing.selectedAgent.location
+                                  ?.country || "Unknown"}
+                                {result.routing.selectedAgent.location?.city &&
+                                  ` (${result.routing.selectedAgent.location.city})`}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-muted-foreground">
+                                {t("ipCheck.agent.load")}
+                              </span>
+                              <div className="flex items-center gap-2">
+                                <div className="w-24 h-2 bg-secondary rounded-full overflow-hidden">
+                                  <div
+                                    className={cn(
+                                      "h-full rounded-full",
+                                      result.routing.selectedAgent.loadScore >
+                                        80
+                                        ? "bg-red-500"
+                                        : result.routing.selectedAgent
+                                              .loadScore > 60
+                                          ? "bg-yellow-500"
+                                          : "bg-green-500",
+                                    )}
+                                    style={{
+                                      width: `${result.routing.selectedAgent.loadScore}%`,
+                                    }}
+                                  />
+                                </div>
+                                <span className="font-mono text-xs">
+                                  {result.routing.selectedAgent.loadScore}%
+                                </span>
+                                {result.routing.selectedAgent.isOverloaded && (
+                                  <Badge
+                                    variant="outline"
+                                    className="text-red-500 border-red-500/20 text-xs"
+                                  >
+                                    {t("ipCheck.agent.overloaded")}
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Alternative Agents */}
+                          {result.routing.selectedAgent.alternativeAgents
+                            ?.length > 0 && (
+                            <div className="border-t md:border-t-0 md:border-l border-border/50 md:pl-4 pt-4 md:pt-0">
+                              <p className="text-sm text-muted-foreground mb-2">
+                                {t("ipCheck.routing.alternativeAgents", {
+                                  count:
+                                    result.routing.selectedAgent
+                                      .totalAgentsInPool,
+                                })}
+                              </p>
+                              <div className="space-y-1">
+                                {result.routing.selectedAgent.alternativeAgents.map(
+                                  (agent) => (
+                                    <div
+                                      key={agent.agentId}
+                                      className="flex justify-between items-center text-sm py-1 px-2 bg-background/50 rounded"
+                                    >
+                                      <span className="font-medium truncate max-w-[120px]">
+                                        {agent.name}
+                                      </span>
+                                      <div className="flex items-center gap-2 text-muted-foreground">
+                                        <span className="font-mono text-xs">
+                                          {agent.ip}
+                                        </span>
+                                        <Badge
+                                          variant="outline"
+                                          className={cn(
+                                            "text-xs",
+                                            agent.isOverloaded
+                                              ? "text-red-500 border-red-500/20"
+                                              : "text-green-500 border-green-500/20",
+                                          )}
+                                        >
+                                          {agent.loadScore}%
+                                        </Badge>
+                                      </div>
+                                    </div>
+                                  ),
+                                )}
+                              </div>
+                            </div>
                           )}
                         </div>
                       </div>
-                    </div>
-
-                    {/* Alternative Agents */}
-                    {result.routing.selectedAgent.alternativeAgents?.length >
-                      0 && (
-                      <div className="mt-4 pt-4 border-t border-border/50">
-                        <p className="text-sm text-muted-foreground mb-2">
-                          {t("ipCheck.routing.alternativeAgents", {
-                            count:
-                              result.routing.selectedAgent.totalAgentsInPool,
-                          })}
-                        </p>
-                        <div className="space-y-1">
-                          {result.routing.selectedAgent.alternativeAgents.map(
-                            (agent) => (
-                              <div
-                                key={agent.agentId}
-                                className="flex justify-between items-center text-sm py-1 px-2 bg-background/50 rounded"
-                              >
-                                <span className="font-medium">
-                                  {agent.name}
-                                </span>
-                                <div className="flex items-center gap-3 text-muted-foreground">
-                                  <span className="font-mono text-xs">
-                                    {agent.ip}
-                                  </span>
-                                  <Badge
-                                    variant="outline"
-                                    className={cn(
-                                      "text-xs",
-                                      agent.isOverloaded
-                                        ? "text-red-500 border-red-500/20"
-                                        : "text-green-500 border-green-500/20"
-                                    )}
-                                  >
-                                    {agent.loadScore}%
-                                  </Badge>
-                                </div>
-                              </div>
-                            )
-                          )}
+                    ) : (
+                      <div className="flex items-center gap-3 py-4 px-4 bg-red-500/10 border border-red-500/20 rounded-lg h-full">
+                        <IconX className="h-5 w-5 text-red-500 flex-shrink-0" />
+                        <div>
+                          <p className="text-red-700 dark:text-red-300 font-medium">
+                            {t("ipCheck.routing.noAgentAvailable")}
+                          </p>
+                          <p className="text-red-600/80 dark:text-red-400/80 text-sm mt-1">
+                            {t("ipCheck.routing.nxdomainWarning")}
+                          </p>
                         </div>
                       </div>
                     )}
                   </div>
-                ) : (
-                  <div className="flex items-center gap-3 py-4 px-4 bg-red-500/10 border border-red-500/20 rounded-lg">
-                    <IconX className="h-5 w-5 text-red-500 flex-shrink-0" />
-                    <div>
-                      <p className="text-red-700 dark:text-red-300 font-medium">
-                        {t("ipCheck.routing.noAgentAvailable")}
-                      </p>
-                      <p className="text-red-600/80 dark:text-red-400/80 text-sm mt-1">
-                        {t("ipCheck.routing.nxdomainWarning")}
-                      </p>
-                    </div>
-                  </div>
-                )}
+                </div>
               </CardContent>
             </BentoCard>
           )}

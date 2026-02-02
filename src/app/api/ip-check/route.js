@@ -24,7 +24,7 @@ export async function GET(request) {
     if (!ip) {
       return NextResponse.json(
         { error: "IP address is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -34,7 +34,7 @@ export async function GET(request) {
     if (!ipRegex.test(ip)) {
       return NextResponse.json(
         { error: "Invalid IP address format" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -66,7 +66,7 @@ export async function GET(request) {
       // Try exact match first
       const exactMatchAgents = findAllAgentsForLocation(
         clientLocation,
-        activeAgents
+        activeAgents,
       );
 
       if (exactMatchAgents.length > 0) {
@@ -97,7 +97,7 @@ export async function GET(request) {
               clientCoords.lat,
               clientCoords.lon,
               agentCoords.lat,
-              agentCoords.lon
+              agentCoords.lon,
             );
 
             if (dist < nearestDistance) {
@@ -119,8 +119,7 @@ export async function GET(request) {
                 nearestAgent.manualLocation?.country ||
                 nearestAgent.ipInfo?.country,
               city:
-                nearestAgent.manualLocation?.city ||
-                nearestAgent.ipInfo?.city,
+                nearestAgent.manualLocation?.city || nearestAgent.ipInfo?.city,
             };
             selectionMethod = "nearest_fallback";
             distance = Math.round(nearestDistance);
@@ -143,7 +142,7 @@ export async function GET(request) {
         // Check if there's a specific assignment for this location
         if (clientLocation && domain.geoDnsConfig) {
           const locationConfig = domain.geoDnsConfig.find(
-            (cfg) => cfg.code.toLowerCase() === clientLocation
+            (cfg) => cfg.code.toLowerCase() === clientLocation,
           );
           if (locationConfig) {
             domainConfig.assignedLocation = locationConfig;
@@ -201,8 +200,8 @@ export async function GET(request) {
           clientLocation === "ua"
             ? "UA blocked from RU/BY agents"
             : clientLocation === "ru"
-            ? "RU blocked from UA agents"
-            : null,
+              ? "RU blocked from UA agents"
+              : null,
       },
       domainConfig,
     });
@@ -210,7 +209,7 @@ export async function GET(request) {
     console.error("IP Check error:", error);
     return NextResponse.json(
       { error: "Failed to check IP", details: error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

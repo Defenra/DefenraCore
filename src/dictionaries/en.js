@@ -758,6 +758,15 @@ export const en = {
       load: "Load",
       overloaded: "Overloaded",
     },
+    agentPerspective: {
+      title: "Agent Perspective",
+      database: "Database",
+      databaseValue: "MaxMind GeoLite2-City",
+      countryCode: "Agent Country Code",
+      fallbackLogic: "Fallback Logic",
+      fallbackExplanation:
+        "If no exact match, falls back to nearest agent by distance",
+    },
     error: {
       noIp: "Please enter an IP address",
     },

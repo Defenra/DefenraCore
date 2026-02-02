@@ -763,6 +763,15 @@ export const ru = {
       load: "Нагрузка",
       overloaded: "Перегружен",
     },
+    agentPerspective: {
+      title: "Перспектива Агента",
+      database: "База данных",
+      databaseValue: "MaxMind GeoLite2-City",
+      countryCode: "Код страны агента",
+      fallbackLogic: "Логика отката",
+      fallbackExplanation:
+        "При отсутствии точного совпадения - выбор ближайшего агента по расстоянию",
+    },
     error: {
       noIp: "Пожалуйста, введите IP-адрес",
     },

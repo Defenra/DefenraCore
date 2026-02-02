@@ -226,26 +226,263 @@ function _getContinentForCountry(countryCode) {
  */
 export function getContinentForCountry(countryCode) {
   const code = countryCode.toUpperCase();
-  
-  // North America
-  if (['US', 'CA', 'MX', 'GT', 'BZ', 'SV', 'HN', 'NI', 'CR', 'PA', 'CU', 'DO', 'HT', 'JM', 'BS', 'BB', 'AG', 'DM', 'GD', 'KN', 'LC', 'VC', 'TT', 'PR', 'KY', 'BM', 'GL'].includes(code)) return 'north-america';
-  
-  // South America
-  if (['BR', 'AR', 'CO', 'PE', 'VE', 'CL', 'EC', 'BO', 'PY', 'UY', 'GY', 'SR', 'GF', 'FK'].includes(code)) return 'south-america';
-  
-  // Europe (including RU/TR geographically for routing preference)
-  if (['RU', 'UA', 'BY', 'MD', 'EE', 'LV', 'LT', 'PL', 'CZ', 'SK', 'HU', 'RO', 'BG', 'RS', 'HR', 'SI', 'BA', 'ME', 'MK', 'AL', 'GR', 'TR', 'CY', 'MT', 'IT', 'SM', 'VA', 'ES', 'PT', 'AD', 'FR', 'MC', 'BE', 'NL', 'LU', 'DE', 'AT', 'CH', 'LI', 'GB', 'IE', 'IS', 'NO', 'SE', 'FI', 'DK', 'FO'].includes(code)) return 'europe';
-  
-  // Asia
-  if (['CN', 'JP', 'KR', 'KP', 'MN', 'TW', 'HK', 'MO', 'VN', 'LA', 'KH', 'TH', 'MM', 'MY', 'SG', 'ID', 'PH', 'BN', 'TL', 'IN', 'PK', 'BD', 'LK', 'NP', 'BT', 'MV', 'AF', 'IR', 'IQ', 'SY', 'LB', 'IL', 'PS', 'JO', 'SA', 'YE', 'OM', 'AE', 'QA', 'BH', 'KW', 'KZ', 'UZ', 'TM', 'KG', 'TJ', 'GE', 'AM', 'AZ'].includes(code)) return 'asia';
-  
-  // Oceania
-  if (['AU', 'NZ', 'PG', 'SB', 'VU', 'FJ', 'NC', 'PF', 'GU', 'MP', 'AS', 'WS', 'TO', 'TV', 'KI', 'MH', 'FM', 'PW', 'NR'].includes(code)) return 'oceania';
-  
-  // Africa
-  if (['EG', 'LY', 'TN', 'DZ', 'MA', 'EH', 'SD', 'SS', 'ER', 'ET', 'DJ', 'SO', 'KE', 'UG', 'TZ', 'RW', 'BI', 'MZ', 'MW', 'ZM', 'ZW', 'BW', 'NA', 'ZA', 'LS', 'SZ', 'AO', 'CD', 'CG', 'GA', 'GQ', 'CM', 'CF', 'TD', 'NE', 'NG', 'BJ', 'TG', 'GH', 'CI', 'LR', 'SL', 'GN', 'GW', 'GM', 'SN', 'MR', 'ML', 'BF', 'CV', 'ST', 'KM', 'SC', 'MU', 'MG', 'RE', 'YT'].includes(code)) return 'africa';
 
-  return 'unknown';
+  // North America
+  if (
+    [
+      "US",
+      "CA",
+      "MX",
+      "GT",
+      "BZ",
+      "SV",
+      "HN",
+      "NI",
+      "CR",
+      "PA",
+      "CU",
+      "DO",
+      "HT",
+      "JM",
+      "BS",
+      "BB",
+      "AG",
+      "DM",
+      "GD",
+      "KN",
+      "LC",
+      "VC",
+      "TT",
+      "PR",
+      "KY",
+      "BM",
+      "GL",
+    ].includes(code)
+  )
+    return "north-america";
+
+  // South America
+  if (
+    [
+      "BR",
+      "AR",
+      "CO",
+      "PE",
+      "VE",
+      "CL",
+      "EC",
+      "BO",
+      "PY",
+      "UY",
+      "GY",
+      "SR",
+      "GF",
+      "FK",
+    ].includes(code)
+  )
+    return "south-america";
+
+  // Europe (including RU/TR geographically for routing preference)
+  if (
+    [
+      "RU",
+      "UA",
+      "BY",
+      "MD",
+      "EE",
+      "LV",
+      "LT",
+      "PL",
+      "CZ",
+      "SK",
+      "HU",
+      "RO",
+      "BG",
+      "RS",
+      "HR",
+      "SI",
+      "BA",
+      "ME",
+      "MK",
+      "AL",
+      "GR",
+      "TR",
+      "CY",
+      "MT",
+      "IT",
+      "SM",
+      "VA",
+      "ES",
+      "PT",
+      "AD",
+      "FR",
+      "MC",
+      "BE",
+      "NL",
+      "LU",
+      "DE",
+      "AT",
+      "CH",
+      "LI",
+      "GB",
+      "IE",
+      "IS",
+      "NO",
+      "SE",
+      "FI",
+      "DK",
+      "FO",
+    ].includes(code)
+  )
+    return "europe";
+
+  // Asia
+  if (
+    [
+      "CN",
+      "JP",
+      "KR",
+      "KP",
+      "MN",
+      "TW",
+      "HK",
+      "MO",
+      "VN",
+      "LA",
+      "KH",
+      "TH",
+      "MM",
+      "MY",
+      "SG",
+      "ID",
+      "PH",
+      "BN",
+      "TL",
+      "IN",
+      "PK",
+      "BD",
+      "LK",
+      "NP",
+      "BT",
+      "MV",
+      "AF",
+      "IR",
+      "IQ",
+      "SY",
+      "LB",
+      "IL",
+      "PS",
+      "JO",
+      "SA",
+      "YE",
+      "OM",
+      "AE",
+      "QA",
+      "BH",
+      "KW",
+      "KZ",
+      "UZ",
+      "TM",
+      "KG",
+      "TJ",
+      "GE",
+      "AM",
+      "AZ",
+    ].includes(code)
+  )
+    return "asia";
+
+  // Oceania
+  if (
+    [
+      "AU",
+      "NZ",
+      "PG",
+      "SB",
+      "VU",
+      "FJ",
+      "NC",
+      "PF",
+      "GU",
+      "MP",
+      "AS",
+      "WS",
+      "TO",
+      "TV",
+      "KI",
+      "MH",
+      "FM",
+      "PW",
+      "NR",
+    ].includes(code)
+  )
+    return "oceania";
+
+  // Africa
+  if (
+    [
+      "EG",
+      "LY",
+      "TN",
+      "DZ",
+      "MA",
+      "EH",
+      "SD",
+      "SS",
+      "ER",
+      "ET",
+      "DJ",
+      "SO",
+      "KE",
+      "UG",
+      "TZ",
+      "RW",
+      "BI",
+      "MZ",
+      "MW",
+      "ZM",
+      "ZW",
+      "BW",
+      "NA",
+      "ZA",
+      "LS",
+      "SZ",
+      "AO",
+      "CD",
+      "CG",
+      "GA",
+      "GQ",
+      "CM",
+      "CF",
+      "TD",
+      "NE",
+      "NG",
+      "BJ",
+      "TG",
+      "GH",
+      "CI",
+      "LR",
+      "SL",
+      "GN",
+      "GW",
+      "GM",
+      "SN",
+      "MR",
+      "ML",
+      "BF",
+      "CV",
+      "ST",
+      "KM",
+      "SC",
+      "MU",
+      "MG",
+      "RE",
+      "YT",
+    ].includes(code)
+  )
+    return "africa";
+
+  return "unknown";
 }
 
 /**
@@ -258,19 +495,19 @@ export function getContinentForCountry(countryCode) {
 export function calculateWeightedDistance(fromCountry, toCountry) {
   const from = LOCATION_COORDINATES[fromCountry.toLowerCase()];
   const to = LOCATION_COORDINATES[toCountry.toLowerCase()];
-  
+
   if (!from || !to) return 999999;
-  
+
   let dist = calculateHaversineDistance(from.lat, from.lon, to.lat, to.lon);
-  
+
   // Apply continent penalty
   const cont1 = getContinentForCountry(fromCountry);
   const cont2 = getContinentForCountry(toCountry);
-  
-  if (cont1 !== 'unknown' && cont2 !== 'unknown' && cont1 !== cont2) {
+
+  if (cont1 !== "unknown" && cont2 !== "unknown" && cont1 !== cont2) {
     dist += 10000; // Heavy penalty for cross-continent
   }
-  
+
   return dist;
 }
 

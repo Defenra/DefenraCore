@@ -163,7 +163,7 @@ export async function POST(request) {
       // Political routing restrictions - bidirectional blocks between conflicting regions
       const politicalRestrictions = {
         ua: ["ru", "by"], // UA protected from RU/BY
-        ru: ["ua"],       // RU protected from UA (bidirectional)
+        ru: ["ua"], // RU protected from UA (bidirectional)
       };
 
       const isRoutingRestricted = (fromCountry, toCountry) => {
@@ -178,7 +178,7 @@ export async function POST(request) {
       // (e.g., UA users can't use RU agents, RU users can't use UA agents)
       for (const country of allCountryCodes) {
         const countryLower = country.toLowerCase();
-        
+
         // Skip if we already have an exact match
         if (geoDnsMap[countryLower]) continue;
 
@@ -191,7 +191,10 @@ export async function POST(request) {
           if (isRoutingRestricted(countryLower, agentCountry)) continue;
 
           // Use weighted distance (adds 10,000km penalty for cross-continent)
-          const distance = calculateWeightedDistance(countryLower, agentCountry);
+          const distance = calculateWeightedDistance(
+            countryLower,
+            agentCountry,
+          );
           if (distance < nearestDistance) {
             nearestDistance = distance;
             nearestAgent = agentIp;
