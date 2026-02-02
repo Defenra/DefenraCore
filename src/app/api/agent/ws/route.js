@@ -230,27 +230,98 @@ async function sendConfigUpdate(agentId) {
   }
 }
 
-// Build domain configuration
+// Build domain configuration (matches HTTP poll structure exactly)
 async function buildDomainConfig(domain, agent) {
-  const geoDnsConfig = {};
+  const allAgents = await Agent.find({ isActive: true }).lean();
+
+  // Build GeoDNS maps (same as poll route)
+  const geoDnsMap = {};
+  const geoDnsAgentPools = {};
+  const geoDnsFallbackMap = {};
+
   if (domain.geoDnsConfig && domain.geoDnsConfig.length > 0) {
-    const allAgents = await Agent.find({ isActive: true }).lean();
     for (const location of domain.geoDnsConfig) {
       const agents = findAllAgentsForLocation(location.code, allAgents);
       if (agents.length > 0) {
+        // Sort by load score and pick best agent for geoDnsMap
         agents.sort((a, b) => a.loadScore - b.loadScore);
-        geoDnsConfig[location.code] = agents[0].agentIp;
+        geoDnsMap[location.code] = agents[0].agentIp;
+
+        // Store full agent pool with weights
+        geoDnsAgentPools[location.code] = agents.map((a) => ({
+          agentId: a.agentId,
+          ip: a.agentIp,
+          weight: Math.max(10, 100 - (a.loadScore || 0)),
+          loadScore: a.loadScore || 0,
+        }));
+
+        // Build fallback records (Anycast)
+        const anycastRecords = await buildAnycastRecords(location.code, agents);
+        if (anycastRecords.length > 0) {
+          geoDnsFallbackMap[location.code] = anycastRecords;
+        }
       }
     }
   }
 
+  // Build DNS records (same filtering as poll route)
+  const regularDnsRecords = (domain.dnsRecords || [])
+    .filter((record) => record.type !== "A" || !record.isOriginIP)
+    .map((record) => ({
+      type: record.type,
+      name: record.name,
+      value: record.value,
+      ttl: record.ttl || 300,
+      priority: record.priority,
+      httpProxyEnabled: record.httpProxyEnabled || false,
+    }));
+
+  // Add A records for each GeoDNS location
+  Object.entries(geoDnsMap).forEach(([code, ip]) => {
+    regularDnsRecords.push({
+      type: "A",
+      name: code,
+      value: ip,
+      ttl: 60,
+      httpProxyEnabled: true,
+    });
+  });
+
   return {
+    id: domain._id.toString(),
     domain: domain.domain,
-    originIp: domain.originIp,
-    httpProxyEnabled: domain.httpProxy?.enabled || false,
-    ssl: domain.ssl || {},
-    antiDdos: domain.antiDdos || {},
-    geoDns: geoDnsConfig,
+    description: domain.description || "",
+    dnsRecords: regularDnsRecords,
+    geoDnsMap: geoDnsMap,
+    geoDnsFallbackMap: geoDnsFallbackMap,
+    geoDnsAgentPools: geoDnsAgentPools,
+    geoDnsLocations: (domain.geoDnsConfig || []).map((loc) => ({
+      code: loc.code,
+      name: loc.name,
+      type: loc.type,
+      subdomain: `${loc.code}`,
+    })),
+    httpProxy: {
+      enabled: domain.httpProxy?.enabled || false,
+      type: domain.httpProxy?.type || "both",
+      originHost: domain.httpProxy?.originHost || null,
+      originPort: domain.httpProxy?.originPort || null,
+      antiDDoS: domain.httpProxy?.antiDDoS || null,
+    },
+    ssl: {
+      enabled: domain.httpProxy?.ssl?.enabled || false,
+      certificate: domain.httpProxy?.ssl?.certificate || null,
+      privateKey: domain.httpProxy?.ssl?.privateKey || null,
+      autoRenew: domain.httpProxy?.ssl?.autoRenew || false,
+      acmeHttpChallenge: domain.httpProxy?.ssl?.acmeHttpChallenge,
+    },
+    luaCode: domain.httpProxy?.luaCode || null,
+    pageRules: (domain.pageRules || []).map((rule) => ({
+      enabled: rule.enabled !== undefined ? rule.enabled : true,
+      priority: rule.priority || 1,
+      urlPattern: rule.urlPattern,
+      actions: rule.actions || {},
+    })),
   };
 }
 
