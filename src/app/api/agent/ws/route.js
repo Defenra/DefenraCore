@@ -108,6 +108,11 @@ async function handleAgentMessage(agentId, message) {
       break;
     case "pong":
       conn.lastPing = Date.now();
+      // Update lastSeen in database
+      await Agent.updateOne(
+        { agentId },
+        { lastSeen: new Date() }
+      );
       break;
   }
 }
@@ -179,6 +184,14 @@ async function sendConfigUpdate(agentId) {
     };
 
     conn.ws.send(JSON.stringify(message));
+    conn.configVersion = Date.now();
+
+    // Update lastSeen to show agent is active
+    await Agent.updateOne(
+      { agentId },
+      { lastSeen: new Date() }
+    );
+
     console.log(`[WebSocket] Config sent to ${agentId}`);
   } catch (error) {
     console.error(`[WebSocket] Error sending config to ${agentId}:`, error);
