@@ -114,6 +114,10 @@ const DomainSchema = new mongoose.Schema(
           type: Date,
           default: null,
         },
+        httpRedirectToHttps: {
+          type: Boolean,
+          default: false,
+        },
         issuer: {
           type: String,
           default: "",

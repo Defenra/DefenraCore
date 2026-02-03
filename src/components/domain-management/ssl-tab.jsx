@@ -386,6 +386,38 @@ export function SslTab({ domain, onUpdate }) {
             />
           </div>
 
+          {/* HTTP to HTTPS Redirect Toggle */}
+          {domain.httpProxy?.ssl?.enabled && hasCertificate && (
+            <div className="flex items-center justify-between p-4 rounded-lg border bg-gradient-to-r from-orange-500/5 to-amber-500/5">
+              <div className="flex items-start gap-3">
+                <div className="p-1.5 bg-orange-500/10 rounded mt-0.5">
+                  <ExternalLink className="h-4 w-4 text-orange-500" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm">Always Use HTTPS</p>
+                  <p className="text-xs text-muted-foreground">
+                    Automatically redirect all HTTP requests to HTTPS
+                  </p>
+                </div>
+              </div>
+              <Switch
+                checked={domain.httpProxy?.ssl?.httpRedirectToHttps || false}
+                onCheckedChange={(checked) =>
+                  onUpdate({
+                    ...domain,
+                    httpProxy: {
+                      ...domain.httpProxy,
+                      ssl: {
+                        ...domain.httpProxy?.ssl,
+                        httpRedirectToHttps: checked,
+                      },
+                    },
+                  })
+                }
+              />
+            </div>
+          )}
+
           {/* SSL Encryption Mode */}
           {domain.httpProxy?.ssl?.enabled && (
             <div className="p-5 rounded-lg border bg-gradient-to-r from-blue-500/5 to-cyan-500/5 space-y-4">
