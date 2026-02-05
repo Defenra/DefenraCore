@@ -71,7 +71,7 @@ const DEFAULT_CONFIG = {
   proxyIpHeaders: [],
   l7Protection: {
     enabled: false,
-    tlsFingerprintEnabled: true,
+    tlsFingerprintEnabled: false,
     botDetectionEnabled: true,
     browserValidationEnabled: true,
     fingerprintRateLimit: 10,
