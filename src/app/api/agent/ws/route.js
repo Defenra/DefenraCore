@@ -2,6 +2,7 @@ import connectDB from "@/lib/mongodb";
 import Agent from "@/models/Agent";
 import Domain from "@/models/Domain";
 import GlobalBan from "@/models/GlobalBan";
+import ProxyModel from "@/models/Proxy";
 import { buildAnycastRecords, findAllAgentsForLocation } from "@/lib/geoFallback";
 
 // Connected agents map: agentId -> { ws, lastPing, agent }
@@ -197,10 +198,27 @@ async function sendConfigUpdate(agentId) {
       $or: [{ isPermanent: true }, { expiresAt: { $gt: now } }],
     }).lean();
 
+    // Fetch proxies for this agent (same logic as HTTP poll route)
+    const proxies = await ProxyModel.find({
+      userId: agent.userId,
+      isActive: true,
+      $or: [{ agentId: agentId }, { agentId: null }],
+    }).select("-userId -__v").lean();
+
     const newConfig = {
       agentId,
       domains: domainConfigs,
       agents: agentsList, // All agents for coordinate-based fallback
+      proxies: proxies.map((proxy) => ({
+        id: proxy._id.toString(),
+        name: proxy.name,
+        type: proxy.type,
+        sourcePort: proxy.sourcePort,
+        destinationHost: proxy.destinationHost,
+        destinationPort: proxy.destinationPort,
+        enabled: proxy.isActive !== undefined ? proxy.isActive : true,
+        proxyProtocol: proxy.proxyProtocol || false,
+      })),
       bans: bans.map((b) => ({
         ip: b.ip,
         reason: b.reason,
